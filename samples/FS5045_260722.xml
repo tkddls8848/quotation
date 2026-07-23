@@ -1,0 +1,1156 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE CFXML [
+            <!ELEMENT CFXML (thisDocumentGenerationDateTime,thisDocumentIdentifier,CFData)>
+            <!ELEMENT thisDocumentGenerationDateTime (DateTimeStamp)>
+            <!ELEMENT thisDocumentIdentifier (ProprietaryDocumentIdentifier)>
+            <!ELEMENT CFData (ProprietaryInformation*,ProprietaryShippingInformation?,ProductLineItem+,CFReportBLOB?)>
+            <!ELEMENT ProprietaryShippingInformation (Name, FinancialAmount)>
+            <!ELEMENT ShippingUnitListPrice (FinancialAmount, PriceTerm)>
+            <!ELEMENT DateTimeStamp (#PCDATA)>
+            <!ELEMENT ProprietaryDocumentIdentifier (#PCDATA)>
+            <!ELEMENT ProprietaryInformation (Name,Value)>
+            <!ELEMENT ProductLineItem (  ProductLineNumber , TransactionType , CPUSIUvalue , ConfigurationControlNumber?, ProprietaryGroupIdentifier , ServicePacLineNumberReference? , Quantity  , ProductIdentification , UnitListPrice? , ShippingUnitListPrice? , MaintenanceUnitListPrice? , ProductSubLineItem* ) >
+            <!ELEMENT CFReportBLOB  (#PCDATA)>
+            <!ELEMENT Name  (#PCDATA)>
+            <!ELEMENT Value (#PCDATA)>
+            <!ELEMENT CPUSIUvalue (#PCDATA)>
+            <!ELEMENT ConfigurationControlNumber (#PCDATA)>
+            <!ELEMENT ProductLineNumber (#PCDATA)>
+            <!ELEMENT ProprietaryGroupIdentifier (#PCDATA)>
+            <!ELEMENT ServicePacLineNumberReference (#PCDATA)>
+            <!ELEMENT Quantity (#PCDATA)>
+            <!ELEMENT TransactionType (#PCDATA)>
+            <!ELEMENT ProductIdentification (PartnerProductIdentification*) >
+            <!ELEMENT ProductSubLineItem ( LineNumber, TransactionType, Quantity , ExchangeAddSubLineItemNumber? , ProductIdentification, UnitListPrice?,MaintenanceUnitListPrice?)>
+            <!ELEMENT UnitListPrice ( FinancialAmount, PriceTerm)>
+            <!ELEMENT MaintenanceUnitListPrice (FinancialAmount, PriceTerm)>
+            <!ELEMENT PartnerProductIdentification ( OrderedProductIdentifier?, ProprietaryProductIdentifier, ProductDescription?, ProductTypeCode?, ProductIdentifierTypeCode?) >
+            <!ELEMENT LineNumber (#PCDATA)>
+            <!ELEMENT ExchangeAddSubLineItemNumber (#PCDATA)>
+            <!ELEMENT FinancialAmount ( GlobalCurrencyCode, MonetaryAmount )>
+            <!ELEMENT PriceTerm (#PCDATA)>
+            <!ELEMENT OrderedProductIdentifier (#PCDATA)>
+            <!ELEMENT ProprietaryProductIdentifier (#PCDATA)>
+            <!ELEMENT ProductDescription (#PCDATA)>
+            <!ELEMENT ProductTypeCode (#PCDATA)>
+            <!ELEMENT ProductIdentifierTypeCode (#PCDATA)>
+            <!ELEMENT GlobalCurrencyCode (#PCDATA)>
+            <!ELEMENT MonetaryAmount (#PCDATA)>
+            
+]>
+<CFXML>
+  <thisDocumentGenerationDateTime>
+    <DateTimeStamp>16:28:07</DateTimeStamp>
+  </thisDocumentGenerationDateTime>
+  <thisDocumentIdentifier>
+    <ProprietaryDocumentIdentifier>CFXML.FS5045.2026-07-22T00:00:00+00:00</ProprietaryDocumentIdentifier>
+  </thisDocumentIdentifier>
+  <CFData>
+    <ProprietaryInformation>
+      <Name>CFXML</Name>
+      <Value>1.0</Value>
+    </ProprietaryInformation>
+    <ProprietaryInformation>
+      <Name>Configurator Identifier</Name>
+      <Value>ECMSSD.90501a261971</Value>
+    </ProprietaryInformation>
+    <ProprietaryInformation>
+      <Name>Price File Date</Name>
+      <Value>2026-07-22</Value>
+    </ProprietaryInformation>
+    <ProprietaryInformation>
+      <Name>Checksum</Name>
+      <Value>2302753820</Value>
+    </ProprietaryInformation>
+    <ProprietaryShippingInformation>
+      <Name>Total Non-discountable Shipping and Handling Charge</Name>
+      <FinancialAmount>
+        <GlobalCurrencyCode>KWON</GlobalCurrencyCode>
+        <MonetaryAmount>1,826.9</MonetaryAmount>
+      </FinancialAmount>
+    </ProprietaryShippingInformation>
+    <ProductLineItem>
+      <ProductLineNumber>1000</ProductLineNumber>
+      <TransactionType>NEW</TransactionType>
+      <CPUSIUvalue>1</CPUSIUvalue>
+      <ProprietaryGroupIdentifier>1000</ProprietaryGroupIdentifier>
+      <Quantity>1</Quantity>
+      <ProductIdentification>
+        <PartnerProductIdentification>
+          <OrderedProductIdentifier>N/A</OrderedProductIdentifier>
+          <ProprietaryProductIdentifier>4680-3P4</ProprietaryProductIdentifier>
+          <ProductDescription>4680-3P4 #1:IBM Storage FlashSystem 5045 SFF Control Enclosure</ProductDescription>
+          <ProductTypeCode>Hardware</ProductTypeCode>
+          <ProductIdentifierTypeCode>MTM-FC</ProductIdentifierTypeCode>
+        </PartnerProductIdentification>
+      </ProductIdentification>
+      <UnitListPrice>
+        <FinancialAmount>
+          <GlobalCurrencyCode>KWON</GlobalCurrencyCode>
+          <MonetaryAmount>88,971.5</MonetaryAmount>
+        </FinancialAmount>
+        <PriceTerm>0</PriceTerm>
+      </UnitListPrice>
+      <ShippingUnitListPrice>
+        <FinancialAmount>
+          <GlobalCurrencyCode>KWON</GlobalCurrencyCode>
+          <MonetaryAmount>608.97</MonetaryAmount>
+        </FinancialAmount>
+        <PriceTerm>0</PriceTerm>
+      </ShippingUnitListPrice>
+      <ProductSubLineItem>
+        <LineNumber>1001</LineNumber>
+        <TransactionType>ADD</TransactionType>
+        <Quantity>1</Quantity>
+        <ProductIdentification>
+          <PartnerProductIdentification>
+            <OrderedProductIdentifier></OrderedProductIdentifier>
+            <ProprietaryProductIdentifier>9730</ProprietaryProductIdentifier>
+            <ProductDescription>Power Cord - PDU Connection</ProductDescription>
+            <ProductTypeCode>Hardware</ProductTypeCode>
+            <ProductIdentifierTypeCode>MTM-FC</ProductIdentifierTypeCode>
+          </PartnerProductIdentification>
+        </ProductIdentification>
+        <UnitListPrice>
+          <FinancialAmount>
+            <GlobalCurrencyCode>KWON</GlobalCurrencyCode>
+            <MonetaryAmount>168.8</MonetaryAmount>
+          </FinancialAmount>
+          <PriceTerm>0</PriceTerm>
+        </UnitListPrice>
+      </ProductSubLineItem>
+      <ProductSubLineItem>
+        <LineNumber>1002</LineNumber>
+        <TransactionType>ADD</TransactionType>
+        <Quantity>8</Quantity>
+        <ProductIdentification>
+          <PartnerProductIdentification>
+            <OrderedProductIdentifier></OrderedProductIdentifier>
+            <ProprietaryProductIdentifier>ACSR</ProprietaryProductIdentifier>
+            <ProductDescription>5m OM3 Fiber Cable (LC)</ProductDescription>
+            <ProductTypeCode>Hardware</ProductTypeCode>
+            <ProductIdentifierTypeCode>MTM-FC</ProductIdentifierTypeCode>
+          </PartnerProductIdentification>
+        </ProductIdentification>
+        <UnitListPrice>
+          <FinancialAmount>
+            <GlobalCurrencyCode>KWON</GlobalCurrencyCode>
+            <MonetaryAmount>391.2</MonetaryAmount>
+          </FinancialAmount>
+          <PriceTerm>0</PriceTerm>
+        </UnitListPrice>
+      </ProductSubLineItem>
+      <ProductSubLineItem>
+        <LineNumber>1003</LineNumber>
+        <TransactionType>ADD</TransactionType>
+        <Quantity>1</Quantity>
+        <ProductIdentification>
+          <PartnerProductIdentification>
+            <OrderedProductIdentifier></OrderedProductIdentifier>
+            <ProprietaryProductIdentifier>ADN1</ProprietaryProductIdentifier>
+            <ProductDescription>Order Type 1 - CTO</ProductDescription>
+            <ProductTypeCode>Hardware</ProductTypeCode>
+            <ProductIdentifierTypeCode>MTM-FC</ProductIdentifierTypeCode>
+          </PartnerProductIdentification>
+        </ProductIdentification>
+        <UnitListPrice>
+          <FinancialAmount>
+            <GlobalCurrencyCode>KWON</GlobalCurrencyCode>
+            <MonetaryAmount>N/C</MonetaryAmount>
+          </FinancialAmount>
+          <PriceTerm>0</PriceTerm>
+        </UnitListPrice>
+      </ProductSubLineItem>
+      <ProductSubLineItem>
+        <LineNumber>1004</LineNumber>
+        <TransactionType>ADD</TransactionType>
+        <Quantity>1</Quantity>
+        <ProductIdentification>
+          <PartnerProductIdentification>
+            <OrderedProductIdentifier></OrderedProductIdentifier>
+            <ProprietaryProductIdentifier>AHPA</ProprietaryProductIdentifier>
+            <ProductDescription>AC Power Supply HE</ProductDescription>
+            <ProductTypeCode>Hardware</ProductTypeCode>
+            <ProductIdentifierTypeCode>MTM-FC</ProductIdentifierTypeCode>
+          </PartnerProductIdentification>
+        </ProductIdentification>
+        <UnitListPrice>
+          <FinancialAmount>
+            <GlobalCurrencyCode>KWON</GlobalCurrencyCode>
+            <MonetaryAmount>N/C</MonetaryAmount>
+          </FinancialAmount>
+          <PriceTerm>0</PriceTerm>
+        </UnitListPrice>
+      </ProductSubLineItem>
+      <ProductSubLineItem>
+        <LineNumber>1005</LineNumber>
+        <TransactionType>ADD</TransactionType>
+        <Quantity>1</Quantity>
+        <ProductIdentification>
+          <PartnerProductIdentification>
+            <OrderedProductIdentifier></OrderedProductIdentifier>
+            <ProprietaryProductIdentifier>AHZE</ProprietaryProductIdentifier>
+            <ProductDescription>Hybrid Flash Indicator</ProductDescription>
+            <ProductTypeCode>Hardware</ProductTypeCode>
+            <ProductIdentifierTypeCode>MTM-FC</ProductIdentifierTypeCode>
+          </PartnerProductIdentification>
+        </ProductIdentification>
+        <UnitListPrice>
+          <FinancialAmount>
+            <GlobalCurrencyCode>KWON</GlobalCurrencyCode>
+            <MonetaryAmount>N/C</MonetaryAmount>
+          </FinancialAmount>
+          <PriceTerm>0</PriceTerm>
+        </UnitListPrice>
+      </ProductSubLineItem>
+      <ProductSubLineItem>
+        <LineNumber>1006</LineNumber>
+        <TransactionType>ADD</TransactionType>
+        <Quantity>1</Quantity>
+        <ProductIdentification>
+          <PartnerProductIdentification>
+            <OrderedProductIdentifier></OrderedProductIdentifier>
+            <ProprietaryProductIdentifier>AKNC</ProprietaryProductIdentifier>
+            <ProductDescription>Premium S&amp;H Indicator</ProductDescription>
+            <ProductTypeCode>Hardware</ProductTypeCode>
+            <ProductIdentifierTypeCode>MTM-FC</ProductIdentifierTypeCode>
+          </PartnerProductIdentification>
+        </ProductIdentification>
+        <UnitListPrice>
+          <FinancialAmount>
+            <GlobalCurrencyCode>KWON</GlobalCurrencyCode>
+            <MonetaryAmount>0</MonetaryAmount>
+          </FinancialAmount>
+          <PriceTerm>0</PriceTerm>
+        </UnitListPrice>
+      </ProductSubLineItem>
+      <ProductSubLineItem>
+        <LineNumber>1007</LineNumber>
+        <TransactionType>ADD</TransactionType>
+        <Quantity>12</Quantity>
+        <ProductIdentification>
+          <PartnerProductIdentification>
+            <OrderedProductIdentifier></OrderedProductIdentifier>
+            <ProprietaryProductIdentifier>AL80</ProprietaryProductIdentifier>
+            <ProductDescription>1.92TB 12 Gb SAS 2.5 Inch Flash Drive</ProductDescription>
+            <ProductTypeCode>Hardware</ProductTypeCode>
+            <ProductIdentifierTypeCode>MTM-FC</ProductIdentifierTypeCode>
+          </PartnerProductIdentification>
+        </ProductIdentification>
+        <UnitListPrice>
+          <FinancialAmount>
+            <GlobalCurrencyCode>KWON</GlobalCurrencyCode>
+            <MonetaryAmount>49,379</MonetaryAmount>
+          </FinancialAmount>
+          <PriceTerm>0</PriceTerm>
+        </UnitListPrice>
+      </ProductSubLineItem>
+      <ProductSubLineItem>
+        <LineNumber>1008</LineNumber>
+        <TransactionType>ADD</TransactionType>
+        <Quantity>1</Quantity>
+        <ProductIdentification>
+          <PartnerProductIdentification>
+            <OrderedProductIdentifier></OrderedProductIdentifier>
+            <ProprietaryProductIdentifier>ALBG</ProprietaryProductIdentifier>
+            <ProductDescription>16 Gb FC 4 Port Adapter Cards (Pair)</ProductDescription>
+            <ProductTypeCode>Hardware</ProductTypeCode>
+            <ProductIdentifierTypeCode>MTM-FC</ProductIdentifierTypeCode>
+          </PartnerProductIdentification>
+        </ProductIdentification>
+        <UnitListPrice>
+          <FinancialAmount>
+            <GlobalCurrencyCode>KWON</GlobalCurrencyCode>
+            <MonetaryAmount>26,463.3</MonetaryAmount>
+          </FinancialAmount>
+          <PriceTerm>0</PriceTerm>
+        </UnitListPrice>
+      </ProductSubLineItem>
+      <ProductSubLineItem>
+        <LineNumber>1009</LineNumber>
+        <TransactionType>ADD</TransactionType>
+        <Quantity>1</Quantity>
+        <ProductIdentification>
+          <PartnerProductIdentification>
+            <OrderedProductIdentifier></OrderedProductIdentifier>
+            <ProprietaryProductIdentifier>ALGA</ProprietaryProductIdentifier>
+            <ProductDescription>32 GB Cache Upgrade</ProductDescription>
+            <ProductTypeCode>Hardware</ProductTypeCode>
+            <ProductIdentifierTypeCode>MTM-FC</ProductIdentifierTypeCode>
+          </PartnerProductIdentification>
+        </ProductIdentification>
+        <UnitListPrice>
+          <FinancialAmount>
+            <GlobalCurrencyCode>KWON</GlobalCurrencyCode>
+            <MonetaryAmount>7,379.3</MonetaryAmount>
+          </FinancialAmount>
+          <PriceTerm>0</PriceTerm>
+        </UnitListPrice>
+      </ProductSubLineItem>
+      <ProductSubLineItem>
+        <LineNumber>1010</LineNumber>
+        <TransactionType>ADD</TransactionType>
+        <Quantity>1</Quantity>
+        <ProductIdentification>
+          <PartnerProductIdentification>
+            <OrderedProductIdentifier></OrderedProductIdentifier>
+            <ProprietaryProductIdentifier>ALH0</ProprietaryProductIdentifier>
+            <ProductDescription>Expert Care Indicator</ProductDescription>
+            <ProductTypeCode>Hardware</ProductTypeCode>
+            <ProductIdentifierTypeCode>MTM-FC</ProductIdentifierTypeCode>
+          </PartnerProductIdentification>
+        </ProductIdentification>
+        <UnitListPrice>
+          <FinancialAmount>
+            <GlobalCurrencyCode>KWON</GlobalCurrencyCode>
+            <MonetaryAmount>N/C</MonetaryAmount>
+          </FinancialAmount>
+          <PriceTerm>0</PriceTerm>
+        </UnitListPrice>
+      </ProductSubLineItem>
+      <ProductSubLineItem>
+        <LineNumber>1011</LineNumber>
+        <TransactionType>ADD</TransactionType>
+        <Quantity>1</Quantity>
+        <ProductIdentification>
+          <PartnerProductIdentification>
+            <OrderedProductIdentifier></OrderedProductIdentifier>
+            <ProprietaryProductIdentifier>ALK3</ProprietaryProductIdentifier>
+            <ProductDescription>3 year IBM Storage Expert Care Advanced</ProductDescription>
+            <ProductTypeCode>Hardware</ProductTypeCode>
+            <ProductIdentifierTypeCode>MTM-FC</ProductIdentifierTypeCode>
+          </PartnerProductIdentification>
+        </ProductIdentification>
+        <UnitListPrice>
+          <FinancialAmount>
+            <GlobalCurrencyCode>KWON</GlobalCurrencyCode>
+            <MonetaryAmount>N/C</MonetaryAmount>
+          </FinancialAmount>
+          <PriceTerm>0</PriceTerm>
+        </UnitListPrice>
+      </ProductSubLineItem>
+    </ProductLineItem>
+    <ProductLineItem>
+      <ProductLineNumber>2000</ProductLineNumber>
+      <TransactionType>NEW</TransactionType>
+      <CPUSIUvalue>0</CPUSIUvalue>
+      <ProprietaryGroupIdentifier>1000</ProprietaryGroupIdentifier>
+      <Quantity>1</Quantity>
+      <ProductIdentification>
+        <PartnerProductIdentification>
+          <OrderedProductIdentifier>N/A</OrderedProductIdentifier>
+          <ProprietaryProductIdentifier>4690-A03</ProprietaryProductIdentifier>
+          <ProductDescription>4680-3P4 #1:3 year Expert Care Advanced</ProductDescription>
+          <ProductTypeCode>Hardware</ProductTypeCode>
+          <ProductIdentifierTypeCode>MTM-FC</ProductIdentifierTypeCode>
+        </PartnerProductIdentification>
+      </ProductIdentification>
+      <UnitListPrice>
+        <FinancialAmount>
+          <GlobalCurrencyCode>KWON</GlobalCurrencyCode>
+          <MonetaryAmount>77,615.33</MonetaryAmount>
+        </FinancialAmount>
+        <PriceTerm>0</PriceTerm>
+      </UnitListPrice>
+    </ProductLineItem>
+    <ProductLineItem>
+      <ProductLineNumber>3000</ProductLineNumber>
+      <TransactionType>NEW</TransactionType>
+      <CPUSIUvalue>0</CPUSIUvalue>
+      <ProprietaryGroupIdentifier>1000</ProprietaryGroupIdentifier>
+      <Quantity>1</Quantity>
+      <ProductIdentification>
+        <PartnerProductIdentification>
+          <OrderedProductIdentifier>N/A</OrderedProductIdentifier>
+          <ProprietaryProductIdentifier>5773-STG</ProprietaryProductIdentifier>
+          <ProductDescription>Support Line for Storage - 3 Year</ProductDescription>
+          <ProductTypeCode>Software</ProductTypeCode>
+          <ProductIdentifierTypeCode>MTM-FC</ProductIdentifierTypeCode>
+        </PartnerProductIdentification>
+      </ProductIdentification>
+      <UnitListPrice>
+        <FinancialAmount>
+          <GlobalCurrencyCode>KWON</GlobalCurrencyCode>
+          <MonetaryAmount>N/C</MonetaryAmount>
+        </FinancialAmount>
+        <PriceTerm>0</PriceTerm>
+      </UnitListPrice>
+      <ProductSubLineItem>
+        <LineNumber>3001</LineNumber>
+        <TransactionType>ADD</TransactionType>
+        <Quantity>1</Quantity>
+        <ProductIdentification>
+          <PartnerProductIdentification>
+            <OrderedProductIdentifier></OrderedProductIdentifier>
+            <ProprietaryProductIdentifier>2000</ProprietaryProductIdentifier>
+            <ProductDescription>Support per Server (N/C)</ProductDescription>
+            <ProductTypeCode>Software</ProductTypeCode>
+            <ProductIdentifierTypeCode>MTM-FC</ProductIdentifierTypeCode>
+          </PartnerProductIdentification>
+        </ProductIdentification>
+        <UnitListPrice>
+          <FinancialAmount>
+            <GlobalCurrencyCode>KWON</GlobalCurrencyCode>
+            <MonetaryAmount>N/C</MonetaryAmount>
+          </FinancialAmount>
+          <PriceTerm>0</PriceTerm>
+        </UnitListPrice>
+      </ProductSubLineItem>
+    </ProductLineItem>
+    <ProductLineItem>
+      <ProductLineNumber>4000</ProductLineNumber>
+      <TransactionType>NEW</TransactionType>
+      <CPUSIUvalue>1</CPUSIUvalue>
+      <ProprietaryGroupIdentifier>4000</ProprietaryGroupIdentifier>
+      <Quantity>1</Quantity>
+      <ProductIdentification>
+        <PartnerProductIdentification>
+          <OrderedProductIdentifier>N/A</OrderedProductIdentifier>
+          <ProprietaryProductIdentifier>4680-3P4</ProprietaryProductIdentifier>
+          <ProductDescription>4680-3P4 #3:IBM Storage FlashSystem 5045 SFF Control Enclosure</ProductDescription>
+          <ProductTypeCode>Hardware</ProductTypeCode>
+          <ProductIdentifierTypeCode>MTM-FC</ProductIdentifierTypeCode>
+        </PartnerProductIdentification>
+      </ProductIdentification>
+      <UnitListPrice>
+        <FinancialAmount>
+          <GlobalCurrencyCode>KWON</GlobalCurrencyCode>
+          <MonetaryAmount>88,971.5</MonetaryAmount>
+        </FinancialAmount>
+        <PriceTerm>0</PriceTerm>
+      </UnitListPrice>
+      <ShippingUnitListPrice>
+        <FinancialAmount>
+          <GlobalCurrencyCode>KWON</GlobalCurrencyCode>
+          <MonetaryAmount>608.97</MonetaryAmount>
+        </FinancialAmount>
+        <PriceTerm>0</PriceTerm>
+      </ShippingUnitListPrice>
+      <ProductSubLineItem>
+        <LineNumber>4001</LineNumber>
+        <TransactionType>ADD</TransactionType>
+        <Quantity>1</Quantity>
+        <ProductIdentification>
+          <PartnerProductIdentification>
+            <OrderedProductIdentifier></OrderedProductIdentifier>
+            <ProprietaryProductIdentifier>9730</ProprietaryProductIdentifier>
+            <ProductDescription>Power Cord - PDU Connection</ProductDescription>
+            <ProductTypeCode>Hardware</ProductTypeCode>
+            <ProductIdentifierTypeCode>MTM-FC</ProductIdentifierTypeCode>
+          </PartnerProductIdentification>
+        </ProductIdentification>
+        <UnitListPrice>
+          <FinancialAmount>
+            <GlobalCurrencyCode>KWON</GlobalCurrencyCode>
+            <MonetaryAmount>168.8</MonetaryAmount>
+          </FinancialAmount>
+          <PriceTerm>0</PriceTerm>
+        </UnitListPrice>
+      </ProductSubLineItem>
+      <ProductSubLineItem>
+        <LineNumber>4002</LineNumber>
+        <TransactionType>ADD</TransactionType>
+        <Quantity>8</Quantity>
+        <ProductIdentification>
+          <PartnerProductIdentification>
+            <OrderedProductIdentifier></OrderedProductIdentifier>
+            <ProprietaryProductIdentifier>ACSR</ProprietaryProductIdentifier>
+            <ProductDescription>5m OM3 Fiber Cable (LC)</ProductDescription>
+            <ProductTypeCode>Hardware</ProductTypeCode>
+            <ProductIdentifierTypeCode>MTM-FC</ProductIdentifierTypeCode>
+          </PartnerProductIdentification>
+        </ProductIdentification>
+        <UnitListPrice>
+          <FinancialAmount>
+            <GlobalCurrencyCode>KWON</GlobalCurrencyCode>
+            <MonetaryAmount>391.2</MonetaryAmount>
+          </FinancialAmount>
+          <PriceTerm>0</PriceTerm>
+        </UnitListPrice>
+      </ProductSubLineItem>
+      <ProductSubLineItem>
+        <LineNumber>4003</LineNumber>
+        <TransactionType>ADD</TransactionType>
+        <Quantity>1</Quantity>
+        <ProductIdentification>
+          <PartnerProductIdentification>
+            <OrderedProductIdentifier></OrderedProductIdentifier>
+            <ProprietaryProductIdentifier>ADN1</ProprietaryProductIdentifier>
+            <ProductDescription>Order Type 1 - CTO</ProductDescription>
+            <ProductTypeCode>Hardware</ProductTypeCode>
+            <ProductIdentifierTypeCode>MTM-FC</ProductIdentifierTypeCode>
+          </PartnerProductIdentification>
+        </ProductIdentification>
+        <UnitListPrice>
+          <FinancialAmount>
+            <GlobalCurrencyCode>KWON</GlobalCurrencyCode>
+            <MonetaryAmount>N/C</MonetaryAmount>
+          </FinancialAmount>
+          <PriceTerm>0</PriceTerm>
+        </UnitListPrice>
+      </ProductSubLineItem>
+      <ProductSubLineItem>
+        <LineNumber>4004</LineNumber>
+        <TransactionType>ADD</TransactionType>
+        <Quantity>1</Quantity>
+        <ProductIdentification>
+          <PartnerProductIdentification>
+            <OrderedProductIdentifier></OrderedProductIdentifier>
+            <ProprietaryProductIdentifier>AHPA</ProprietaryProductIdentifier>
+            <ProductDescription>AC Power Supply HE</ProductDescription>
+            <ProductTypeCode>Hardware</ProductTypeCode>
+            <ProductIdentifierTypeCode>MTM-FC</ProductIdentifierTypeCode>
+          </PartnerProductIdentification>
+        </ProductIdentification>
+        <UnitListPrice>
+          <FinancialAmount>
+            <GlobalCurrencyCode>KWON</GlobalCurrencyCode>
+            <MonetaryAmount>N/C</MonetaryAmount>
+          </FinancialAmount>
+          <PriceTerm>0</PriceTerm>
+        </UnitListPrice>
+      </ProductSubLineItem>
+      <ProductSubLineItem>
+        <LineNumber>4005</LineNumber>
+        <TransactionType>ADD</TransactionType>
+        <Quantity>1</Quantity>
+        <ProductIdentification>
+          <PartnerProductIdentification>
+            <OrderedProductIdentifier></OrderedProductIdentifier>
+            <ProprietaryProductIdentifier>AHZE</ProprietaryProductIdentifier>
+            <ProductDescription>Hybrid Flash Indicator</ProductDescription>
+            <ProductTypeCode>Hardware</ProductTypeCode>
+            <ProductIdentifierTypeCode>MTM-FC</ProductIdentifierTypeCode>
+          </PartnerProductIdentification>
+        </ProductIdentification>
+        <UnitListPrice>
+          <FinancialAmount>
+            <GlobalCurrencyCode>KWON</GlobalCurrencyCode>
+            <MonetaryAmount>N/C</MonetaryAmount>
+          </FinancialAmount>
+          <PriceTerm>0</PriceTerm>
+        </UnitListPrice>
+      </ProductSubLineItem>
+      <ProductSubLineItem>
+        <LineNumber>4006</LineNumber>
+        <TransactionType>ADD</TransactionType>
+        <Quantity>1</Quantity>
+        <ProductIdentification>
+          <PartnerProductIdentification>
+            <OrderedProductIdentifier></OrderedProductIdentifier>
+            <ProprietaryProductIdentifier>AKNC</ProprietaryProductIdentifier>
+            <ProductDescription>Premium S&amp;H Indicator</ProductDescription>
+            <ProductTypeCode>Hardware</ProductTypeCode>
+            <ProductIdentifierTypeCode>MTM-FC</ProductIdentifierTypeCode>
+          </PartnerProductIdentification>
+        </ProductIdentification>
+        <UnitListPrice>
+          <FinancialAmount>
+            <GlobalCurrencyCode>KWON</GlobalCurrencyCode>
+            <MonetaryAmount>0</MonetaryAmount>
+          </FinancialAmount>
+          <PriceTerm>0</PriceTerm>
+        </UnitListPrice>
+      </ProductSubLineItem>
+      <ProductSubLineItem>
+        <LineNumber>4007</LineNumber>
+        <TransactionType>ADD</TransactionType>
+        <Quantity>10</Quantity>
+        <ProductIdentification>
+          <PartnerProductIdentification>
+            <OrderedProductIdentifier></OrderedProductIdentifier>
+            <ProprietaryProductIdentifier>AL6B</ProprietaryProductIdentifier>
+            <ProductDescription>2.4TB 10K 2.5 Inch HDD</ProductDescription>
+            <ProductTypeCode>Hardware</ProductTypeCode>
+            <ProductIdentifierTypeCode>MTM-FC</ProductIdentifierTypeCode>
+          </PartnerProductIdentification>
+        </ProductIdentification>
+        <UnitListPrice>
+          <FinancialAmount>
+            <GlobalCurrencyCode>KWON</GlobalCurrencyCode>
+            <MonetaryAmount>6,256.5</MonetaryAmount>
+          </FinancialAmount>
+          <PriceTerm>0</PriceTerm>
+        </UnitListPrice>
+      </ProductSubLineItem>
+      <ProductSubLineItem>
+        <LineNumber>4008</LineNumber>
+        <TransactionType>ADD</TransactionType>
+        <Quantity>1</Quantity>
+        <ProductIdentification>
+          <PartnerProductIdentification>
+            <OrderedProductIdentifier></OrderedProductIdentifier>
+            <ProprietaryProductIdentifier>ALBG</ProprietaryProductIdentifier>
+            <ProductDescription>16 Gb FC 4 Port Adapter Cards (Pair)</ProductDescription>
+            <ProductTypeCode>Hardware</ProductTypeCode>
+            <ProductIdentifierTypeCode>MTM-FC</ProductIdentifierTypeCode>
+          </PartnerProductIdentification>
+        </ProductIdentification>
+        <UnitListPrice>
+          <FinancialAmount>
+            <GlobalCurrencyCode>KWON</GlobalCurrencyCode>
+            <MonetaryAmount>26,463.3</MonetaryAmount>
+          </FinancialAmount>
+          <PriceTerm>0</PriceTerm>
+        </UnitListPrice>
+      </ProductSubLineItem>
+      <ProductSubLineItem>
+        <LineNumber>4009</LineNumber>
+        <TransactionType>ADD</TransactionType>
+        <Quantity>1</Quantity>
+        <ProductIdentification>
+          <PartnerProductIdentification>
+            <OrderedProductIdentifier></OrderedProductIdentifier>
+            <ProprietaryProductIdentifier>ALGA</ProprietaryProductIdentifier>
+            <ProductDescription>32 GB Cache Upgrade</ProductDescription>
+            <ProductTypeCode>Hardware</ProductTypeCode>
+            <ProductIdentifierTypeCode>MTM-FC</ProductIdentifierTypeCode>
+          </PartnerProductIdentification>
+        </ProductIdentification>
+        <UnitListPrice>
+          <FinancialAmount>
+            <GlobalCurrencyCode>KWON</GlobalCurrencyCode>
+            <MonetaryAmount>7,379.3</MonetaryAmount>
+          </FinancialAmount>
+          <PriceTerm>0</PriceTerm>
+        </UnitListPrice>
+      </ProductSubLineItem>
+      <ProductSubLineItem>
+        <LineNumber>4010</LineNumber>
+        <TransactionType>ADD</TransactionType>
+        <Quantity>1</Quantity>
+        <ProductIdentification>
+          <PartnerProductIdentification>
+            <OrderedProductIdentifier></OrderedProductIdentifier>
+            <ProprietaryProductIdentifier>ALH0</ProprietaryProductIdentifier>
+            <ProductDescription>Expert Care Indicator</ProductDescription>
+            <ProductTypeCode>Hardware</ProductTypeCode>
+            <ProductIdentifierTypeCode>MTM-FC</ProductIdentifierTypeCode>
+          </PartnerProductIdentification>
+        </ProductIdentification>
+        <UnitListPrice>
+          <FinancialAmount>
+            <GlobalCurrencyCode>KWON</GlobalCurrencyCode>
+            <MonetaryAmount>N/C</MonetaryAmount>
+          </FinancialAmount>
+          <PriceTerm>0</PriceTerm>
+        </UnitListPrice>
+      </ProductSubLineItem>
+      <ProductSubLineItem>
+        <LineNumber>4011</LineNumber>
+        <TransactionType>ADD</TransactionType>
+        <Quantity>1</Quantity>
+        <ProductIdentification>
+          <PartnerProductIdentification>
+            <OrderedProductIdentifier></OrderedProductIdentifier>
+            <ProprietaryProductIdentifier>ALK3</ProprietaryProductIdentifier>
+            <ProductDescription>3 year IBM Storage Expert Care Advanced</ProductDescription>
+            <ProductTypeCode>Hardware</ProductTypeCode>
+            <ProductIdentifierTypeCode>MTM-FC</ProductIdentifierTypeCode>
+          </PartnerProductIdentification>
+        </ProductIdentification>
+        <UnitListPrice>
+          <FinancialAmount>
+            <GlobalCurrencyCode>KWON</GlobalCurrencyCode>
+            <MonetaryAmount>N/C</MonetaryAmount>
+          </FinancialAmount>
+          <PriceTerm>0</PriceTerm>
+        </UnitListPrice>
+      </ProductSubLineItem>
+    </ProductLineItem>
+    <ProductLineItem>
+      <ProductLineNumber>5000</ProductLineNumber>
+      <TransactionType>NEW</TransactionType>
+      <CPUSIUvalue>0</CPUSIUvalue>
+      <ProprietaryGroupIdentifier>4000</ProprietaryGroupIdentifier>
+      <Quantity>1</Quantity>
+      <ProductIdentification>
+        <PartnerProductIdentification>
+          <OrderedProductIdentifier>N/A</OrderedProductIdentifier>
+          <ProprietaryProductIdentifier>4690-A03</ProprietaryProductIdentifier>
+          <ProductDescription>4680-3P4 #3:3 year Expert Care Advanced</ProductDescription>
+          <ProductTypeCode>Hardware</ProductTypeCode>
+          <ProductIdentifierTypeCode>MTM-FC</ProductIdentifierTypeCode>
+        </PartnerProductIdentification>
+      </ProductIdentification>
+      <UnitListPrice>
+        <FinancialAmount>
+          <GlobalCurrencyCode>KWON</GlobalCurrencyCode>
+          <MonetaryAmount>20,377.17</MonetaryAmount>
+        </FinancialAmount>
+        <PriceTerm>0</PriceTerm>
+      </UnitListPrice>
+    </ProductLineItem>
+    <ProductLineItem>
+      <ProductLineNumber>6000</ProductLineNumber>
+      <TransactionType>NEW</TransactionType>
+      <CPUSIUvalue>0</CPUSIUvalue>
+      <ProprietaryGroupIdentifier>4000</ProprietaryGroupIdentifier>
+      <Quantity>1</Quantity>
+      <ProductIdentification>
+        <PartnerProductIdentification>
+          <OrderedProductIdentifier>N/A</OrderedProductIdentifier>
+          <ProprietaryProductIdentifier>5773-STG</ProprietaryProductIdentifier>
+          <ProductDescription>Support Line for Storage - 3 Year</ProductDescription>
+          <ProductTypeCode>Software</ProductTypeCode>
+          <ProductIdentifierTypeCode>MTM-FC</ProductIdentifierTypeCode>
+        </PartnerProductIdentification>
+      </ProductIdentification>
+      <UnitListPrice>
+        <FinancialAmount>
+          <GlobalCurrencyCode>KWON</GlobalCurrencyCode>
+          <MonetaryAmount>N/C</MonetaryAmount>
+        </FinancialAmount>
+        <PriceTerm>0</PriceTerm>
+      </UnitListPrice>
+      <ProductSubLineItem>
+        <LineNumber>6001</LineNumber>
+        <TransactionType>ADD</TransactionType>
+        <Quantity>1</Quantity>
+        <ProductIdentification>
+          <PartnerProductIdentification>
+            <OrderedProductIdentifier></OrderedProductIdentifier>
+            <ProprietaryProductIdentifier>2000</ProprietaryProductIdentifier>
+            <ProductDescription>Support per Server (N/C)</ProductDescription>
+            <ProductTypeCode>Software</ProductTypeCode>
+            <ProductIdentifierTypeCode>MTM-FC</ProductIdentifierTypeCode>
+          </PartnerProductIdentification>
+        </ProductIdentification>
+        <UnitListPrice>
+          <FinancialAmount>
+            <GlobalCurrencyCode>KWON</GlobalCurrencyCode>
+            <MonetaryAmount>N/C</MonetaryAmount>
+          </FinancialAmount>
+          <PriceTerm>0</PriceTerm>
+        </UnitListPrice>
+      </ProductSubLineItem>
+    </ProductLineItem>
+    <ProductLineItem>
+      <ProductLineNumber>7000</ProductLineNumber>
+      <TransactionType>NEW</TransactionType>
+      <CPUSIUvalue>1</CPUSIUvalue>
+      <ProprietaryGroupIdentifier>7000</ProprietaryGroupIdentifier>
+      <Quantity>1</Quantity>
+      <ProductIdentification>
+        <PartnerProductIdentification>
+          <OrderedProductIdentifier>N/A</OrderedProductIdentifier>
+          <ProprietaryProductIdentifier>4680-3P2</ProprietaryProductIdentifier>
+          <ProductDescription>4680-3P2 #5:IBM Storage FlashSystem 5045 LFF Control Enclosure</ProductDescription>
+          <ProductTypeCode>Hardware</ProductTypeCode>
+          <ProductIdentifierTypeCode>MTM-FC</ProductIdentifierTypeCode>
+        </PartnerProductIdentification>
+      </ProductIdentification>
+      <UnitListPrice>
+        <FinancialAmount>
+          <GlobalCurrencyCode>KWON</GlobalCurrencyCode>
+          <MonetaryAmount>88,971.5</MonetaryAmount>
+        </FinancialAmount>
+        <PriceTerm>0</PriceTerm>
+      </UnitListPrice>
+      <ShippingUnitListPrice>
+        <FinancialAmount>
+          <GlobalCurrencyCode>KWON</GlobalCurrencyCode>
+          <MonetaryAmount>608.97</MonetaryAmount>
+        </FinancialAmount>
+        <PriceTerm>0</PriceTerm>
+      </ShippingUnitListPrice>
+      <ProductSubLineItem>
+        <LineNumber>7001</LineNumber>
+        <TransactionType>ADD</TransactionType>
+        <Quantity>1</Quantity>
+        <ProductIdentification>
+          <PartnerProductIdentification>
+            <OrderedProductIdentifier></OrderedProductIdentifier>
+            <ProprietaryProductIdentifier>9730</ProprietaryProductIdentifier>
+            <ProductDescription>Power Cord - PDU Connection</ProductDescription>
+            <ProductTypeCode>Hardware</ProductTypeCode>
+            <ProductIdentifierTypeCode>MTM-FC</ProductIdentifierTypeCode>
+          </PartnerProductIdentification>
+        </ProductIdentification>
+        <UnitListPrice>
+          <FinancialAmount>
+            <GlobalCurrencyCode>KWON</GlobalCurrencyCode>
+            <MonetaryAmount>168.8</MonetaryAmount>
+          </FinancialAmount>
+          <PriceTerm>0</PriceTerm>
+        </UnitListPrice>
+      </ProductSubLineItem>
+      <ProductSubLineItem>
+        <LineNumber>7002</LineNumber>
+        <TransactionType>ADD</TransactionType>
+        <Quantity>8</Quantity>
+        <ProductIdentification>
+          <PartnerProductIdentification>
+            <OrderedProductIdentifier></OrderedProductIdentifier>
+            <ProprietaryProductIdentifier>ACSR</ProprietaryProductIdentifier>
+            <ProductDescription>5m OM3 Fiber Cable (LC)</ProductDescription>
+            <ProductTypeCode>Hardware</ProductTypeCode>
+            <ProductIdentifierTypeCode>MTM-FC</ProductIdentifierTypeCode>
+          </PartnerProductIdentification>
+        </ProductIdentification>
+        <UnitListPrice>
+          <FinancialAmount>
+            <GlobalCurrencyCode>KWON</GlobalCurrencyCode>
+            <MonetaryAmount>391.2</MonetaryAmount>
+          </FinancialAmount>
+          <PriceTerm>0</PriceTerm>
+        </UnitListPrice>
+      </ProductSubLineItem>
+      <ProductSubLineItem>
+        <LineNumber>7003</LineNumber>
+        <TransactionType>ADD</TransactionType>
+        <Quantity>1</Quantity>
+        <ProductIdentification>
+          <PartnerProductIdentification>
+            <OrderedProductIdentifier></OrderedProductIdentifier>
+            <ProprietaryProductIdentifier>ADN1</ProprietaryProductIdentifier>
+            <ProductDescription>Order Type 1 - CTO</ProductDescription>
+            <ProductTypeCode>Hardware</ProductTypeCode>
+            <ProductIdentifierTypeCode>MTM-FC</ProductIdentifierTypeCode>
+          </PartnerProductIdentification>
+        </ProductIdentification>
+        <UnitListPrice>
+          <FinancialAmount>
+            <GlobalCurrencyCode>KWON</GlobalCurrencyCode>
+            <MonetaryAmount>N/C</MonetaryAmount>
+          </FinancialAmount>
+          <PriceTerm>0</PriceTerm>
+        </UnitListPrice>
+      </ProductSubLineItem>
+      <ProductSubLineItem>
+        <LineNumber>7004</LineNumber>
+        <TransactionType>ADD</TransactionType>
+        <Quantity>1</Quantity>
+        <ProductIdentification>
+          <PartnerProductIdentification>
+            <OrderedProductIdentifier></OrderedProductIdentifier>
+            <ProprietaryProductIdentifier>AHPA</ProprietaryProductIdentifier>
+            <ProductDescription>AC Power Supply HE</ProductDescription>
+            <ProductTypeCode>Hardware</ProductTypeCode>
+            <ProductIdentifierTypeCode>MTM-FC</ProductIdentifierTypeCode>
+          </PartnerProductIdentification>
+        </ProductIdentification>
+        <UnitListPrice>
+          <FinancialAmount>
+            <GlobalCurrencyCode>KWON</GlobalCurrencyCode>
+            <MonetaryAmount>N/C</MonetaryAmount>
+          </FinancialAmount>
+          <PriceTerm>0</PriceTerm>
+        </UnitListPrice>
+      </ProductSubLineItem>
+      <ProductSubLineItem>
+        <LineNumber>7005</LineNumber>
+        <TransactionType>ADD</TransactionType>
+        <Quantity>1</Quantity>
+        <ProductIdentification>
+          <PartnerProductIdentification>
+            <OrderedProductIdentifier></OrderedProductIdentifier>
+            <ProprietaryProductIdentifier>AHZE</ProprietaryProductIdentifier>
+            <ProductDescription>Hybrid Flash Indicator</ProductDescription>
+            <ProductTypeCode>Hardware</ProductTypeCode>
+            <ProductIdentifierTypeCode>MTM-FC</ProductIdentifierTypeCode>
+          </PartnerProductIdentification>
+        </ProductIdentification>
+        <UnitListPrice>
+          <FinancialAmount>
+            <GlobalCurrencyCode>KWON</GlobalCurrencyCode>
+            <MonetaryAmount>N/C</MonetaryAmount>
+          </FinancialAmount>
+          <PriceTerm>0</PriceTerm>
+        </UnitListPrice>
+      </ProductSubLineItem>
+      <ProductSubLineItem>
+        <LineNumber>7006</LineNumber>
+        <TransactionType>ADD</TransactionType>
+        <Quantity>1</Quantity>
+        <ProductIdentification>
+          <PartnerProductIdentification>
+            <OrderedProductIdentifier></OrderedProductIdentifier>
+            <ProprietaryProductIdentifier>AKNC</ProprietaryProductIdentifier>
+            <ProductDescription>Premium S&amp;H Indicator</ProductDescription>
+            <ProductTypeCode>Hardware</ProductTypeCode>
+            <ProductIdentifierTypeCode>MTM-FC</ProductIdentifierTypeCode>
+          </PartnerProductIdentification>
+        </ProductIdentification>
+        <UnitListPrice>
+          <FinancialAmount>
+            <GlobalCurrencyCode>KWON</GlobalCurrencyCode>
+            <MonetaryAmount>0</MonetaryAmount>
+          </FinancialAmount>
+          <PriceTerm>0</PriceTerm>
+        </UnitListPrice>
+      </ProductSubLineItem>
+      <ProductSubLineItem>
+        <LineNumber>7007</LineNumber>
+        <TransactionType>ADD</TransactionType>
+        <Quantity>6</Quantity>
+        <ProductIdentification>
+          <PartnerProductIdentification>
+            <OrderedProductIdentifier></OrderedProductIdentifier>
+            <ProprietaryProductIdentifier>AL3B</ProprietaryProductIdentifier>
+            <ProductDescription>8TB 7.2K 3.5 Inch NL HDD</ProductDescription>
+            <ProductTypeCode>Hardware</ProductTypeCode>
+            <ProductIdentifierTypeCode>MTM-FC</ProductIdentifierTypeCode>
+          </PartnerProductIdentification>
+        </ProductIdentification>
+        <UnitListPrice>
+          <FinancialAmount>
+            <GlobalCurrencyCode>KWON</GlobalCurrencyCode>
+            <MonetaryAmount>7,662.1</MonetaryAmount>
+          </FinancialAmount>
+          <PriceTerm>0</PriceTerm>
+        </UnitListPrice>
+      </ProductSubLineItem>
+      <ProductSubLineItem>
+        <LineNumber>7008</LineNumber>
+        <TransactionType>ADD</TransactionType>
+        <Quantity>1</Quantity>
+        <ProductIdentification>
+          <PartnerProductIdentification>
+            <OrderedProductIdentifier></OrderedProductIdentifier>
+            <ProprietaryProductIdentifier>ALBG</ProprietaryProductIdentifier>
+            <ProductDescription>16 Gb FC 4 Port Adapter Cards (Pair)</ProductDescription>
+            <ProductTypeCode>Hardware</ProductTypeCode>
+            <ProductIdentifierTypeCode>MTM-FC</ProductIdentifierTypeCode>
+          </PartnerProductIdentification>
+        </ProductIdentification>
+        <UnitListPrice>
+          <FinancialAmount>
+            <GlobalCurrencyCode>KWON</GlobalCurrencyCode>
+            <MonetaryAmount>26,463.3</MonetaryAmount>
+          </FinancialAmount>
+          <PriceTerm>0</PriceTerm>
+        </UnitListPrice>
+      </ProductSubLineItem>
+      <ProductSubLineItem>
+        <LineNumber>7009</LineNumber>
+        <TransactionType>ADD</TransactionType>
+        <Quantity>1</Quantity>
+        <ProductIdentification>
+          <PartnerProductIdentification>
+            <OrderedProductIdentifier></OrderedProductIdentifier>
+            <ProprietaryProductIdentifier>ALGA</ProprietaryProductIdentifier>
+            <ProductDescription>32 GB Cache Upgrade</ProductDescription>
+            <ProductTypeCode>Hardware</ProductTypeCode>
+            <ProductIdentifierTypeCode>MTM-FC</ProductIdentifierTypeCode>
+          </PartnerProductIdentification>
+        </ProductIdentification>
+        <UnitListPrice>
+          <FinancialAmount>
+            <GlobalCurrencyCode>KWON</GlobalCurrencyCode>
+            <MonetaryAmount>7,379.3</MonetaryAmount>
+          </FinancialAmount>
+          <PriceTerm>0</PriceTerm>
+        </UnitListPrice>
+      </ProductSubLineItem>
+      <ProductSubLineItem>
+        <LineNumber>7010</LineNumber>
+        <TransactionType>ADD</TransactionType>
+        <Quantity>1</Quantity>
+        <ProductIdentification>
+          <PartnerProductIdentification>
+            <OrderedProductIdentifier></OrderedProductIdentifier>
+            <ProprietaryProductIdentifier>ALH0</ProprietaryProductIdentifier>
+            <ProductDescription>Expert Care Indicator</ProductDescription>
+            <ProductTypeCode>Hardware</ProductTypeCode>
+            <ProductIdentifierTypeCode>MTM-FC</ProductIdentifierTypeCode>
+          </PartnerProductIdentification>
+        </ProductIdentification>
+        <UnitListPrice>
+          <FinancialAmount>
+            <GlobalCurrencyCode>KWON</GlobalCurrencyCode>
+            <MonetaryAmount>N/C</MonetaryAmount>
+          </FinancialAmount>
+          <PriceTerm>0</PriceTerm>
+        </UnitListPrice>
+      </ProductSubLineItem>
+      <ProductSubLineItem>
+        <LineNumber>7011</LineNumber>
+        <TransactionType>ADD</TransactionType>
+        <Quantity>1</Quantity>
+        <ProductIdentification>
+          <PartnerProductIdentification>
+            <OrderedProductIdentifier></OrderedProductIdentifier>
+            <ProprietaryProductIdentifier>ALK3</ProprietaryProductIdentifier>
+            <ProductDescription>3 year IBM Storage Expert Care Advanced</ProductDescription>
+            <ProductTypeCode>Hardware</ProductTypeCode>
+            <ProductIdentifierTypeCode>MTM-FC</ProductIdentifierTypeCode>
+          </PartnerProductIdentification>
+        </ProductIdentification>
+        <UnitListPrice>
+          <FinancialAmount>
+            <GlobalCurrencyCode>KWON</GlobalCurrencyCode>
+            <MonetaryAmount>N/C</MonetaryAmount>
+          </FinancialAmount>
+          <PriceTerm>0</PriceTerm>
+        </UnitListPrice>
+      </ProductSubLineItem>
+    </ProductLineItem>
+    <ProductLineItem>
+      <ProductLineNumber>8000</ProductLineNumber>
+      <TransactionType>NEW</TransactionType>
+      <CPUSIUvalue>0</CPUSIUvalue>
+      <ProprietaryGroupIdentifier>7000</ProprietaryGroupIdentifier>
+      <Quantity>1</Quantity>
+      <ProductIdentification>
+        <PartnerProductIdentification>
+          <OrderedProductIdentifier>N/A</OrderedProductIdentifier>
+          <ProprietaryProductIdentifier>4690-A03</ProprietaryProductIdentifier>
+          <ProductDescription>4680-3P2 #5:3 year Expert Care Advanced</ProductDescription>
+          <ProductTypeCode>Hardware</ProductTypeCode>
+          <ProductIdentifierTypeCode>MTM-FC</ProductIdentifierTypeCode>
+        </PartnerProductIdentification>
+      </ProductIdentification>
+      <UnitListPrice>
+        <FinancialAmount>
+          <GlobalCurrencyCode>KWON</GlobalCurrencyCode>
+          <MonetaryAmount>18,585.19</MonetaryAmount>
+        </FinancialAmount>
+        <PriceTerm>0</PriceTerm>
+      </UnitListPrice>
+    </ProductLineItem>
+    <ProductLineItem>
+      <ProductLineNumber>9000</ProductLineNumber>
+      <TransactionType>NEW</TransactionType>
+      <CPUSIUvalue>0</CPUSIUvalue>
+      <ProprietaryGroupIdentifier>7000</ProprietaryGroupIdentifier>
+      <Quantity>1</Quantity>
+      <ProductIdentification>
+        <PartnerProductIdentification>
+          <OrderedProductIdentifier>N/A</OrderedProductIdentifier>
+          <ProprietaryProductIdentifier>5773-STG</ProprietaryProductIdentifier>
+          <ProductDescription>Support Line for Storage - 3 Year</ProductDescription>
+          <ProductTypeCode>Software</ProductTypeCode>
+          <ProductIdentifierTypeCode>MTM-FC</ProductIdentifierTypeCode>
+        </PartnerProductIdentification>
+      </ProductIdentification>
+      <UnitListPrice>
+        <FinancialAmount>
+          <GlobalCurrencyCode>KWON</GlobalCurrencyCode>
+          <MonetaryAmount>N/C</MonetaryAmount>
+        </FinancialAmount>
+        <PriceTerm>0</PriceTerm>
+      </UnitListPrice>
+      <ProductSubLineItem>
+        <LineNumber>9001</LineNumber>
+        <TransactionType>ADD</TransactionType>
+        <Quantity>1</Quantity>
+        <ProductIdentification>
+          <PartnerProductIdentification>
+            <OrderedProductIdentifier></OrderedProductIdentifier>
+            <ProprietaryProductIdentifier>2000</ProprietaryProductIdentifier>
+            <ProductDescription>Support per Server (N/C)</ProductDescription>
+            <ProductTypeCode>Software</ProductTypeCode>
+            <ProductIdentifierTypeCode>MTM-FC</ProductIdentifierTypeCode>
+          </PartnerProductIdentification>
+        </ProductIdentification>
+        <UnitListPrice>
+          <FinancialAmount>
+            <GlobalCurrencyCode>KWON</GlobalCurrencyCode>
+            <MonetaryAmount>N/C</MonetaryAmount>
+          </FinancialAmount>
+          <PriceTerm>0</PriceTerm>
+        </UnitListPrice>
+      </ProductSubLineItem>
+    </ProductLineItem>
+    <CFReportBLOB><![CDATA[
+003120260722ECMSSD  90501a261971AP7660023                                                                                                   KRko                     00                                                                                                                                                
+030Unclassified          
+05         00                                                               
+05         00    CEID: 10ailnjz
+05         10                                                               
+05         10   Created on We Jul 22 2026 16:28:07 GMT+0900 (UTC) by Sang In
+05         00   Park                                                        
+05         10                                                               
+05         1U   You have selected IBM Storage Expert Care for your Client.  
+05         1U   Note: Only in enclosed city list and <50 KM of CBD, 24/48/72
+05         0U   hours committed fix can be sold without additional delivery 
+05         0U   approval.                                                   
+05         10   Customer Requested Arrival Date: 2026/08/05                 
+060898001MDDIBM_INC_SHIPPING^1^YES^IBM_FV_VISIBLE^1^FALSE^SV_DEFAULT_CATEGORIES^0^SW_Global_06_swrs_cho_global_preference_control^1^sw_core_otc_charge_option^SW_Global_06_swrs_media_global_preference_control^1^swn_esd_media^SW_Global_06_swrs_language_global_preference_control^1^sw_core_language_prim_korean^SW_Global_06_swrs_maintenance_global_preference_control^1^sw_core_nim_maint_3yr^SW_Global_06_swrs_shipping_options_global_control^1^sw_core_shipping_option_3444^SW_Global_06_swrs_expedite_global_control^1^sw_core_shipping_option_no_expedite^SW_Global_06_swrs_suppress_global_control^1^sw_core_shipping_option_not_3480^SW_Global_06_swrs_preinstall_languages_control^1^sw_core_preinst_language_korean^SW_Global_06_swrs_cultural_languages_control^1^sw_core_cultural_std_language^SW_Global_06_swrs_support_global_preference_control^1^sw_9by5_support_service^IBM_WITHDRAWN_PRODUCTS_MODE^1^FALSE^
+07   4680-3P4 #1                                     46803P4                         
+011INITIAL ORDER CONFIGURATION                                                       
+060673001MDDIBM_PLATFORM^1^All^SWN_CATEGORIES_MC^2^ibm_sw_core_category_management^ibm_sw_core_category_otherstorage^sw_rs_5608_pc2:new_maintenance^1^three_year_registration^sw_rs_5608_pc2:existing_maintenance^1^swn_maint_not_applicable^SW_TYPE^1^All^SWN_PROCESSED_SOFTWARE_OBJECTS_KEY_S^1^sw_5773_stg_fs5200_default_and_require_provider_group^sw_rs_5773_stg:new_maintenance^1^sw_core_nim_maint_3yr^SWN_CONTEXT_SOFTWARE_OBJECTS_KEY_S^1^ibm_all_platform_type:All::DEFAULT:{}:FALSE:DEFAULT:{}:DEFAULT:DEFAULT:::FALSE:0:_:DEFAULT:FALSE:FALSE:FALSE:0:DEFAULT:{}^swn_verify_auto_added_recommended_software_message_displayed_B^1^TRUE^SWN_EXPLICITLY_DELETED_MTMS^1^sw_rs_5608_pc2^
+084680 3P4    19730       1ACSR       8ADN1       1AHPA       1AHZE       1AKNC       1AL80      12ALBG       1ALGA       1ALH0       1ALK3       1
+9546803P4                   000000000            T           1                    20260805                                                    IBM Storage FlashSystem 5045 SFF Control Enclosure 
+060533001MDDTIER_NEEDTOBETOTALED^1^YES^IBM_MTM_NAME^1^^SSD_RACK_CB^1^2^ibm_parent_id_S^1^SSD_Leaf_Category 0x000005BD382B6C00 [SBO_FLASH_SSD]^SSD_2077_DATA^1^ssd_2077_Flash^SHIPPING_FEATURECODE^1^AKNC^CONFIG_TYPE^1^PREMODULAR^SERVICE_INTEGRATOR_RELATED_HW^1^46803P4-2-60^IBM_MTM_CONTEXTS_MC^4^ibm_region_ap^ibm_country_korea^ibm_INITIAL^ssd_4680_3P4^SSD_MTM_EXPLICIT_SELECTION_QTYS_MF^7^1^0^1^0^12^1^8^SSD_MTM_EXPLICIT_SELECTION_MC^7^ssd_2077_AHZE^ssd_2077_AHZD^ssd_2072_AKNC^ssd_2072_AKCH^ssd_2077_AL80^ssd_2077_ALBG^ssd_2077f_ACSR^
+060042001BED2^9^01F3FFFFFE90^01F3FFFFFE90^
+969730                                            Power Cord - PDU Connection                 
+96ACSR                                            5m OM3 Fiber Cable (LC)                     
+96ADN1                      N                     Order Type 1 - CTO                          
+96AHPA                      N                     AC Power Supply HE                          
+96AHZE                      N                     Hybrid Flash Indicator                      
+96AKNC                                            Premium S&H Indicator                       
+96AL80                                            1.92TB 12 Gb SAS 2.5 Inch Flash Drive       
+96ALBG                                            16 Gb FC 4 Port Adapter Cards (Pair)        
+96ALGA                                            32 GB Cache Upgrade                         
+96ALH0                      N                     Expert Care Indicator                       
+96ALK3                      N                     3 year IBM Storage Expert Care Advanced     
+084690 A03    1
+954690A03                   000000000            T           0                    20260805                                                    3 year Expert Care Advanced                 
+060119001MDDTIER_MAINTENANCEPRODUCT^1^YES^BASE_SERVICES_INTEGRATOR_TAG^1^^SERVICE_INTEGRATOR_RELATED_HW^1^46803P4-2-60^
+060041001BED2^^01F3FFFFFE78^01F3FFFFFE78^
+475773STG    12000       1
+955773STG                   000000000           NT           0                    20260805                                                    Support Line for Storage - 3 Year                           
+060104001MDDSWN_MTM_CONTEXTS_MC^4^ibm_region_ap^ibm_country_korea^sw_software_p_series_type^ibm_INITIAL^
+060043001BED2^19^01F3FFFFFEE8^01F3FFFFFEE8^
+962000                      N                     Support per Server (N/C)                                    
+07   4680-3P4 #3                                     46803P4                         
+011INITIAL ORDER CONFIGURATION                                                       
+060673001MDDIBM_PLATFORM^1^All^SWN_CATEGORIES_MC^2^ibm_sw_core_category_management^ibm_sw_core_category_otherstorage^sw_rs_5608_pc2:new_maintenance^1^three_year_registration^sw_rs_5608_pc2:existing_maintenance^1^swn_maint_not_applicable^SW_TYPE^1^All^SWN_PROCESSED_SOFTWARE_OBJECTS_KEY_S^1^sw_5773_stg_fs5200_default_and_require_provider_group^SWN_CONTEXT_SOFTWARE_OBJECTS_KEY_S^1^ibm_all_platform_type:All::DEFAULT:{}:FALSE:DEFAULT:{}:DEFAULT:DEFAULT:::FALSE:0:_:DEFAULT:FALSE:FALSE:FALSE:0:DEFAULT:{}^sw_rs_5773_stg:new_maintenance^1^sw_core_nim_maint_3yr^swn_verify_auto_added_recommended_software_message_displayed_B^1^TRUE^SWN_EXPLICITLY_DELETED_MTMS^1^sw_rs_5608_pc2^
+084680 3P4    19730       1ACSR       8ADN1       1AHPA       1AHZE       1AKNC       1AL6B      10ALBG       1ALGA       1ALH0       1ALK3       1
+9546803P4                   000000000            T           1                    20260805                                                    IBM Storage FlashSystem 5045 SFF Control Enclosure 
+060549001MDDTIER_NEEDTOBETOTALED^1^YES^IBM_MTM_NAME^1^^SSD_RACK_CB^1^2^ibm_parent_id_S^1^SSD_Leaf_Category 0x000005BD382B6C00 [SBO_FLASH_SSD]^SSD_2077_DATA^1^ssd_2077_Flash^SHIPPING_FEATURECODE^1^AKNC^CONFIG_TYPE^1^PREMODULAR^SERVICE_INTEGRATOR_RELATED_HW^1^46803P4-4-59^IBM_MTM_CONTEXTS_MC^4^ibm_region_ap^ibm_country_korea^ibm_INITIAL^ssd_4680_3P4^SSD_MTM_EXPLICIT_SELECTION_QTYS_MF^8^1^0^1^0^0^1^8^10^SSD_MTM_EXPLICIT_SELECTION_MC^8^ssd_2077_AHZE^ssd_2077_AHZD^ssd_2072_AKNC^ssd_2072_AKCH^ssd_2077_AL80^ssd_2077_ALBG^ssd_2077f_ACSR^ssd_2077_AL6B^
+060043001BED4^11^01F3FFFFFDE8^01F3FFFFFDE8^
+969730                                            Power Cord - PDU Connection                 
+96ACSR                                            5m OM3 Fiber Cable (LC)                     
+96ADN1                      N                     Order Type 1 - CTO                          
+96AHPA                      N                     AC Power Supply HE                          
+96AHZE                      N                     Hybrid Flash Indicator                      
+96AKNC                                            Premium S&H Indicator                       
+96AL6B                                            2.4TB 10K 2.5 Inch HDD                      
+96ALBG                                            16 Gb FC 4 Port Adapter Cards (Pair)        
+96ALGA                                            32 GB Cache Upgrade                         
+96ALH0                      N                     Expert Care Indicator                       
+96ALK3                      N                     3 year IBM Storage Expert Care Advanced     
+084690 A03    1
+954690A03                   000000000            T           0                    20260805                                                    3 year Expert Care Advanced                 
+060119001MDDTIER_MAINTENANCEPRODUCT^1^YES^BASE_SERVICES_INTEGRATOR_TAG^1^^SERVICE_INTEGRATOR_RELATED_HW^1^46803P4-4-59^
+060041001BED4^^01F3FFFFFD08^01F3FFFFFD08^
+475773STG    12000       1
+955773STG                   000000000           NT           0                    20260805                                                    Support Line for Storage - 3 Year                           
+060104001MDDSWN_MTM_CONTEXTS_MC^4^ibm_region_ap^ibm_country_korea^sw_software_p_series_type^ibm_INITIAL^
+060043001BED4^20^01F3FFFFFD18^01F3FFFFFD18^
+962000                      N                     Support per Server (N/C)                                    
+07   4680-3P2 #5                                     46803P2                         
+011INITIAL ORDER CONFIGURATION                                                       
+060673001MDDsw_rs_5608_pc2:existing_maintenance^1^swn_maint_not_applicable^sw_rs_5608_pc2:new_maintenance^1^three_year_registration^SW_TYPE^1^All^SWN_CATEGORIES_MC^2^ibm_sw_core_category_management^ibm_sw_core_category_otherstorage^IBM_PLATFORM^1^All^SWN_PROCESSED_SOFTWARE_OBJECTS_KEY_S^1^sw_5773_stg_fs5200_default_and_require_provider_group^sw_rs_5773_stg:new_maintenance^1^sw_core_nim_maint_3yr^SWN_CONTEXT_SOFTWARE_OBJECTS_KEY_S^1^ibm_all_platform_type:All::DEFAULT:{}:FALSE:DEFAULT:{}:DEFAULT:DEFAULT:::FALSE:0:_:DEFAULT:FALSE:FALSE:FALSE:0:DEFAULT:{}^SWN_EXPLICITLY_DELETED_MTMS^1^sw_rs_5608_pc2^swn_verify_auto_added_recommended_software_message_displayed_B^1^TRUE^
+084680 3P2    19730       1ACSR       8ADN1       1AHPA       1AHZE       1AKNC       1AL3B       6ALBG       1ALGA       1ALH0       1ALK3       1
+9546803P2                   000000000            T           1                    20260805                                                    IBM Storage FlashSystem 5045 LFF Control Enclosure 
+060501001MDDTIER_NEEDTOBETOTALED^1^YES^IBM_MTM_NAME^1^^SSD_RACK_CB^1^2^ibm_parent_id_S^1^SSD_Leaf_Category 0x000005BD382B6C00 [SBO_FLASH_SSD]^SSD_2077_DATA^1^ssd_2077_Flash^SHIPPING_FEATURECODE^1^AKNC^CONFIG_TYPE^1^PREMODULAR^SERVICE_INTEGRATOR_RELATED_HW^1^46803P2-56-58^IBM_MTM_CONTEXTS_MC^4^ibm_region_ap^ibm_country_korea^ibm_INITIAL^ssd_4680_3P2^SSD_MTM_EXPLICIT_SELECTION_QTYS_MF^5^1^0^6^1^8^SSD_MTM_EXPLICIT_SELECTION_MC^5^ssd_2072_AKNC^ssd_2072_AKCH^ssd_2077_AL3B^ssd_2077_ALBG^ssd_2077f_ACSR^
+060044001BED56^25^01F3FFFFFD50^01F3FFFFFD50^
+969730                                            Power Cord - PDU Connection                 
+96ACSR                                            5m OM3 Fiber Cable (LC)                     
+96ADN1                      N                     Order Type 1 - CTO                          
+96AHPA                      N                     AC Power Supply HE                          
+96AHZE                      N                     Hybrid Flash Indicator                      
+96AKNC                                            Premium S&H Indicator                       
+96AL3B                                            8TB 7.2K 3.5 Inch NL HDD                    
+96ALBG                                            16 Gb FC 4 Port Adapter Cards (Pair)        
+96ALGA                                            32 GB Cache Upgrade                         
+96ALH0                      N                     Expert Care Indicator                       
+96ALK3                      N                     3 year IBM Storage Expert Care Advanced     
+084690 A03    1
+954690A03                   000000000            T           0                    20260805                                                    3 year Expert Care Advanced                 
+060120001MDDTIER_MAINTENANCEPRODUCT^1^YES^BASE_SERVICES_INTEGRATOR_TAG^1^^SERVICE_INTEGRATOR_RELATED_HW^1^46803P2-56-58^
+060042001BED56^^01F3FFFFFF78^01F3FFFFFF78^
+475773STG    12000       1
+955773STG                   000000000           NT           0                    20260805                                                    Support Line for Storage - 3 Year                           
+060104001MDDSWN_MTM_CONTEXTS_MC^4^ibm_region_ap^ibm_country_korea^sw_software_p_series_type^ibm_INITIAL^
+060044001BED56^30^01F3FFFFFF60^01F3FFFFFF60^
+962000                      N                     Support per Server (N/C)                                    
+98   96
+992302753820
+]]></CFReportBLOB>
+  </CFData>
+</CFXML>

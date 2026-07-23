@@ -1,0 +1,2303 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE CFXML [
+            <!ELEMENT CFXML (thisDocumentGenerationDateTime,thisDocumentIdentifier,CFData)>
+            <!ELEMENT thisDocumentGenerationDateTime (DateTimeStamp)>
+            <!ELEMENT thisDocumentIdentifier (ProprietaryDocumentIdentifier)>
+            <!ELEMENT CFData (ProprietaryInformation*,ProprietaryShippingInformation?,ProductLineItem+,CFReportBLOB?)>
+            <!ELEMENT ProprietaryShippingInformation (Name, FinancialAmount)>
+            <!ELEMENT ShippingUnitListPrice (FinancialAmount, PriceTerm)>
+            <!ELEMENT DateTimeStamp (#PCDATA)>
+            <!ELEMENT ProprietaryDocumentIdentifier (#PCDATA)>
+            <!ELEMENT ProprietaryInformation (Name,Value)>
+            <!ELEMENT ProductLineItem (  ProductLineNumber , TransactionType , CPUSIUvalue , ConfigurationControlNumber?, ProprietaryGroupIdentifier , ServicePacLineNumberReference? , Quantity  , ProductIdentification , UnitListPrice? , ShippingUnitListPrice? , MaintenanceUnitListPrice? , ProductSubLineItem* ) >
+            <!ELEMENT CFReportBLOB  (#PCDATA)>
+            <!ELEMENT Name  (#PCDATA)>
+            <!ELEMENT Value (#PCDATA)>
+            <!ELEMENT CPUSIUvalue (#PCDATA)>
+            <!ELEMENT ConfigurationControlNumber (#PCDATA)>
+            <!ELEMENT ProductLineNumber (#PCDATA)>
+            <!ELEMENT ProprietaryGroupIdentifier (#PCDATA)>
+            <!ELEMENT ServicePacLineNumberReference (#PCDATA)>
+            <!ELEMENT Quantity (#PCDATA)>
+            <!ELEMENT TransactionType (#PCDATA)>
+            <!ELEMENT ProductIdentification (PartnerProductIdentification*) >
+            <!ELEMENT ProductSubLineItem ( LineNumber, TransactionType, Quantity , ExchangeAddSubLineItemNumber? , ProductIdentification, UnitListPrice?,MaintenanceUnitListPrice?)>
+            <!ELEMENT UnitListPrice ( FinancialAmount, PriceTerm)>
+            <!ELEMENT MaintenanceUnitListPrice (FinancialAmount, PriceTerm)>
+            <!ELEMENT PartnerProductIdentification ( OrderedProductIdentifier?, ProprietaryProductIdentifier, ProductDescription?, ProductTypeCode?, ProductIdentifierTypeCode?) >
+            <!ELEMENT LineNumber (#PCDATA)>
+            <!ELEMENT ExchangeAddSubLineItemNumber (#PCDATA)>
+            <!ELEMENT FinancialAmount ( GlobalCurrencyCode, MonetaryAmount )>
+            <!ELEMENT PriceTerm (#PCDATA)>
+            <!ELEMENT OrderedProductIdentifier (#PCDATA)>
+            <!ELEMENT ProprietaryProductIdentifier (#PCDATA)>
+            <!ELEMENT ProductDescription (#PCDATA)>
+            <!ELEMENT ProductTypeCode (#PCDATA)>
+            <!ELEMENT ProductIdentifierTypeCode (#PCDATA)>
+            <!ELEMENT GlobalCurrencyCode (#PCDATA)>
+            <!ELEMENT MonetaryAmount (#PCDATA)>
+            
+]>
+<CFXML>
+  <thisDocumentGenerationDateTime>
+    <DateTimeStamp>17:17:41</DateTimeStamp>
+  </thisDocumentGenerationDateTime>
+  <thisDocumentIdentifier>
+    <ProprietaryDocumentIdentifier>CFXML.2.2025-01-23T00:00:00+00:00</ProprietaryDocumentIdentifier>
+  </thisDocumentIdentifier>
+  <CFData>
+    <ProprietaryInformation>
+      <Name>CFXML</Name>
+      <Value>1.0</Value>
+    </ProprietaryInformation>
+    <ProprietaryInformation>
+      <Name>Configurator Identifier</Name>
+      <Value>ECMPWR.90501a250090</Value>
+    </ProprietaryInformation>
+    <ProprietaryInformation>
+      <Name>Price File Date</Name>
+      <Value>2025-01-23</Value>
+    </ProprietaryInformation>
+    <ProprietaryInformation>
+      <Name>Checksum</Name>
+      <Value>3899561074</Value>
+    </ProprietaryInformation>
+    <ProprietaryShippingInformation>
+      <Name>Total Non-discountable Shipping and Handling Charge</Name>
+      <FinancialAmount>
+        <GlobalCurrencyCode>KWON</GlobalCurrencyCode>
+        <MonetaryAmount>4,820.49</MonetaryAmount>
+      </FinancialAmount>
+    </ProprietaryShippingInformation>
+    <ProductLineItem>
+      <ProductLineNumber>1000</ProductLineNumber>
+      <TransactionType>NEW</TransactionType>
+      <CPUSIUvalue>0</CPUSIUvalue>
+      <ProprietaryGroupIdentifier>1000</ProprietaryGroupIdentifier>
+      <Quantity>1</Quantity>
+      <ProductIdentification>
+        <PartnerProductIdentification>
+          <OrderedProductIdentifier>N/A</OrderedProductIdentifier>
+          <ProprietaryProductIdentifier>6911-301</ProprietaryProductIdentifier>
+          <ProductDescription>IBM Expert Labs Project Unit for IBM Power Systems</ProductDescription>
+          <ProductTypeCode>Services</ProductTypeCode>
+          <ProductIdentifierTypeCode>MTM-FC</ProductIdentifierTypeCode>
+        </PartnerProductIdentification>
+      </ProductIdentification>
+      <UnitListPrice>
+        <FinancialAmount>
+          <GlobalCurrencyCode>KWON</GlobalCurrencyCode>
+          <MonetaryAmount>N/C</MonetaryAmount>
+        </FinancialAmount>
+        <PriceTerm>0</PriceTerm>
+      </UnitListPrice>
+      <ProductSubLineItem>
+        <LineNumber>1001</LineNumber>
+        <TransactionType>ADD</TransactionType>
+        <Quantity>1</Quantity>
+        <ProductIdentification>
+          <PartnerProductIdentification>
+            <OrderedProductIdentifier></OrderedProductIdentifier>
+            <ProprietaryProductIdentifier>SVRP</ProprietaryProductIdentifier>
+            <ProductDescription>IBM Expert Labs - 1 Remote Project Unit for IBM Power</ProductDescription>
+            <ProductTypeCode>Services</ProductTypeCode>
+            <ProductIdentifierTypeCode>MTM-FC</ProductIdentifierTypeCode>
+          </PartnerProductIdentification>
+        </ProductIdentification>
+        <UnitListPrice>
+          <FinancialAmount>
+            <GlobalCurrencyCode>KWON</GlobalCurrencyCode>
+            <MonetaryAmount>11,800</MonetaryAmount>
+          </FinancialAmount>
+          <PriceTerm>0</PriceTerm>
+        </UnitListPrice>
+      </ProductSubLineItem>
+    </ProductLineItem>
+    <ProductLineItem>
+      <ProductLineNumber>2000</ProductLineNumber>
+      <TransactionType>NEW</TransactionType>
+      <CPUSIUvalue>1</CPUSIUvalue>
+      <ProprietaryGroupIdentifier>2000</ProprietaryGroupIdentifier>
+      <Quantity>1</Quantity>
+      <ProductIdentification>
+        <PartnerProductIdentification>
+          <OrderedProductIdentifier>N/A</OrderedProductIdentifier>
+          <ProprietaryProductIdentifier>9080-HEX</ProprietaryProductIdentifier>
+          <ProductDescription>Server 1:Server 1:9080 Model HEX</ProductDescription>
+          <ProductTypeCode>Hardware</ProductTypeCode>
+          <ProductIdentifierTypeCode>MTM-FC</ProductIdentifierTypeCode>
+        </PartnerProductIdentification>
+      </ProductIdentification>
+      <UnitListPrice>
+        <FinancialAmount>
+          <GlobalCurrencyCode>KWON</GlobalCurrencyCode>
+          <MonetaryAmount>408,022.1</MonetaryAmount>
+        </FinancialAmount>
+        <PriceTerm>0</PriceTerm>
+      </UnitListPrice>
+      <ShippingUnitListPrice>
+        <FinancialAmount>
+          <GlobalCurrencyCode>KWON</GlobalCurrencyCode>
+          <MonetaryAmount>4,700.69</MonetaryAmount>
+        </FinancialAmount>
+        <PriceTerm>0</PriceTerm>
+      </ShippingUnitListPrice>
+      <ProductSubLineItem>
+        <LineNumber>2001</LineNumber>
+        <TransactionType>ADD</TransactionType>
+        <Quantity>6</Quantity>
+        <ProductIdentification>
+          <PartnerProductIdentification>
+            <OrderedProductIdentifier></OrderedProductIdentifier>
+            <ProprietaryProductIdentifier>0265</ProprietaryProductIdentifier>
+            <ProductDescription>AIX Partition Specify</ProductDescription>
+            <ProductTypeCode>Hardware</ProductTypeCode>
+            <ProductIdentifierTypeCode>MTM-FC</ProductIdentifierTypeCode>
+          </PartnerProductIdentification>
+        </ProductIdentification>
+        <UnitListPrice>
+          <FinancialAmount>
+            <GlobalCurrencyCode>KWON</GlobalCurrencyCode>
+            <MonetaryAmount>0</MonetaryAmount>
+          </FinancialAmount>
+          <PriceTerm>0</PriceTerm>
+        </UnitListPrice>
+      </ProductSubLineItem>
+      <ProductSubLineItem>
+        <LineNumber>2002</LineNumber>
+        <TransactionType>ADD</TransactionType>
+        <Quantity>1</Quantity>
+        <ProductIdentification>
+          <PartnerProductIdentification>
+            <OrderedProductIdentifier></OrderedProductIdentifier>
+            <ProprietaryProductIdentifier>1107</ProprietaryProductIdentifier>
+            <ProductDescription>USB 500 GB Removable Disk Drive</ProductDescription>
+            <ProductTypeCode>Hardware</ProductTypeCode>
+            <ProductIdentifierTypeCode>MTM-FC</ProductIdentifierTypeCode>
+          </PartnerProductIdentification>
+        </ProductIdentification>
+        <UnitListPrice>
+          <FinancialAmount>
+            <GlobalCurrencyCode>KWON</GlobalCurrencyCode>
+            <MonetaryAmount>1,976</MonetaryAmount>
+          </FinancialAmount>
+          <PriceTerm>0</PriceTerm>
+        </UnitListPrice>
+      </ProductSubLineItem>
+      <ProductSubLineItem>
+        <LineNumber>2003</LineNumber>
+        <TransactionType>ADD</TransactionType>
+        <Quantity>1</Quantity>
+        <ProductIdentification>
+          <PartnerProductIdentification>
+            <OrderedProductIdentifier></OrderedProductIdentifier>
+            <ProprietaryProductIdentifier>2146</ProprietaryProductIdentifier>
+            <ProductDescription>Primary OS - AIX</ProductDescription>
+            <ProductTypeCode>Hardware</ProductTypeCode>
+            <ProductIdentifierTypeCode>MTM-FC</ProductIdentifierTypeCode>
+          </PartnerProductIdentification>
+        </ProductIdentification>
+        <UnitListPrice>
+          <FinancialAmount>
+            <GlobalCurrencyCode>KWON</GlobalCurrencyCode>
+            <MonetaryAmount>0</MonetaryAmount>
+          </FinancialAmount>
+          <PriceTerm>0</PriceTerm>
+        </UnitListPrice>
+      </ProductSubLineItem>
+      <ProductSubLineItem>
+        <LineNumber>2004</LineNumber>
+        <TransactionType>ADD</TransactionType>
+        <Quantity>1</Quantity>
+        <ProductIdentification>
+          <PartnerProductIdentification>
+            <OrderedProductIdentifier></OrderedProductIdentifier>
+            <ProprietaryProductIdentifier>4650</ProprietaryProductIdentifier>
+            <ProductDescription>Rack Indicator- Not Factory Integrated</ProductDescription>
+            <ProductTypeCode>Hardware</ProductTypeCode>
+            <ProductIdentifierTypeCode>MTM-FC</ProductIdentifierTypeCode>
+          </PartnerProductIdentification>
+        </ProductIdentification>
+        <UnitListPrice>
+          <FinancialAmount>
+            <GlobalCurrencyCode>KWON</GlobalCurrencyCode>
+            <MonetaryAmount>0</MonetaryAmount>
+          </FinancialAmount>
+          <PriceTerm>0</PriceTerm>
+        </UnitListPrice>
+      </ProductSubLineItem>
+      <ProductSubLineItem>
+        <LineNumber>2005</LineNumber>
+        <TransactionType>ADD</TransactionType>
+        <Quantity>1</Quantity>
+        <ProductIdentification>
+          <PartnerProductIdentification>
+            <OrderedProductIdentifier></OrderedProductIdentifier>
+            <ProprietaryProductIdentifier>5000</ProprietaryProductIdentifier>
+            <ProductDescription>Software Preload Required</ProductDescription>
+            <ProductTypeCode>Hardware</ProductTypeCode>
+            <ProductIdentifierTypeCode>MTM-FC</ProductIdentifierTypeCode>
+          </PartnerProductIdentification>
+        </ProductIdentification>
+        <UnitListPrice>
+          <FinancialAmount>
+            <GlobalCurrencyCode>KWON</GlobalCurrencyCode>
+            <MonetaryAmount>0</MonetaryAmount>
+          </FinancialAmount>
+          <PriceTerm>0</PriceTerm>
+        </UnitListPrice>
+      </ProductSubLineItem>
+      <ProductSubLineItem>
+        <LineNumber>2006</LineNumber>
+        <TransactionType>ADD</TransactionType>
+        <Quantity>4</Quantity>
+        <ProductIdentification>
+          <PartnerProductIdentification>
+            <OrderedProductIdentifier></OrderedProductIdentifier>
+            <ProprietaryProductIdentifier>6671</ProprietaryProductIdentifier>
+            <ProductDescription>Power Cord 2.7M (9-foot), Drawer to IBM PDU,  250V/10A</ProductDescription>
+            <ProductTypeCode>Hardware</ProductTypeCode>
+            <ProductIdentifierTypeCode>MTM-FC</ProductIdentifierTypeCode>
+          </PartnerProductIdentification>
+        </ProductIdentification>
+        <UnitListPrice>
+          <FinancialAmount>
+            <GlobalCurrencyCode>KWON</GlobalCurrencyCode>
+            <MonetaryAmount>113.6</MonetaryAmount>
+          </FinancialAmount>
+          <PriceTerm>0</PriceTerm>
+        </UnitListPrice>
+      </ProductSubLineItem>
+      <ProductSubLineItem>
+        <LineNumber>2007</LineNumber>
+        <TransactionType>ADD</TransactionType>
+        <Quantity>8</Quantity>
+        <ProductIdentification>
+          <PartnerProductIdentification>
+            <OrderedProductIdentifier></OrderedProductIdentifier>
+            <ProprietaryProductIdentifier>6672</ProprietaryProductIdentifier>
+            <ProductDescription>Power Cord 2M (6.5-foot), Drawer to IBM PDU,  250V/10A</ProductDescription>
+            <ProductTypeCode>Hardware</ProductTypeCode>
+            <ProductIdentifierTypeCode>MTM-FC</ProductIdentifierTypeCode>
+          </PartnerProductIdentification>
+        </ProductIdentification>
+        <UnitListPrice>
+          <FinancialAmount>
+            <GlobalCurrencyCode>KWON</GlobalCurrencyCode>
+            <MonetaryAmount>113.6</MonetaryAmount>
+          </FinancialAmount>
+          <PriceTerm>0</PriceTerm>
+        </UnitListPrice>
+      </ProductSubLineItem>
+      <ProductSubLineItem>
+        <LineNumber>2008</LineNumber>
+        <TransactionType>ADD</TransactionType>
+        <Quantity>1</Quantity>
+        <ProductIdentification>
+          <PartnerProductIdentification>
+            <OrderedProductIdentifier></OrderedProductIdentifier>
+            <ProprietaryProductIdentifier>9169</ProprietaryProductIdentifier>
+            <ProductDescription>Order Routing Indicator- System Plant</ProductDescription>
+            <ProductTypeCode>Hardware</ProductTypeCode>
+            <ProductIdentifierTypeCode>MTM-FC</ProductIdentifierTypeCode>
+          </PartnerProductIdentification>
+        </ProductIdentification>
+        <UnitListPrice>
+          <FinancialAmount>
+            <GlobalCurrencyCode>KWON</GlobalCurrencyCode>
+            <MonetaryAmount>0</MonetaryAmount>
+          </FinancialAmount>
+          <PriceTerm>0</PriceTerm>
+        </UnitListPrice>
+      </ProductSubLineItem>
+      <ProductSubLineItem>
+        <LineNumber>2009</LineNumber>
+        <TransactionType>ADD</TransactionType>
+        <Quantity>24</Quantity>
+        <ProductIdentification>
+          <PartnerProductIdentification>
+            <OrderedProductIdentifier></OrderedProductIdentifier>
+            <ProprietaryProductIdentifier>9440</ProprietaryProductIdentifier>
+            <ProductDescription>New AIX License Core Counter</ProductDescription>
+            <ProductTypeCode>Hardware</ProductTypeCode>
+            <ProductIdentifierTypeCode>MTM-FC</ProductIdentifierTypeCode>
+          </PartnerProductIdentification>
+        </ProductIdentification>
+        <UnitListPrice>
+          <FinancialAmount>
+            <GlobalCurrencyCode>KWON</GlobalCurrencyCode>
+            <MonetaryAmount>0</MonetaryAmount>
+          </FinancialAmount>
+          <PriceTerm>0</PriceTerm>
+        </UnitListPrice>
+      </ProductSubLineItem>
+      <ProductSubLineItem>
+        <LineNumber>2010</LineNumber>
+        <TransactionType>ADD</TransactionType>
+        <Quantity>1</Quantity>
+        <ProductIdentification>
+          <PartnerProductIdentification>
+            <OrderedProductIdentifier></OrderedProductIdentifier>
+            <ProprietaryProductIdentifier>9716</ProprietaryProductIdentifier>
+            <ProductDescription>Language Group Specify - Korean</ProductDescription>
+            <ProductTypeCode>Hardware</ProductTypeCode>
+            <ProductIdentifierTypeCode>MTM-FC</ProductIdentifierTypeCode>
+          </PartnerProductIdentification>
+        </ProductIdentification>
+        <UnitListPrice>
+          <FinancialAmount>
+            <GlobalCurrencyCode>KWON</GlobalCurrencyCode>
+            <MonetaryAmount>0</MonetaryAmount>
+          </FinancialAmount>
+          <PriceTerm>0</PriceTerm>
+        </UnitListPrice>
+      </ProductSubLineItem>
+      <ProductSubLineItem>
+        <LineNumber>2011</LineNumber>
+        <TransactionType>ADD</TransactionType>
+        <Quantity>1</Quantity>
+        <ProductIdentification>
+          <PartnerProductIdentification>
+            <OrderedProductIdentifier></OrderedProductIdentifier>
+            <ProprietaryProductIdentifier>AKNC</ProprietaryProductIdentifier>
+            <ProductDescription>Premium S&amp;H Indicator</ProductDescription>
+            <ProductTypeCode>Hardware</ProductTypeCode>
+            <ProductIdentifierTypeCode>MTM-FC</ProductIdentifierTypeCode>
+          </PartnerProductIdentification>
+        </ProductIdentification>
+        <UnitListPrice>
+          <FinancialAmount>
+            <GlobalCurrencyCode>KWON</GlobalCurrencyCode>
+            <MonetaryAmount>0</MonetaryAmount>
+          </FinancialAmount>
+          <PriceTerm>0</PriceTerm>
+        </UnitListPrice>
+      </ProductSubLineItem>
+      <ProductSubLineItem>
+        <LineNumber>2012</LineNumber>
+        <TransactionType>ADD</TransactionType>
+        <Quantity>28</Quantity>
+        <ProductIdentification>
+          <PartnerProductIdentification>
+            <OrderedProductIdentifier></OrderedProductIdentifier>
+            <ProprietaryProductIdentifier>EB46</ProprietaryProductIdentifier>
+            <ProductDescription>10GbE Optical Transceiver SFP+ SR</ProductDescription>
+            <ProductTypeCode>Hardware</ProductTypeCode>
+            <ProductIdentifierTypeCode>MTM-FC</ProductIdentifierTypeCode>
+          </PartnerProductIdentification>
+        </ProductIdentification>
+        <UnitListPrice>
+          <FinancialAmount>
+            <GlobalCurrencyCode>KWON</GlobalCurrencyCode>
+            <MonetaryAmount>492.8</MonetaryAmount>
+          </FinancialAmount>
+          <PriceTerm>0</PriceTerm>
+        </UnitListPrice>
+      </ProductSubLineItem>
+      <ProductSubLineItem>
+        <LineNumber>2013</LineNumber>
+        <TransactionType>ADD</TransactionType>
+        <Quantity>1</Quantity>
+        <ProductIdentification>
+          <PartnerProductIdentification>
+            <OrderedProductIdentifier></OrderedProductIdentifier>
+            <ProprietaryProductIdentifier>EBAB</ProprietaryProductIdentifier>
+            <ProductDescription>IBM Rack-mount Drawer Bezel and Hardware</ProductDescription>
+            <ProductTypeCode>Hardware</ProductTypeCode>
+            <ProductIdentifierTypeCode>MTM-FC</ProductIdentifierTypeCode>
+          </PartnerProductIdentification>
+        </ProductIdentification>
+        <UnitListPrice>
+          <FinancialAmount>
+            <GlobalCurrencyCode>KWON</GlobalCurrencyCode>
+            <MonetaryAmount>1,700.2</MonetaryAmount>
+          </FinancialAmount>
+          <PriceTerm>0</PriceTerm>
+        </UnitListPrice>
+      </ProductSubLineItem>
+      <ProductSubLineItem>
+        <LineNumber>2014</LineNumber>
+        <TransactionType>ADD</TransactionType>
+        <Quantity>6</Quantity>
+        <ProductIdentification>
+          <PartnerProductIdentification>
+            <OrderedProductIdentifier></OrderedProductIdentifier>
+            <ProprietaryProductIdentifier>EC6K</ProprietaryProductIdentifier>
+            <ProductDescription>PCIe2 2-Port USB 3.0 Adapter</ProductDescription>
+            <ProductTypeCode>Hardware</ProductTypeCode>
+            <ProductIdentifierTypeCode>MTM-FC</ProductIdentifierTypeCode>
+          </PartnerProductIdentification>
+        </ProductIdentification>
+        <UnitListPrice>
+          <FinancialAmount>
+            <GlobalCurrencyCode>KWON</GlobalCurrencyCode>
+            <MonetaryAmount>4,023.9</MonetaryAmount>
+          </FinancialAmount>
+          <PriceTerm>0</PriceTerm>
+        </UnitListPrice>
+      </ProductSubLineItem>
+      <ProductSubLineItem>
+        <LineNumber>2015</LineNumber>
+        <TransactionType>ADD</TransactionType>
+        <Quantity>1</Quantity>
+        <ProductIdentification>
+          <PartnerProductIdentification>
+            <OrderedProductIdentifier></OrderedProductIdentifier>
+            <ProprietaryProductIdentifier>EC6N</ProprietaryProductIdentifier>
+            <ProductDescription>E1080 Control Unit External USB Enablement Cable</ProductDescription>
+            <ProductTypeCode>Hardware</ProductTypeCode>
+            <ProductIdentifierTypeCode>MTM-FC</ProductIdentifierTypeCode>
+          </PartnerProductIdentification>
+        </ProductIdentification>
+        <UnitListPrice>
+          <FinancialAmount>
+            <GlobalCurrencyCode>KWON</GlobalCurrencyCode>
+            <MonetaryAmount>238.3</MonetaryAmount>
+          </FinancialAmount>
+          <PriceTerm>0</PriceTerm>
+        </UnitListPrice>
+      </ProductSubLineItem>
+      <ProductSubLineItem>
+        <LineNumber>2016</LineNumber>
+        <TransactionType>ADD</TransactionType>
+        <Quantity>14</Quantity>
+        <ProductIdentification>
+          <PartnerProductIdentification>
+            <OrderedProductIdentifier></OrderedProductIdentifier>
+            <ProprietaryProductIdentifier>EC72</ProprietaryProductIdentifier>
+            <ProductDescription>PCIe4 2-Port 25/10/1 GbE RoCE SFP28 Adapter</ProductDescription>
+            <ProductTypeCode>Hardware</ProductTypeCode>
+            <ProductIdentifierTypeCode>MTM-FC</ProductIdentifierTypeCode>
+          </PartnerProductIdentification>
+        </ProductIdentification>
+        <UnitListPrice>
+          <FinancialAmount>
+            <GlobalCurrencyCode>KWON</GlobalCurrencyCode>
+            <MonetaryAmount>15,158.4</MonetaryAmount>
+          </FinancialAmount>
+          <PriceTerm>0</PriceTerm>
+        </UnitListPrice>
+      </ProductSubLineItem>
+      <ProductSubLineItem>
+        <LineNumber>2017</LineNumber>
+        <TransactionType>ADD</TransactionType>
+        <Quantity>6</Quantity>
+        <ProductIdentification>
+          <PartnerProductIdentification>
+            <OrderedProductIdentifier></OrderedProductIdentifier>
+            <ProprietaryProductIdentifier>ECLS</ProprietaryProductIdentifier>
+            <ProductDescription>3.0M CXP x16 Copper Cable Pair for PCIe4 Expansion Drawer</ProductDescription>
+            <ProductTypeCode>Hardware</ProductTypeCode>
+            <ProductIdentifierTypeCode>MTM-FC</ProductIdentifierTypeCode>
+          </PartnerProductIdentification>
+        </ProductIdentification>
+        <UnitListPrice>
+          <FinancialAmount>
+            <GlobalCurrencyCode>KWON</GlobalCurrencyCode>
+            <MonetaryAmount>7,539.7</MonetaryAmount>
+          </FinancialAmount>
+          <PriceTerm>0</PriceTerm>
+        </UnitListPrice>
+      </ProductSubLineItem>
+      <ProductSubLineItem>
+        <LineNumber>2018</LineNumber>
+        <TransactionType>ADD</TransactionType>
+        <Quantity>2</Quantity>
+        <ProductIdentification>
+          <PartnerProductIdentification>
+            <OrderedProductIdentifier></OrderedProductIdentifier>
+            <ProprietaryProductIdentifier>ECLX</ProprietaryProductIdentifier>
+            <ProductDescription>3.0M Active Optical Cable x16 Pair for PCIe4 Expansion Drawer</ProductDescription>
+            <ProductTypeCode>Hardware</ProductTypeCode>
+            <ProductIdentifierTypeCode>MTM-FC</ProductIdentifierTypeCode>
+          </PartnerProductIdentification>
+        </ProductIdentification>
+        <UnitListPrice>
+          <FinancialAmount>
+            <GlobalCurrencyCode>KWON</GlobalCurrencyCode>
+            <MonetaryAmount>69,701</MonetaryAmount>
+          </FinancialAmount>
+          <PriceTerm>0</PriceTerm>
+        </UnitListPrice>
+      </ProductSubLineItem>
+      <ProductSubLineItem>
+        <LineNumber>2019</LineNumber>
+        <TransactionType>ADD</TransactionType>
+        <Quantity>10</Quantity>
+        <ProductIdentification>
+          <PartnerProductIdentification>
+            <OrderedProductIdentifier></OrderedProductIdentifier>
+            <ProprietaryProductIdentifier>ECW0</ProprietaryProductIdentifier>
+            <ProductDescription>Optical Wrap Plug</ProductDescription>
+            <ProductTypeCode>Hardware</ProductTypeCode>
+            <ProductIdentifierTypeCode>MTM-FC</ProductIdentifierTypeCode>
+          </PartnerProductIdentification>
+        </ProductIdentification>
+        <UnitListPrice>
+          <FinancialAmount>
+            <GlobalCurrencyCode>KWON</GlobalCurrencyCode>
+            <MonetaryAmount>78.1</MonetaryAmount>
+          </FinancialAmount>
+          <PriceTerm>0</PriceTerm>
+        </UnitListPrice>
+      </ProductSubLineItem>
+      <ProductSubLineItem>
+        <LineNumber>2020</LineNumber>
+        <TransactionType>ADD</TransactionType>
+        <Quantity>1</Quantity>
+        <ProductIdentification>
+          <PartnerProductIdentification>
+            <OrderedProductIdentifier></OrderedProductIdentifier>
+            <ProprietaryProductIdentifier>EDBK</ProprietaryProductIdentifier>
+            <ProductDescription>2 x SMP cable brackets for non-IBM Rack</ProductDescription>
+            <ProductTypeCode>Hardware</ProductTypeCode>
+            <ProductIdentifierTypeCode>MTM-FC</ProductIdentifierTypeCode>
+          </PartnerProductIdentification>
+        </ProductIdentification>
+        <UnitListPrice>
+          <FinancialAmount>
+            <GlobalCurrencyCode>KWON</GlobalCurrencyCode>
+            <MonetaryAmount>544.3</MonetaryAmount>
+          </FinancialAmount>
+          <PriceTerm>0</PriceTerm>
+        </UnitListPrice>
+      </ProductSubLineItem>
+      <ProductSubLineItem>
+        <LineNumber>2021</LineNumber>
+        <TransactionType>ADD</TransactionType>
+        <Quantity>2</Quantity>
+        <ProductIdentification>
+          <PartnerProductIdentification>
+            <OrderedProductIdentifier></OrderedProductIdentifier>
+            <ProprietaryProductIdentifier>EDFP</ProprietaryProductIdentifier>
+            <ProductDescription>Flexible service processor</ProductDescription>
+            <ProductTypeCode>Hardware</ProductTypeCode>
+            <ProductIdentifierTypeCode>MTM-FC</ProductIdentifierTypeCode>
+          </PartnerProductIdentification>
+        </ProductIdentification>
+        <UnitListPrice>
+          <FinancialAmount>
+            <GlobalCurrencyCode>KWON</GlobalCurrencyCode>
+            <MonetaryAmount>40,802.3</MonetaryAmount>
+          </FinancialAmount>
+          <PriceTerm>0</PriceTerm>
+        </UnitListPrice>
+      </ProductSubLineItem>
+      <ProductSubLineItem>
+        <LineNumber>2022</LineNumber>
+        <TransactionType>ADD</TransactionType>
+        <Quantity>1</Quantity>
+        <ProductIdentification>
+          <PartnerProductIdentification>
+            <OrderedProductIdentifier></OrderedProductIdentifier>
+            <ProprietaryProductIdentifier>EDN1</ProprietaryProductIdentifier>
+            <ProductDescription>5U System node Indicator drawer</ProductDescription>
+            <ProductTypeCode>Hardware</ProductTypeCode>
+            <ProductIdentifierTypeCode>MTM-FC</ProductIdentifierTypeCode>
+          </PartnerProductIdentification>
+        </ProductIdentification>
+        <UnitListPrice>
+          <FinancialAmount>
+            <GlobalCurrencyCode>KWON</GlobalCurrencyCode>
+            <MonetaryAmount>0</MonetaryAmount>
+          </FinancialAmount>
+          <PriceTerm>0</PriceTerm>
+        </UnitListPrice>
+      </ProductSubLineItem>
+      <ProductSubLineItem>
+        <LineNumber>2023</LineNumber>
+        <TransactionType>ADD</TransactionType>
+        <Quantity>1</Quantity>
+        <ProductIdentification>
+          <PartnerProductIdentification>
+            <OrderedProductIdentifier></OrderedProductIdentifier>
+            <ProprietaryProductIdentifier>EDP2</ProprietaryProductIdentifier>
+            <ProductDescription>40-core (4x10) 3.65 to 3.90 GHz (max) Power10 Processor with 5U system node drawer</ProductDescription>
+            <ProductTypeCode>Hardware</ProductTypeCode>
+            <ProductIdentifierTypeCode>MTM-FC</ProductIdentifierTypeCode>
+          </PartnerProductIdentification>
+        </ProductIdentification>
+        <UnitListPrice>
+          <FinancialAmount>
+            <GlobalCurrencyCode>KWON</GlobalCurrencyCode>
+            <MonetaryAmount>1,262,318.8</MonetaryAmount>
+          </FinancialAmount>
+          <PriceTerm>0</PriceTerm>
+        </UnitListPrice>
+      </ProductSubLineItem>
+      <ProductSubLineItem>
+        <LineNumber>2024</LineNumber>
+        <TransactionType>ADD</TransactionType>
+        <Quantity>24</Quantity>
+        <ProductIdentification>
+          <PartnerProductIdentification>
+            <OrderedProductIdentifier></OrderedProductIdentifier>
+            <ProprietaryProductIdentifier>EDPB</ProprietaryProductIdentifier>
+            <ProductDescription>1 core Processor Activation for #EDP2</ProductDescription>
+            <ProductTypeCode>Hardware</ProductTypeCode>
+            <ProductIdentifierTypeCode>MTM-FC</ProductIdentifierTypeCode>
+          </PartnerProductIdentification>
+        </ProductIdentification>
+        <UnitListPrice>
+          <FinancialAmount>
+            <GlobalCurrencyCode>KWON</GlobalCurrencyCode>
+            <MonetaryAmount>34,001.9</MonetaryAmount>
+          </FinancialAmount>
+          <PriceTerm>0</PriceTerm>
+        </UnitListPrice>
+      </ProductSubLineItem>
+      <ProductSubLineItem>
+        <LineNumber>2025</LineNumber>
+        <TransactionType>ADD</TransactionType>
+        <Quantity>1</Quantity>
+        <ProductIdentification>
+          <PartnerProductIdentification>
+            <OrderedProductIdentifier></OrderedProductIdentifier>
+            <ProprietaryProductIdentifier>EFCH</ProprietaryProductIdentifier>
+            <ProductDescription>System Node to System Control Unit Cable Set for Drawer 1</ProductDescription>
+            <ProductTypeCode>Hardware</ProductTypeCode>
+            <ProductIdentifierTypeCode>MTM-FC</ProductIdentifierTypeCode>
+          </PartnerProductIdentification>
+        </ProductIdentification>
+        <UnitListPrice>
+          <FinancialAmount>
+            <GlobalCurrencyCode>KWON</GlobalCurrencyCode>
+            <MonetaryAmount>6,120.5</MonetaryAmount>
+          </FinancialAmount>
+          <PriceTerm>0</PriceTerm>
+        </UnitListPrice>
+      </ProductSubLineItem>
+      <ProductSubLineItem>
+        <LineNumber>2026</LineNumber>
+        <TransactionType>ADD</TransactionType>
+        <Quantity>1</Quantity>
+        <ProductIdentification>
+          <PartnerProductIdentification>
+            <OrderedProductIdentifier></OrderedProductIdentifier>
+            <ProprietaryProductIdentifier>EHSD</ProprietaryProductIdentifier>
+            <ProductDescription>Power AIX Segment Indicator</ProductDescription>
+            <ProductTypeCode>Hardware</ProductTypeCode>
+            <ProductIdentifierTypeCode>MTM-FC</ProductIdentifierTypeCode>
+          </PartnerProductIdentification>
+        </ProductIdentification>
+        <UnitListPrice>
+          <FinancialAmount>
+            <GlobalCurrencyCode>KWON</GlobalCurrencyCode>
+            <MonetaryAmount>0</MonetaryAmount>
+          </FinancialAmount>
+          <PriceTerm>0</PriceTerm>
+        </UnitListPrice>
+      </ProductSubLineItem>
+      <ProductSubLineItem>
+        <LineNumber>2027</LineNumber>
+        <TransactionType>ADD</TransactionType>
+        <Quantity>8</Quantity>
+        <ProductIdentification>
+          <PartnerProductIdentification>
+            <OrderedProductIdentifier></OrderedProductIdentifier>
+            <ProprietaryProductIdentifier>EJ24</ProprietaryProductIdentifier>
+            <ProductDescription>PCIe x16 to CXP Converter Card, Supports optical cables</ProductDescription>
+            <ProductTypeCode>Hardware</ProductTypeCode>
+            <ProductIdentifierTypeCode>MTM-FC</ProductIdentifierTypeCode>
+          </PartnerProductIdentification>
+        </ProductIdentification>
+        <UnitListPrice>
+          <FinancialAmount>
+            <GlobalCurrencyCode>KWON</GlobalCurrencyCode>
+            <MonetaryAmount>11,900.8</MonetaryAmount>
+          </FinancialAmount>
+          <PriceTerm>0</PriceTerm>
+        </UnitListPrice>
+      </ProductSubLineItem>
+      <ProductSubLineItem>
+        <LineNumber>2028</LineNumber>
+        <TransactionType>ADD</TransactionType>
+        <Quantity>1</Quantity>
+        <ProductIdentification>
+          <PartnerProductIdentification>
+            <OrderedProductIdentifier></OrderedProductIdentifier>
+            <ProprietaryProductIdentifier>EJBC</ProprietaryProductIdentifier>
+            <ProductDescription>4-NVMe U.2 (7mm) Flash drive bays</ProductDescription>
+            <ProductTypeCode>Hardware</ProductTypeCode>
+            <ProductIdentifierTypeCode>MTM-FC</ProductIdentifierTypeCode>
+          </PartnerProductIdentification>
+        </ProductIdentification>
+        <UnitListPrice>
+          <FinancialAmount>
+            <GlobalCurrencyCode>KWON</GlobalCurrencyCode>
+            <MonetaryAmount>11,560.8</MonetaryAmount>
+          </FinancialAmount>
+          <PriceTerm>0</PriceTerm>
+        </UnitListPrice>
+      </ProductSubLineItem>
+      <ProductSubLineItem>
+        <LineNumber>2029</LineNumber>
+        <TransactionType>ADD</TransactionType>
+        <Quantity>1</Quantity>
+        <ProductIdentification>
+          <PartnerProductIdentification>
+            <OrderedProductIdentifier></OrderedProductIdentifier>
+            <ProprietaryProductIdentifier>EM5Z</ProprietaryProductIdentifier>
+            <ProductDescription>512 GB DDR5 Memory Activations for HEX</ProductDescription>
+            <ProductTypeCode>Hardware</ProductTypeCode>
+            <ProductIdentifierTypeCode>MTM-FC</ProductIdentifierTypeCode>
+          </PartnerProductIdentification>
+        </ProductIdentification>
+        <UnitListPrice>
+          <FinancialAmount>
+            <GlobalCurrencyCode>KWON</GlobalCurrencyCode>
+            <MonetaryAmount>349,055.4</MonetaryAmount>
+          </FinancialAmount>
+          <PriceTerm>0</PriceTerm>
+        </UnitListPrice>
+      </ProductSubLineItem>
+      <ProductSubLineItem>
+        <LineNumber>2030</LineNumber>
+        <TransactionType>ADD</TransactionType>
+        <Quantity>8</Quantity>
+        <ProductIdentification>
+          <PartnerProductIdentification>
+            <OrderedProductIdentifier></OrderedProductIdentifier>
+            <ProprietaryProductIdentifier>EMFM</ProprietaryProductIdentifier>
+            <ProductDescription>128 GB (4x32GB) DDR5 Memory DDIMM</ProductDescription>
+            <ProductTypeCode>Hardware</ProductTypeCode>
+            <ProductIdentifierTypeCode>MTM-FC</ProductIdentifierTypeCode>
+          </PartnerProductIdentification>
+        </ProductIdentification>
+        <UnitListPrice>
+          <FinancialAmount>
+            <GlobalCurrencyCode>KWON</GlobalCurrencyCode>
+            <MonetaryAmount>102,082.1</MonetaryAmount>
+          </FinancialAmount>
+          <PriceTerm>0</PriceTerm>
+        </UnitListPrice>
+      </ProductSubLineItem>
+      <ProductSubLineItem>
+        <LineNumber>2031</LineNumber>
+        <TransactionType>ADD</TransactionType>
+        <Quantity>10</Quantity>
+        <ProductIdentification>
+          <PartnerProductIdentification>
+            <OrderedProductIdentifier></OrderedProductIdentifier>
+            <ProprietaryProductIdentifier>EN1A</ProprietaryProductIdentifier>
+            <ProductDescription>PCIe3 32Gb 2-port Fibre Channel Adapter</ProductDescription>
+            <ProductTypeCode>Hardware</ProductTypeCode>
+            <ProductIdentifierTypeCode>MTM-FC</ProductIdentifierTypeCode>
+          </PartnerProductIdentification>
+        </ProductIdentification>
+        <UnitListPrice>
+          <FinancialAmount>
+            <GlobalCurrencyCode>KWON</GlobalCurrencyCode>
+            <MonetaryAmount>34,882</MonetaryAmount>
+          </FinancialAmount>
+          <PriceTerm>0</PriceTerm>
+        </UnitListPrice>
+      </ProductSubLineItem>
+      <ProductSubLineItem>
+        <LineNumber>2032</LineNumber>
+        <TransactionType>ADD</TransactionType>
+        <Quantity>3</Quantity>
+        <ProductIdentification>
+          <PartnerProductIdentification>
+            <OrderedProductIdentifier></OrderedProductIdentifier>
+            <ProprietaryProductIdentifier>ENZ0</ProprietaryProductIdentifier>
+            <ProductDescription>PCIe Gen4 I/O Expansion Drawer</ProductDescription>
+            <ProductTypeCode>Hardware</ProductTypeCode>
+            <ProductIdentifierTypeCode>MTM-FC</ProductIdentifierTypeCode>
+          </PartnerProductIdentification>
+        </ProductIdentification>
+        <UnitListPrice>
+          <FinancialAmount>
+            <GlobalCurrencyCode>KWON</GlobalCurrencyCode>
+            <MonetaryAmount>45,576.5</MonetaryAmount>
+          </FinancialAmount>
+          <PriceTerm>0</PriceTerm>
+        </UnitListPrice>
+      </ProductSubLineItem>
+      <ProductSubLineItem>
+        <LineNumber>2033</LineNumber>
+        <TransactionType>ADD</TransactionType>
+        <Quantity>6</Quantity>
+        <ProductIdentification>
+          <PartnerProductIdentification>
+            <OrderedProductIdentifier></OrderedProductIdentifier>
+            <ProprietaryProductIdentifier>ENZF</ProprietaryProductIdentifier>
+            <ProductDescription>PCIe4 6-Slot Fanout Module for PCIe Gen4 I/O Expansion Drawer</ProductDescription>
+            <ProductTypeCode>Hardware</ProductTypeCode>
+            <ProductIdentifierTypeCode>MTM-FC</ProductIdentifierTypeCode>
+          </PartnerProductIdentification>
+        </ProductIdentification>
+        <UnitListPrice>
+          <FinancialAmount>
+            <GlobalCurrencyCode>KWON</GlobalCurrencyCode>
+            <MonetaryAmount>43,607.5</MonetaryAmount>
+          </FinancialAmount>
+          <PriceTerm>0</PriceTerm>
+        </UnitListPrice>
+      </ProductSubLineItem>
+      <ProductSubLineItem>
+        <LineNumber>2034</LineNumber>
+        <TransactionType>ADD</TransactionType>
+        <Quantity>24</Quantity>
+        <ProductIdentification>
+          <PartnerProductIdentification>
+            <OrderedProductIdentifier></OrderedProductIdentifier>
+            <ProprietaryProductIdentifier>EPVT</ProprietaryProductIdentifier>
+            <ProductDescription>PowerVM V4</ProductDescription>
+            <ProductTypeCode>Hardware</ProductTypeCode>
+            <ProductIdentifierTypeCode>MTM-FC</ProductIdentifierTypeCode>
+          </PartnerProductIdentification>
+        </ProductIdentification>
+        <UnitListPrice>
+          <FinancialAmount>
+            <GlobalCurrencyCode>KWON</GlobalCurrencyCode>
+            <MonetaryAmount>0</MonetaryAmount>
+          </FinancialAmount>
+          <PriceTerm>0</PriceTerm>
+        </UnitListPrice>
+      </ProductSubLineItem>
+      <ProductSubLineItem>
+        <LineNumber>2035</LineNumber>
+        <TransactionType>ADD</TransactionType>
+        <Quantity>1</Quantity>
+        <ProductIdentification>
+          <PartnerProductIdentification>
+            <OrderedProductIdentifier></OrderedProductIdentifier>
+            <ProprietaryProductIdentifier>ER21</ProprietaryProductIdentifier>
+            <ProductDescription>Field Integration of Rack and Server</ProductDescription>
+            <ProductTypeCode>Hardware</ProductTypeCode>
+            <ProductIdentifierTypeCode>MTM-FC</ProductIdentifierTypeCode>
+          </PartnerProductIdentification>
+        </ProductIdentification>
+        <UnitListPrice>
+          <FinancialAmount>
+            <GlobalCurrencyCode>KWON</GlobalCurrencyCode>
+            <MonetaryAmount>0</MonetaryAmount>
+          </FinancialAmount>
+          <PriceTerm>0</PriceTerm>
+        </UnitListPrice>
+      </ProductSubLineItem>
+      <ProductSubLineItem>
+        <LineNumber>2036</LineNumber>
+        <TransactionType>ADD</TransactionType>
+        <Quantity>12</Quantity>
+        <ProductIdentification>
+          <PartnerProductIdentification>
+            <OrderedProductIdentifier></OrderedProductIdentifier>
+            <ProprietaryProductIdentifier>ES5A</ProprietaryProductIdentifier>
+            <ProductDescription>Enterprise 800GB SSD PCIe4 NVMe U.2 module for AIX/Linux</ProductDescription>
+            <ProductTypeCode>Hardware</ProductTypeCode>
+            <ProductIdentifierTypeCode>MTM-FC</ProductIdentifierTypeCode>
+          </PartnerProductIdentification>
+        </ProductIdentification>
+        <UnitListPrice>
+          <FinancialAmount>
+            <GlobalCurrencyCode>KWON</GlobalCurrencyCode>
+            <MonetaryAmount>14,210.2</MonetaryAmount>
+          </FinancialAmount>
+          <PriceTerm>0</PriceTerm>
+        </UnitListPrice>
+      </ProductSubLineItem>
+      <ProductSubLineItem>
+        <LineNumber>2037</LineNumber>
+        <TransactionType>ADD</TransactionType>
+        <Quantity>2</Quantity>
+        <ProductIdentification>
+          <PartnerProductIdentification>
+            <OrderedProductIdentifier></OrderedProductIdentifier>
+            <ProprietaryProductIdentifier>ESM1</ProprietaryProductIdentifier>
+            <ProductDescription>ESM Module w/PCIe4 x16 2-port connection to CXP Converter Adapter</ProductDescription>
+            <ProductTypeCode>Hardware</ProductTypeCode>
+            <ProductIdentifierTypeCode>MTM-FC</ProductIdentifierTypeCode>
+          </PartnerProductIdentification>
+        </ProductIdentification>
+        <UnitListPrice>
+          <FinancialAmount>
+            <GlobalCurrencyCode>KWON</GlobalCurrencyCode>
+            <MonetaryAmount>32,523.6</MonetaryAmount>
+          </FinancialAmount>
+          <PriceTerm>0</PriceTerm>
+        </UnitListPrice>
+      </ProductSubLineItem>
+      <ProductSubLineItem>
+        <LineNumber>2038</LineNumber>
+        <TransactionType>ADD</TransactionType>
+        <Quantity>1</Quantity>
+        <ProductIdentification>
+          <PartnerProductIdentification>
+            <OrderedProductIdentifier></OrderedProductIdentifier>
+            <ProprietaryProductIdentifier>ESR0</ProprietaryProductIdentifier>
+            <ProductDescription>EXP24U.2 NVMe SAS Storage Enclosure</ProductDescription>
+            <ProductTypeCode>Hardware</ProductTypeCode>
+            <ProductIdentifierTypeCode>MTM-FC</ProductIdentifierTypeCode>
+          </PartnerProductIdentification>
+        </ProductIdentification>
+        <UnitListPrice>
+          <FinancialAmount>
+            <GlobalCurrencyCode>KWON</GlobalCurrencyCode>
+            <MonetaryAmount>96,813.7</MonetaryAmount>
+          </FinancialAmount>
+          <PriceTerm>0</PriceTerm>
+        </UnitListPrice>
+      </ProductSubLineItem>
+      <ProductSubLineItem>
+        <LineNumber>2039</LineNumber>
+        <TransactionType>ADD</TransactionType>
+        <Quantity>39</Quantity>
+        <ProductIdentification>
+          <PartnerProductIdentification>
+            <OrderedProductIdentifier></OrderedProductIdentifier>
+            <ProprietaryProductIdentifier>ESWK</ProprietaryProductIdentifier>
+            <ProductDescription>AIX Update Access Key (UAK)</ProductDescription>
+            <ProductTypeCode>Hardware</ProductTypeCode>
+            <ProductIdentifierTypeCode>MTM-FC</ProductIdentifierTypeCode>
+          </PartnerProductIdentification>
+        </ProductIdentification>
+        <UnitListPrice>
+          <FinancialAmount>
+            <GlobalCurrencyCode>KWON</GlobalCurrencyCode>
+            <MonetaryAmount>0</MonetaryAmount>
+          </FinancialAmount>
+          <PriceTerm>0</PriceTerm>
+        </UnitListPrice>
+      </ProductSubLineItem>
+      <ProductSubLineItem>
+        <LineNumber>2040</LineNumber>
+        <TransactionType>ADD</TransactionType>
+        <Quantity>1</Quantity>
+        <ProductIdentification>
+          <PartnerProductIdentification>
+            <OrderedProductIdentifier></OrderedProductIdentifier>
+            <ProprietaryProductIdentifier>EUA4</ProprietaryProductIdentifier>
+            <ProductDescription>RDX USB External Docking Station</ProductDescription>
+            <ProductTypeCode>Hardware</ProductTypeCode>
+            <ProductIdentifierTypeCode>MTM-FC</ProductIdentifierTypeCode>
+          </PartnerProductIdentification>
+        </ProductIdentification>
+        <UnitListPrice>
+          <FinancialAmount>
+            <GlobalCurrencyCode>KWON</GlobalCurrencyCode>
+            <MonetaryAmount>2,868.2</MonetaryAmount>
+          </FinancialAmount>
+          <PriceTerm>0</PriceTerm>
+        </UnitListPrice>
+      </ProductSubLineItem>
+      <ProductSubLineItem>
+        <LineNumber>2041</LineNumber>
+        <TransactionType>ADD</TransactionType>
+        <Quantity>1</Quantity>
+        <ProductIdentification>
+          <PartnerProductIdentification>
+            <OrderedProductIdentifier></OrderedProductIdentifier>
+            <ProprietaryProductIdentifier>EUA5</ProprietaryProductIdentifier>
+            <ProductDescription>Standalone USB DVD drive w/cable</ProductDescription>
+            <ProductTypeCode>Hardware</ProductTypeCode>
+            <ProductIdentifierTypeCode>MTM-FC</ProductIdentifierTypeCode>
+          </PartnerProductIdentification>
+        </ProductIdentification>
+        <UnitListPrice>
+          <FinancialAmount>
+            <GlobalCurrencyCode>KWON</GlobalCurrencyCode>
+            <MonetaryAmount>888.8</MonetaryAmount>
+          </FinancialAmount>
+          <PriceTerm>0</PriceTerm>
+        </UnitListPrice>
+      </ProductSubLineItem>
+    </ProductLineItem>
+    <ProductLineItem>
+      <ProductLineNumber>3000</ProductLineNumber>
+      <TransactionType>NEW</TransactionType>
+      <CPUSIUvalue>0</CPUSIUvalue>
+      <ProprietaryGroupIdentifier>2000</ProprietaryGroupIdentifier>
+      <Quantity>1</Quantity>
+      <ProductIdentification>
+        <PartnerProductIdentification>
+          <OrderedProductIdentifier>N/A</OrderedProductIdentifier>
+          <ProprietaryProductIdentifier>7226-1U3</ProprietaryProductIdentifier>
+          <ProductDescription>Server 1:Multi-media Storage Enclosure</ProductDescription>
+          <ProductTypeCode>Hardware</ProductTypeCode>
+          <ProductIdentifierTypeCode>MTM-FC</ProductIdentifierTypeCode>
+        </PartnerProductIdentification>
+      </ProductIdentification>
+      <UnitListPrice>
+        <FinancialAmount>
+          <GlobalCurrencyCode>KWON</GlobalCurrencyCode>
+          <MonetaryAmount>4,178.3</MonetaryAmount>
+        </FinancialAmount>
+        <PriceTerm>0</PriceTerm>
+      </UnitListPrice>
+      <ShippingUnitListPrice>
+        <FinancialAmount>
+          <GlobalCurrencyCode>KWON</GlobalCurrencyCode>
+          <MonetaryAmount>119.8</MonetaryAmount>
+        </FinancialAmount>
+        <PriceTerm>0</PriceTerm>
+      </ShippingUnitListPrice>
+      <MaintenanceUnitListPrice>
+        <FinancialAmount>
+          <GlobalCurrencyCode>KWON</GlobalCurrencyCode>
+          <MonetaryAmount>309</MonetaryAmount>
+        </FinancialAmount>
+        <PriceTerm>Y</PriceTerm>
+      </MaintenanceUnitListPrice>
+      <ProductSubLineItem>
+        <LineNumber>3001</LineNumber>
+        <TransactionType>ADD</TransactionType>
+        <Quantity>5</Quantity>
+        <ProductIdentification>
+          <PartnerProductIdentification>
+            <OrderedProductIdentifier></OrderedProductIdentifier>
+            <ProprietaryProductIdentifier>1107</ProprietaryProductIdentifier>
+            <ProductDescription>500 GB Removable RDX Drive</ProductDescription>
+            <ProductTypeCode>Hardware</ProductTypeCode>
+            <ProductIdentifierTypeCode>MTM-FC</ProductIdentifierTypeCode>
+          </PartnerProductIdentification>
+        </ProductIdentification>
+        <UnitListPrice>
+          <FinancialAmount>
+            <GlobalCurrencyCode>KWON</GlobalCurrencyCode>
+            <MonetaryAmount>536.7</MonetaryAmount>
+          </FinancialAmount>
+          <PriceTerm>0</PriceTerm>
+        </UnitListPrice>
+      </ProductSubLineItem>
+      <ProductSubLineItem>
+        <LineNumber>3002</LineNumber>
+        <TransactionType>ADD</TransactionType>
+        <Quantity>1</Quantity>
+        <ProductIdentification>
+          <PartnerProductIdentification>
+            <OrderedProductIdentifier></OrderedProductIdentifier>
+            <ProprietaryProductIdentifier>9600</ProprietaryProductIdentifier>
+            <ProductDescription>Attached to AIX System</ProductDescription>
+            <ProductTypeCode>Hardware</ProductTypeCode>
+            <ProductIdentifierTypeCode>MTM-FC</ProductIdentifierTypeCode>
+          </PartnerProductIdentification>
+        </ProductIdentification>
+        <UnitListPrice>
+          <FinancialAmount>
+            <GlobalCurrencyCode>KWON</GlobalCurrencyCode>
+            <MonetaryAmount>N/C</MonetaryAmount>
+          </FinancialAmount>
+          <PriceTerm>0</PriceTerm>
+        </UnitListPrice>
+      </ProductSubLineItem>
+      <ProductSubLineItem>
+        <LineNumber>3003</LineNumber>
+        <TransactionType>ADD</TransactionType>
+        <Quantity>1</Quantity>
+        <ProductIdentification>
+          <PartnerProductIdentification>
+            <OrderedProductIdentifier></OrderedProductIdentifier>
+            <ProprietaryProductIdentifier>9848</ProprietaryProductIdentifier>
+            <ProductDescription>Rack Device to PDU Cord</ProductDescription>
+            <ProductTypeCode>Hardware</ProductTypeCode>
+            <ProductIdentifierTypeCode>MTM-FC</ProductIdentifierTypeCode>
+          </PartnerProductIdentification>
+        </ProductIdentification>
+        <UnitListPrice>
+          <FinancialAmount>
+            <GlobalCurrencyCode>KWON</GlobalCurrencyCode>
+            <MonetaryAmount>48.9</MonetaryAmount>
+          </FinancialAmount>
+          <PriceTerm>0</PriceTerm>
+        </UnitListPrice>
+      </ProductSubLineItem>
+      <ProductSubLineItem>
+        <LineNumber>3004</LineNumber>
+        <TransactionType>ADD</TransactionType>
+        <Quantity>1</Quantity>
+        <ProductIdentification>
+          <PartnerProductIdentification>
+            <OrderedProductIdentifier></OrderedProductIdentifier>
+            <ProprietaryProductIdentifier>AKNC</ProprietaryProductIdentifier>
+            <ProductDescription>Premium S&amp;H Indicator</ProductDescription>
+            <ProductTypeCode>Hardware</ProductTypeCode>
+            <ProductIdentifierTypeCode>MTM-FC</ProductIdentifierTypeCode>
+          </PartnerProductIdentification>
+        </ProductIdentification>
+        <UnitListPrice>
+          <FinancialAmount>
+            <GlobalCurrencyCode>KWON</GlobalCurrencyCode>
+            <MonetaryAmount>0</MonetaryAmount>
+          </FinancialAmount>
+          <PriceTerm>0</PriceTerm>
+        </UnitListPrice>
+      </ProductSubLineItem>
+      <ProductSubLineItem>
+        <LineNumber>3005</LineNumber>
+        <TransactionType>ADD</TransactionType>
+        <Quantity>1</Quantity>
+        <ProductIdentification>
+          <PartnerProductIdentification>
+            <OrderedProductIdentifier></OrderedProductIdentifier>
+            <ProprietaryProductIdentifier>EU03</ProprietaryProductIdentifier>
+            <ProductDescription>RDX 3.0 Removable Disk Docking Station</ProductDescription>
+            <ProductTypeCode>Hardware</ProductTypeCode>
+            <ProductIdentifierTypeCode>MTM-FC</ProductIdentifierTypeCode>
+          </PartnerProductIdentification>
+        </ProductIdentification>
+        <UnitListPrice>
+          <FinancialAmount>
+            <GlobalCurrencyCode>KWON</GlobalCurrencyCode>
+            <MonetaryAmount>734.4</MonetaryAmount>
+          </FinancialAmount>
+          <PriceTerm>0</PriceTerm>
+        </UnitListPrice>
+      </ProductSubLineItem>
+    </ProductLineItem>
+    <ProductLineItem>
+      <ProductLineNumber>4000</ProductLineNumber>
+      <TransactionType>NEW</TransactionType>
+      <CPUSIUvalue>0</CPUSIUvalue>
+      <ProprietaryGroupIdentifier>2000</ProprietaryGroupIdentifier>
+      <Quantity>1</Quantity>
+      <ProductIdentification>
+        <PartnerProductIdentification>
+          <OrderedProductIdentifier>N/A</OrderedProductIdentifier>
+          <ProprietaryProductIdentifier>5313-HPO</ProprietaryProductIdentifier>
+          <ProductDescription>Server 1:IBM Power Software HIPO</ProductDescription>
+          <ProductTypeCode>Hardware</ProductTypeCode>
+          <ProductIdentifierTypeCode>MTM-FC</ProductIdentifierTypeCode>
+        </PartnerProductIdentification>
+      </ProductIdentification>
+      <UnitListPrice>
+        <FinancialAmount>
+          <GlobalCurrencyCode>KWON</GlobalCurrencyCode>
+          <MonetaryAmount>N/C</MonetaryAmount>
+        </FinancialAmount>
+        <PriceTerm>0</PriceTerm>
+      </UnitListPrice>
+      <ShippingUnitListPrice>
+        <FinancialAmount>
+          <GlobalCurrencyCode>KWON</GlobalCurrencyCode>
+          <MonetaryAmount>0</MonetaryAmount>
+        </FinancialAmount>
+        <PriceTerm>0</PriceTerm>
+      </ShippingUnitListPrice>
+      <ProductSubLineItem>
+        <LineNumber>4001</LineNumber>
+        <TransactionType>ADD</TransactionType>
+        <Quantity>1</Quantity>
+        <ProductIdentification>
+          <PartnerProductIdentification>
+            <OrderedProductIdentifier></OrderedProductIdentifier>
+            <ProprietaryProductIdentifier>0647</ProprietaryProductIdentifier>
+            <ProductDescription>9080-HEX Routing Code</ProductDescription>
+            <ProductTypeCode>Hardware</ProductTypeCode>
+            <ProductIdentifierTypeCode>MTM-FC</ProductIdentifierTypeCode>
+          </PartnerProductIdentification>
+        </ProductIdentification>
+        <UnitListPrice>
+          <FinancialAmount>
+            <GlobalCurrencyCode>KWON</GlobalCurrencyCode>
+            <MonetaryAmount>N/C</MonetaryAmount>
+          </FinancialAmount>
+          <PriceTerm>0</PriceTerm>
+        </UnitListPrice>
+      </ProductSubLineItem>
+      <ProductSubLineItem>
+        <LineNumber>4002</LineNumber>
+        <TransactionType>ADD</TransactionType>
+        <Quantity>1</Quantity>
+        <ProductIdentification>
+          <PartnerProductIdentification>
+            <OrderedProductIdentifier></OrderedProductIdentifier>
+            <ProprietaryProductIdentifier>0967</ProprietaryProductIdentifier>
+            <ProductDescription>Base OS</ProductDescription>
+            <ProductTypeCode>Hardware</ProductTypeCode>
+            <ProductIdentifierTypeCode>MTM-FC</ProductIdentifierTypeCode>
+          </PartnerProductIdentification>
+        </ProductIdentification>
+        <UnitListPrice>
+          <FinancialAmount>
+            <GlobalCurrencyCode>KWON</GlobalCurrencyCode>
+            <MonetaryAmount>N/C</MonetaryAmount>
+          </FinancialAmount>
+          <PriceTerm>0</PriceTerm>
+        </UnitListPrice>
+      </ProductSubLineItem>
+      <ProductSubLineItem>
+        <LineNumber>4003</LineNumber>
+        <TransactionType>ADD</TransactionType>
+        <Quantity>1</Quantity>
+        <ProductIdentification>
+          <PartnerProductIdentification>
+            <OrderedProductIdentifier></OrderedProductIdentifier>
+            <ProprietaryProductIdentifier>1073</ProprietaryProductIdentifier>
+            <ProductDescription>OS Specify code for AIX 7.3</ProductDescription>
+            <ProductTypeCode>Hardware</ProductTypeCode>
+            <ProductIdentifierTypeCode>MTM-FC</ProductIdentifierTypeCode>
+          </PartnerProductIdentification>
+        </ProductIdentification>
+        <UnitListPrice>
+          <FinancialAmount>
+            <GlobalCurrencyCode>KWON</GlobalCurrencyCode>
+            <MonetaryAmount>N/C</MonetaryAmount>
+          </FinancialAmount>
+          <PriceTerm>0</PriceTerm>
+        </UnitListPrice>
+      </ProductSubLineItem>
+      <ProductSubLineItem>
+        <LineNumber>4004</LineNumber>
+        <TransactionType>ADD</TransactionType>
+        <Quantity>1</Quantity>
+        <ProductIdentification>
+          <PartnerProductIdentification>
+            <OrderedProductIdentifier></OrderedProductIdentifier>
+            <ProprietaryProductIdentifier>2308</ProprietaryProductIdentifier>
+            <ProductDescription>IBM PowerHA SystemMirror Std Ed V7.2 (5765-H39)</ProductDescription>
+            <ProductTypeCode>Hardware</ProductTypeCode>
+            <ProductIdentifierTypeCode>MTM-FC</ProductIdentifierTypeCode>
+          </PartnerProductIdentification>
+        </ProductIdentification>
+        <UnitListPrice>
+          <FinancialAmount>
+            <GlobalCurrencyCode>KWON</GlobalCurrencyCode>
+            <MonetaryAmount>N/C</MonetaryAmount>
+          </FinancialAmount>
+          <PriceTerm>0</PriceTerm>
+        </UnitListPrice>
+      </ProductSubLineItem>
+      <ProductSubLineItem>
+        <LineNumber>4005</LineNumber>
+        <TransactionType>ADD</TransactionType>
+        <Quantity>1</Quantity>
+        <ProductIdentification>
+          <PartnerProductIdentification>
+            <OrderedProductIdentifier></OrderedProductIdentifier>
+            <ProprietaryProductIdentifier>5000</ProprietaryProductIdentifier>
+            <ProductDescription>Preload</ProductDescription>
+            <ProductTypeCode>Hardware</ProductTypeCode>
+            <ProductIdentifierTypeCode>MTM-FC</ProductIdentifierTypeCode>
+          </PartnerProductIdentification>
+        </ProductIdentification>
+        <UnitListPrice>
+          <FinancialAmount>
+            <GlobalCurrencyCode>KWON</GlobalCurrencyCode>
+            <MonetaryAmount>N/C</MonetaryAmount>
+          </FinancialAmount>
+          <PriceTerm>0</PriceTerm>
+        </UnitListPrice>
+      </ProductSubLineItem>
+      <ProductSubLineItem>
+        <LineNumber>4006</LineNumber>
+        <TransactionType>ADD</TransactionType>
+        <Quantity>1</Quantity>
+        <ProductIdentification>
+          <PartnerProductIdentification>
+            <OrderedProductIdentifier></OrderedProductIdentifier>
+            <ProprietaryProductIdentifier>5986</ProprietaryProductIdentifier>
+            <ProductDescription>Korean Preinstall PII Language</ProductDescription>
+            <ProductTypeCode>Hardware</ProductTypeCode>
+            <ProductIdentifierTypeCode>MTM-FC</ProductIdentifierTypeCode>
+          </PartnerProductIdentification>
+        </ProductIdentification>
+        <UnitListPrice>
+          <FinancialAmount>
+            <GlobalCurrencyCode>KWON</GlobalCurrencyCode>
+            <MonetaryAmount>N/C</MonetaryAmount>
+          </FinancialAmount>
+          <PriceTerm>0</PriceTerm>
+        </UnitListPrice>
+      </ProductSubLineItem>
+      <ProductSubLineItem>
+        <LineNumber>4007</LineNumber>
+        <TransactionType>ADD</TransactionType>
+        <Quantity>1</Quantity>
+        <ProductIdentification>
+          <PartnerProductIdentification>
+            <OrderedProductIdentifier></OrderedProductIdentifier>
+            <ProprietaryProductIdentifier>9209</ProprietaryProductIdentifier>
+            <ProductDescription>HW not Rack Integrated</ProductDescription>
+            <ProductTypeCode>Hardware</ProductTypeCode>
+            <ProductIdentifierTypeCode>MTM-FC</ProductIdentifierTypeCode>
+          </PartnerProductIdentification>
+        </ProductIdentification>
+        <UnitListPrice>
+          <FinancialAmount>
+            <GlobalCurrencyCode>KWON</GlobalCurrencyCode>
+            <MonetaryAmount>N/C</MonetaryAmount>
+          </FinancialAmount>
+          <PriceTerm>0</PriceTerm>
+        </UnitListPrice>
+      </ProductSubLineItem>
+    </ProductLineItem>
+    <ProductLineItem>
+      <ProductLineNumber>5000</ProductLineNumber>
+      <TransactionType>NEW</TransactionType>
+      <CPUSIUvalue>0</CPUSIUvalue>
+      <ProprietaryGroupIdentifier>2000</ProprietaryGroupIdentifier>
+      <Quantity>1</Quantity>
+      <ProductIdentification>
+        <PartnerProductIdentification>
+          <OrderedProductIdentifier>N/A</OrderedProductIdentifier>
+          <ProprietaryProductIdentifier>5692-A6P</ProprietaryProductIdentifier>
+          <ProductDescription>System Software</ProductDescription>
+          <ProductTypeCode>Software</ProductTypeCode>
+          <ProductIdentifierTypeCode>MTM-FC</ProductIdentifierTypeCode>
+        </PartnerProductIdentification>
+      </ProductIdentification>
+      <UnitListPrice>
+        <FinancialAmount>
+          <GlobalCurrencyCode>KWON</GlobalCurrencyCode>
+          <MonetaryAmount>N/C</MonetaryAmount>
+        </FinancialAmount>
+        <PriceTerm>0</PriceTerm>
+      </UnitListPrice>
+      <ProductSubLineItem>
+        <LineNumber>5001</LineNumber>
+        <TransactionType>ADD</TransactionType>
+        <Quantity>1</Quantity>
+        <ProductIdentification>
+          <PartnerProductIdentification>
+            <OrderedProductIdentifier></OrderedProductIdentifier>
+            <ProprietaryProductIdentifier>1101</ProprietaryProductIdentifier>
+            <ProductDescription>DVD Process No Charge</ProductDescription>
+            <ProductTypeCode>Software</ProductTypeCode>
+            <ProductIdentifierTypeCode>MTM-FC</ProductIdentifierTypeCode>
+          </PartnerProductIdentification>
+        </ProductIdentification>
+        <UnitListPrice>
+          <FinancialAmount>
+            <GlobalCurrencyCode>KWON</GlobalCurrencyCode>
+            <MonetaryAmount>N/C</MonetaryAmount>
+          </FinancialAmount>
+          <PriceTerm>0</PriceTerm>
+        </UnitListPrice>
+      </ProductSubLineItem>
+      <ProductSubLineItem>
+        <LineNumber>5002</LineNumber>
+        <TransactionType>ADD</TransactionType>
+        <Quantity>1</Quantity>
+        <ProductIdentification>
+          <PartnerProductIdentification>
+            <OrderedProductIdentifier></OrderedProductIdentifier>
+            <ProprietaryProductIdentifier>2282</ProprietaryProductIdentifier>
+            <ProductDescription>IBM PowerVM V4 VIOS</ProductDescription>
+            <ProductTypeCode>Software</ProductTypeCode>
+            <ProductIdentifierTypeCode>MTM-FC</ProductIdentifierTypeCode>
+          </PartnerProductIdentification>
+        </ProductIdentification>
+        <UnitListPrice>
+          <FinancialAmount>
+            <GlobalCurrencyCode>KWON</GlobalCurrencyCode>
+            <MonetaryAmount>N/C</MonetaryAmount>
+          </FinancialAmount>
+          <PriceTerm>0</PriceTerm>
+        </UnitListPrice>
+      </ProductSubLineItem>
+      <ProductSubLineItem>
+        <LineNumber>5003</LineNumber>
+        <TransactionType>ADD</TransactionType>
+        <Quantity>1</Quantity>
+        <ProductIdentification>
+          <PartnerProductIdentification>
+            <OrderedProductIdentifier></OrderedProductIdentifier>
+            <ProprietaryProductIdentifier>2284</ProprietaryProductIdentifier>
+            <ProductDescription>IBM PowerVM V4 Expansion Pack</ProductDescription>
+            <ProductTypeCode>Software</ProductTypeCode>
+            <ProductIdentifierTypeCode>MTM-FC</ProductIdentifierTypeCode>
+          </PartnerProductIdentification>
+        </ProductIdentification>
+        <UnitListPrice>
+          <FinancialAmount>
+            <GlobalCurrencyCode>KWON</GlobalCurrencyCode>
+            <MonetaryAmount>N/C</MonetaryAmount>
+          </FinancialAmount>
+          <PriceTerm>0</PriceTerm>
+        </UnitListPrice>
+      </ProductSubLineItem>
+      <ProductSubLineItem>
+        <LineNumber>5004</LineNumber>
+        <TransactionType>ADD</TransactionType>
+        <Quantity>1</Quantity>
+        <ProductIdentification>
+          <PartnerProductIdentification>
+            <OrderedProductIdentifier></OrderedProductIdentifier>
+            <ProprietaryProductIdentifier>2322</ProprietaryProductIdentifier>
+            <ProductDescription>IBM PowerHA SystemMirror Std Ed V7.2 (5765-H39)</ProductDescription>
+            <ProductTypeCode>Software</ProductTypeCode>
+            <ProductIdentifierTypeCode>MTM-FC</ProductIdentifierTypeCode>
+          </PartnerProductIdentification>
+        </ProductIdentification>
+        <UnitListPrice>
+          <FinancialAmount>
+            <GlobalCurrencyCode>KWON</GlobalCurrencyCode>
+            <MonetaryAmount>N/C</MonetaryAmount>
+          </FinancialAmount>
+          <PriceTerm>0</PriceTerm>
+        </UnitListPrice>
+      </ProductSubLineItem>
+      <ProductSubLineItem>
+        <LineNumber>5005</LineNumber>
+        <TransactionType>ADD</TransactionType>
+        <Quantity>1</Quantity>
+        <ProductIdentification>
+          <PartnerProductIdentification>
+            <OrderedProductIdentifier></OrderedProductIdentifier>
+            <ProprietaryProductIdentifier>2324</ProprietaryProductIdentifier>
+            <ProductDescription>NovaLink (5765-PVS/PVE/VE3/VE4)</ProductDescription>
+            <ProductTypeCode>Software</ProductTypeCode>
+            <ProductIdentifierTypeCode>MTM-FC</ProductIdentifierTypeCode>
+          </PartnerProductIdentification>
+        </ProductIdentification>
+        <UnitListPrice>
+          <FinancialAmount>
+            <GlobalCurrencyCode>KWON</GlobalCurrencyCode>
+            <MonetaryAmount>N/C</MonetaryAmount>
+          </FinancialAmount>
+          <PriceTerm>0</PriceTerm>
+        </UnitListPrice>
+      </ProductSubLineItem>
+      <ProductSubLineItem>
+        <LineNumber>5006</LineNumber>
+        <TransactionType>ADD</TransactionType>
+        <Quantity>1</Quantity>
+        <ProductIdentification>
+          <PartnerProductIdentification>
+            <OrderedProductIdentifier></OrderedProductIdentifier>
+            <ProprietaryProductIdentifier>2375</ProprietaryProductIdentifier>
+            <ProductDescription>AIX 7.3 Base Install</ProductDescription>
+            <ProductTypeCode>Software</ProductTypeCode>
+            <ProductIdentifierTypeCode>MTM-FC</ProductIdentifierTypeCode>
+          </PartnerProductIdentification>
+        </ProductIdentification>
+        <UnitListPrice>
+          <FinancialAmount>
+            <GlobalCurrencyCode>KWON</GlobalCurrencyCode>
+            <MonetaryAmount>N/C</MonetaryAmount>
+          </FinancialAmount>
+          <PriceTerm>0</PriceTerm>
+        </UnitListPrice>
+      </ProductSubLineItem>
+      <ProductSubLineItem>
+        <LineNumber>5007</LineNumber>
+        <TransactionType>ADD</TransactionType>
+        <Quantity>1</Quantity>
+        <ProductIdentification>
+          <PartnerProductIdentification>
+            <OrderedProductIdentifier></OrderedProductIdentifier>
+            <ProprietaryProductIdentifier>2376</ProprietaryProductIdentifier>
+            <ProductDescription>AIX 7.3 Expansion Pack</ProductDescription>
+            <ProductTypeCode>Software</ProductTypeCode>
+            <ProductIdentifierTypeCode>MTM-FC</ProductIdentifierTypeCode>
+          </PartnerProductIdentification>
+        </ProductIdentification>
+        <UnitListPrice>
+          <FinancialAmount>
+            <GlobalCurrencyCode>KWON</GlobalCurrencyCode>
+            <MonetaryAmount>N/C</MonetaryAmount>
+          </FinancialAmount>
+          <PriceTerm>0</PriceTerm>
+        </UnitListPrice>
+      </ProductSubLineItem>
+      <ProductSubLineItem>
+        <LineNumber>5008</LineNumber>
+        <TransactionType>ADD</TransactionType>
+        <Quantity>1</Quantity>
+        <ProductIdentification>
+          <PartnerProductIdentification>
+            <OrderedProductIdentifier></OrderedProductIdentifier>
+            <ProprietaryProductIdentifier>2377</ProprietaryProductIdentifier>
+            <ProductDescription>AIX 7.3 Standard Edition Specify (5765-G98)</ProductDescription>
+            <ProductTypeCode>Software</ProductTypeCode>
+            <ProductIdentifierTypeCode>MTM-FC</ProductIdentifierTypeCode>
+          </PartnerProductIdentification>
+        </ProductIdentification>
+        <UnitListPrice>
+          <FinancialAmount>
+            <GlobalCurrencyCode>KWON</GlobalCurrencyCode>
+            <MonetaryAmount>N/C</MonetaryAmount>
+          </FinancialAmount>
+          <PriceTerm>0</PriceTerm>
+        </UnitListPrice>
+      </ProductSubLineItem>
+      <ProductSubLineItem>
+        <LineNumber>5009</LineNumber>
+        <TransactionType>ADD</TransactionType>
+        <Quantity>1</Quantity>
+        <ProductIdentification>
+          <PartnerProductIdentification>
+            <OrderedProductIdentifier></OrderedProductIdentifier>
+            <ProprietaryProductIdentifier>3435</ProprietaryProductIdentifier>
+            <ProductDescription>DVD/CD-ROM</ProductDescription>
+            <ProductTypeCode>Software</ProductTypeCode>
+            <ProductIdentifierTypeCode>MTM-FC</ProductIdentifierTypeCode>
+          </PartnerProductIdentification>
+        </ProductIdentification>
+        <UnitListPrice>
+          <FinancialAmount>
+            <GlobalCurrencyCode>KWON</GlobalCurrencyCode>
+            <MonetaryAmount>N/C</MonetaryAmount>
+          </FinancialAmount>
+          <PriceTerm>0</PriceTerm>
+        </UnitListPrice>
+      </ProductSubLineItem>
+      <ProductSubLineItem>
+        <LineNumber>5010</LineNumber>
+        <TransactionType>ADD</TransactionType>
+        <Quantity>1</Quantity>
+        <ProductIdentification>
+          <PartnerProductIdentification>
+            <OrderedProductIdentifier></OrderedProductIdentifier>
+            <ProprietaryProductIdentifier>3450</ProprietaryProductIdentifier>
+            <ProductDescription>Electronic Delivery</ProductDescription>
+            <ProductTypeCode>Software</ProductTypeCode>
+            <ProductIdentifierTypeCode>MTM-FC</ProductIdentifierTypeCode>
+          </PartnerProductIdentification>
+        </ProductIdentification>
+        <UnitListPrice>
+          <FinancialAmount>
+            <GlobalCurrencyCode>KWON</GlobalCurrencyCode>
+            <MonetaryAmount>N/C</MonetaryAmount>
+          </FinancialAmount>
+          <PriceTerm>0</PriceTerm>
+        </UnitListPrice>
+      </ProductSubLineItem>
+    </ProductLineItem>
+    <ProductLineItem>
+      <ProductLineNumber>6000</ProductLineNumber>
+      <TransactionType>NEW</TransactionType>
+      <CPUSIUvalue>0</CPUSIUvalue>
+      <ProprietaryGroupIdentifier>2000</ProprietaryGroupIdentifier>
+      <Quantity>1</Quantity>
+      <ProductIdentification>
+        <PartnerProductIdentification>
+          <OrderedProductIdentifier>N/A</OrderedProductIdentifier>
+          <ProprietaryProductIdentifier>5765-G98</ProprietaryProductIdentifier>
+          <ProductDescription>IBM AIX 7 Standard Edition</ProductDescription>
+          <ProductTypeCode>Software</ProductTypeCode>
+          <ProductIdentifierTypeCode>MTM-FC</ProductIdentifierTypeCode>
+        </PartnerProductIdentification>
+      </ProductIdentification>
+      <UnitListPrice>
+        <FinancialAmount>
+          <GlobalCurrencyCode>KWON</GlobalCurrencyCode>
+          <MonetaryAmount>N/C</MonetaryAmount>
+        </FinancialAmount>
+        <PriceTerm>0</PriceTerm>
+      </UnitListPrice>
+      <ProductSubLineItem>
+        <LineNumber>6001</LineNumber>
+        <TransactionType>ADD</TransactionType>
+        <Quantity>1</Quantity>
+        <ProductIdentification>
+          <PartnerProductIdentification>
+            <OrderedProductIdentifier></OrderedProductIdentifier>
+            <ProprietaryProductIdentifier>2377</ProprietaryProductIdentifier>
+            <ProductDescription>AIX 7.3 Standard Edition Specify</ProductDescription>
+            <ProductTypeCode>Software</ProductTypeCode>
+            <ProductIdentifierTypeCode>MTM-FC</ProductIdentifierTypeCode>
+          </PartnerProductIdentification>
+        </ProductIdentification>
+        <UnitListPrice>
+          <FinancialAmount>
+            <GlobalCurrencyCode>KWON</GlobalCurrencyCode>
+            <MonetaryAmount>N/C</MonetaryAmount>
+          </FinancialAmount>
+          <PriceTerm>0</PriceTerm>
+        </UnitListPrice>
+      </ProductSubLineItem>
+      <ProductSubLineItem>
+        <LineNumber>6002</LineNumber>
+        <TransactionType>ADD</TransactionType>
+        <Quantity>1</Quantity>
+        <ProductIdentification>
+          <PartnerProductIdentification>
+            <OrderedProductIdentifier></OrderedProductIdentifier>
+            <ProprietaryProductIdentifier>3500</ProprietaryProductIdentifier>
+            <ProductDescription>Preload Specifier</ProductDescription>
+            <ProductTypeCode>Software</ProductTypeCode>
+            <ProductIdentifierTypeCode>MTM-FC</ProductIdentifierTypeCode>
+          </PartnerProductIdentification>
+        </ProductIdentification>
+        <UnitListPrice>
+          <FinancialAmount>
+            <GlobalCurrencyCode>KWON</GlobalCurrencyCode>
+            <MonetaryAmount>N/C</MonetaryAmount>
+          </FinancialAmount>
+          <PriceTerm>0</PriceTerm>
+        </UnitListPrice>
+      </ProductSubLineItem>
+      <ProductSubLineItem>
+        <LineNumber>6003</LineNumber>
+        <TransactionType>ADD</TransactionType>
+        <Quantity>24</Quantity>
+        <ProductIdentification>
+          <PartnerProductIdentification>
+            <OrderedProductIdentifier></OrderedProductIdentifier>
+            <ProprietaryProductIdentifier>C1AW</ProprietaryProductIdentifier>
+            <ProductDescription>Per Processor Power - Medium</ProductDescription>
+            <ProductTypeCode>Software</ProductTypeCode>
+            <ProductIdentifierTypeCode>MTM-FC</ProductIdentifierTypeCode>
+          </PartnerProductIdentification>
+        </ProductIdentification>
+        <UnitListPrice>
+          <FinancialAmount>
+            <GlobalCurrencyCode>KWON</GlobalCurrencyCode>
+            <MonetaryAmount>5,191.1</MonetaryAmount>
+          </FinancialAmount>
+          <PriceTerm>0</PriceTerm>
+        </UnitListPrice>
+      </ProductSubLineItem>
+    </ProductLineItem>
+    <ProductLineItem>
+      <ProductLineNumber>7000</ProductLineNumber>
+      <TransactionType>NEW</TransactionType>
+      <CPUSIUvalue>0</CPUSIUvalue>
+      <ProprietaryGroupIdentifier>2000</ProprietaryGroupIdentifier>
+      <Quantity>1</Quantity>
+      <ProductIdentification>
+        <PartnerProductIdentification>
+          <OrderedProductIdentifier>N/A</OrderedProductIdentifier>
+          <ProprietaryProductIdentifier>5773-SM3</ProprietaryProductIdentifier>
+          <ProductDescription>3-Year SWMA for 5765-C34/E61/E62/G03/G62/G98</ProductDescription>
+          <ProductTypeCode>Software</ProductTypeCode>
+          <ProductIdentifierTypeCode>MTM-FC</ProductIdentifierTypeCode>
+        </PartnerProductIdentification>
+      </ProductIdentification>
+      <UnitListPrice>
+        <FinancialAmount>
+          <GlobalCurrencyCode>KWON</GlobalCurrencyCode>
+          <MonetaryAmount>N/C</MonetaryAmount>
+        </FinancialAmount>
+        <PriceTerm>0</PriceTerm>
+      </UnitListPrice>
+      <ProductSubLineItem>
+        <LineNumber>7001</LineNumber>
+        <TransactionType>ADD</TransactionType>
+        <Quantity>24</Quantity>
+        <ProductIdentification>
+          <PartnerProductIdentification>
+            <OrderedProductIdentifier></OrderedProductIdentifier>
+            <ProprietaryProductIdentifier>1256</ProprietaryProductIdentifier>
+            <ProductDescription>Per Processor 3 Yr SWMA Medium Power Reg</ProductDescription>
+            <ProductTypeCode>Software</ProductTypeCode>
+            <ProductIdentifierTypeCode>MTM-FC</ProductIdentifierTypeCode>
+          </PartnerProductIdentification>
+        </ProductIdentification>
+        <UnitListPrice>
+          <FinancialAmount>
+            <GlobalCurrencyCode>KWON</GlobalCurrencyCode>
+            <MonetaryAmount>3,893.3</MonetaryAmount>
+          </FinancialAmount>
+          <PriceTerm>0</PriceTerm>
+        </UnitListPrice>
+      </ProductSubLineItem>
+    </ProductLineItem>
+    <ProductLineItem>
+      <ProductLineNumber>8000</ProductLineNumber>
+      <TransactionType>NEW</TransactionType>
+      <CPUSIUvalue>0</CPUSIUvalue>
+      <ProprietaryGroupIdentifier>2000</ProprietaryGroupIdentifier>
+      <Quantity>1</Quantity>
+      <ProductIdentification>
+        <PartnerProductIdentification>
+          <OrderedProductIdentifier>N/A</OrderedProductIdentifier>
+          <ProprietaryProductIdentifier>5639-1CE</ProprietaryProductIdentifier>
+          <ProductDescription>RocketCE AI on IBM Power Support 1Y</ProductDescription>
+          <ProductTypeCode>Software</ProductTypeCode>
+          <ProductIdentifierTypeCode>MTM-FC</ProductIdentifierTypeCode>
+        </PartnerProductIdentification>
+      </ProductIdentification>
+      <UnitListPrice>
+        <FinancialAmount>
+          <GlobalCurrencyCode>KWON</GlobalCurrencyCode>
+          <MonetaryAmount>N/C</MonetaryAmount>
+        </FinancialAmount>
+        <PriceTerm>0</PriceTerm>
+      </UnitListPrice>
+      <ProductSubLineItem>
+        <LineNumber>8001</LineNumber>
+        <TransactionType>ADD</TransactionType>
+        <Quantity>1</Quantity>
+        <ProductIdentification>
+          <PartnerProductIdentification>
+            <OrderedProductIdentifier></OrderedProductIdentifier>
+            <ProprietaryProductIdentifier>5809</ProprietaryProductIdentifier>
+            <ProductDescription>Product Registration Card</ProductDescription>
+            <ProductTypeCode>Software</ProductTypeCode>
+            <ProductIdentifierTypeCode>MTM-FC</ProductIdentifierTypeCode>
+          </PartnerProductIdentification>
+        </ProductIdentification>
+        <UnitListPrice>
+          <FinancialAmount>
+            <GlobalCurrencyCode>KWON</GlobalCurrencyCode>
+            <MonetaryAmount>N/C</MonetaryAmount>
+          </FinancialAmount>
+          <PriceTerm>0</PriceTerm>
+        </UnitListPrice>
+      </ProductSubLineItem>
+      <ProductSubLineItem>
+        <LineNumber>8002</LineNumber>
+        <TransactionType>ADD</TransactionType>
+        <Quantity>1</Quantity>
+        <ProductIdentification>
+          <PartnerProductIdentification>
+            <OrderedProductIdentifier></OrderedProductIdentifier>
+            <ProprietaryProductIdentifier>F5GD</ProprietaryProductIdentifier>
+            <ProductDescription>SW Support 1 Year Per Medium Server</ProductDescription>
+            <ProductTypeCode>Software</ProductTypeCode>
+            <ProductIdentifierTypeCode>MTM-FC</ProductIdentifierTypeCode>
+          </PartnerProductIdentification>
+        </ProductIdentification>
+        <UnitListPrice>
+          <FinancialAmount>
+            <GlobalCurrencyCode>KWON</GlobalCurrencyCode>
+            <MonetaryAmount>285</MonetaryAmount>
+          </FinancialAmount>
+          <PriceTerm>0</PriceTerm>
+        </UnitListPrice>
+      </ProductSubLineItem>
+    </ProductLineItem>
+    <ProductLineItem>
+      <ProductLineNumber>9000</ProductLineNumber>
+      <TransactionType>NEW</TransactionType>
+      <CPUSIUvalue>0</CPUSIUvalue>
+      <ProprietaryGroupIdentifier>2000</ProprietaryGroupIdentifier>
+      <Quantity>1</Quantity>
+      <ProductIdentification>
+        <PartnerProductIdentification>
+          <OrderedProductIdentifier>N/A</OrderedProductIdentifier>
+          <ProprietaryProductIdentifier>5765-H39</ProprietaryProductIdentifier>
+          <ProductDescription>IBM PowerHA SystemMirror Standard Edition V7</ProductDescription>
+          <ProductTypeCode>Software</ProductTypeCode>
+          <ProductIdentifierTypeCode>MTM-FC</ProductIdentifierTypeCode>
+        </PartnerProductIdentification>
+      </ProductIdentification>
+      <UnitListPrice>
+        <FinancialAmount>
+          <GlobalCurrencyCode>KWON</GlobalCurrencyCode>
+          <MonetaryAmount>N/C</MonetaryAmount>
+        </FinancialAmount>
+        <PriceTerm>0</PriceTerm>
+      </UnitListPrice>
+      <ProductSubLineItem>
+        <LineNumber>9001</LineNumber>
+        <TransactionType>ADD</TransactionType>
+        <Quantity>1</Quantity>
+        <ProductIdentification>
+          <PartnerProductIdentification>
+            <OrderedProductIdentifier></OrderedProductIdentifier>
+            <ProprietaryProductIdentifier>3500</ProprietaryProductIdentifier>
+            <ProductDescription>Preload Specifier</ProductDescription>
+            <ProductTypeCode>Software</ProductTypeCode>
+            <ProductIdentifierTypeCode>MTM-FC</ProductIdentifierTypeCode>
+          </PartnerProductIdentification>
+        </ProductIdentification>
+        <UnitListPrice>
+          <FinancialAmount>
+            <GlobalCurrencyCode>KWON</GlobalCurrencyCode>
+            <MonetaryAmount>N/C</MonetaryAmount>
+          </FinancialAmount>
+          <PriceTerm>0</PriceTerm>
+        </UnitListPrice>
+      </ProductSubLineItem>
+      <ProductSubLineItem>
+        <LineNumber>9002</LineNumber>
+        <TransactionType>ADD</TransactionType>
+        <Quantity>13</Quantity>
+        <ProductIdentification>
+          <PartnerProductIdentification>
+            <OrderedProductIdentifier></OrderedProductIdentifier>
+            <ProprietaryProductIdentifier>C1EL</ProprietaryProductIdentifier>
+            <ProductDescription>Per Proc w 1Yr SW Maint (Medium)</ProductDescription>
+            <ProductTypeCode>Software</ProductTypeCode>
+            <ProductIdentifierTypeCode>MTM-FC</ProductIdentifierTypeCode>
+          </PartnerProductIdentification>
+        </ProductIdentification>
+        <UnitListPrice>
+          <FinancialAmount>
+            <GlobalCurrencyCode>KWON</GlobalCurrencyCode>
+            <MonetaryAmount>14,764.2</MonetaryAmount>
+          </FinancialAmount>
+          <PriceTerm>0</PriceTerm>
+        </UnitListPrice>
+      </ProductSubLineItem>
+    </ProductLineItem>
+    <ProductLineItem>
+      <ProductLineNumber>10000</ProductLineNumber>
+      <TransactionType>NEW</TransactionType>
+      <CPUSIUvalue>0</CPUSIUvalue>
+      <ProprietaryGroupIdentifier>2000</ProprietaryGroupIdentifier>
+      <Quantity>1</Quantity>
+      <ProductIdentification>
+        <PartnerProductIdentification>
+          <OrderedProductIdentifier>N/A</OrderedProductIdentifier>
+          <ProprietaryProductIdentifier>5662-H23</ProprietaryProductIdentifier>
+          <ProductDescription>3-Year Registration SWMA for 5765-H39/H23</ProductDescription>
+          <ProductTypeCode>Software</ProductTypeCode>
+          <ProductIdentifierTypeCode>MTM-FC</ProductIdentifierTypeCode>
+        </PartnerProductIdentification>
+      </ProductIdentification>
+      <UnitListPrice>
+        <FinancialAmount>
+          <GlobalCurrencyCode>KWON</GlobalCurrencyCode>
+          <MonetaryAmount>N/C</MonetaryAmount>
+        </FinancialAmount>
+        <PriceTerm>0</PriceTerm>
+      </UnitListPrice>
+      <ProductSubLineItem>
+        <LineNumber>10001</LineNumber>
+        <TransactionType>ADD</TransactionType>
+        <Quantity>13</Quantity>
+        <ProductIdentification>
+          <PartnerProductIdentification>
+            <OrderedProductIdentifier></OrderedProductIdentifier>
+            <ProprietaryProductIdentifier>0704</ProprietaryProductIdentifier>
+            <ProductDescription>Per Proc SW Maint 3Y Reg (Medium)</ProductDescription>
+            <ProductTypeCode>Software</ProductTypeCode>
+            <ProductIdentifierTypeCode>MTM-FC</ProductIdentifierTypeCode>
+          </PartnerProductIdentification>
+        </ProductIdentification>
+        <UnitListPrice>
+          <FinancialAmount>
+            <GlobalCurrencyCode>KWON</GlobalCurrencyCode>
+            <MonetaryAmount>5,905.7</MonetaryAmount>
+          </FinancialAmount>
+          <PriceTerm>0</PriceTerm>
+        </UnitListPrice>
+      </ProductSubLineItem>
+    </ProductLineItem>
+    <ProductLineItem>
+      <ProductLineNumber>11000</ProductLineNumber>
+      <TransactionType>NEW</TransactionType>
+      <CPUSIUvalue>0</CPUSIUvalue>
+      <ProprietaryGroupIdentifier>2000</ProprietaryGroupIdentifier>
+      <Quantity>1</Quantity>
+      <ProductIdentification>
+        <PartnerProductIdentification>
+          <OrderedProductIdentifier>N/A</OrderedProductIdentifier>
+          <ProprietaryProductIdentifier>5765-J18</ProprietaryProductIdentifier>
+          <ProductDescription>IBM Open XL C/C++ for AIX V17</ProductDescription>
+          <ProductTypeCode>Software</ProductTypeCode>
+          <ProductIdentifierTypeCode>MTM-FC</ProductIdentifierTypeCode>
+        </PartnerProductIdentification>
+      </ProductIdentification>
+      <UnitListPrice>
+        <FinancialAmount>
+          <GlobalCurrencyCode>KWON</GlobalCurrencyCode>
+          <MonetaryAmount>N/C</MonetaryAmount>
+        </FinancialAmount>
+        <PriceTerm>0</PriceTerm>
+      </UnitListPrice>
+      <ProductSubLineItem>
+        <LineNumber>11001</LineNumber>
+        <TransactionType>ADD</TransactionType>
+        <Quantity>1</Quantity>
+        <ProductIdentification>
+          <PartnerProductIdentification>
+            <OrderedProductIdentifier></OrderedProductIdentifier>
+            <ProprietaryProductIdentifier>3435</ProprietaryProductIdentifier>
+            <ProductDescription>DVD</ProductDescription>
+            <ProductTypeCode>Software</ProductTypeCode>
+            <ProductIdentifierTypeCode>MTM-FC</ProductIdentifierTypeCode>
+          </PartnerProductIdentification>
+        </ProductIdentification>
+        <UnitListPrice>
+          <FinancialAmount>
+            <GlobalCurrencyCode>KWON</GlobalCurrencyCode>
+            <MonetaryAmount>N/C</MonetaryAmount>
+          </FinancialAmount>
+          <PriceTerm>0</PriceTerm>
+        </UnitListPrice>
+      </ProductSubLineItem>
+      <ProductSubLineItem>
+        <LineNumber>11002</LineNumber>
+        <TransactionType>ADD</TransactionType>
+        <Quantity>1</Quantity>
+        <ProductIdentification>
+          <PartnerProductIdentification>
+            <OrderedProductIdentifier></OrderedProductIdentifier>
+            <ProprietaryProductIdentifier>3450</ProprietaryProductIdentifier>
+            <ProductDescription>Electronic Delivery</ProductDescription>
+            <ProductTypeCode>Software</ProductTypeCode>
+            <ProductIdentifierTypeCode>MTM-FC</ProductIdentifierTypeCode>
+          </PartnerProductIdentification>
+        </ProductIdentification>
+        <UnitListPrice>
+          <FinancialAmount>
+            <GlobalCurrencyCode>KWON</GlobalCurrencyCode>
+            <MonetaryAmount>N/C</MonetaryAmount>
+          </FinancialAmount>
+          <PriceTerm>0</PriceTerm>
+        </UnitListPrice>
+      </ProductSubLineItem>
+      <ProductSubLineItem>
+        <LineNumber>11003</LineNumber>
+        <TransactionType>ADD</TransactionType>
+        <Quantity>1</Quantity>
+        <ProductIdentification>
+          <PartnerProductIdentification>
+            <OrderedProductIdentifier></OrderedProductIdentifier>
+            <ProprietaryProductIdentifier>5806</ProprietaryProductIdentifier>
+            <ProductDescription>Multilingual DVD</ProductDescription>
+            <ProductTypeCode>Software</ProductTypeCode>
+            <ProductIdentifierTypeCode>MTM-FC</ProductIdentifierTypeCode>
+          </PartnerProductIdentification>
+        </ProductIdentification>
+        <UnitListPrice>
+          <FinancialAmount>
+            <GlobalCurrencyCode>KWON</GlobalCurrencyCode>
+            <MonetaryAmount>N/C</MonetaryAmount>
+          </FinancialAmount>
+          <PriceTerm>0</PriceTerm>
+        </UnitListPrice>
+      </ProductSubLineItem>
+      <ProductSubLineItem>
+        <LineNumber>11004</LineNumber>
+        <TransactionType>ADD</TransactionType>
+        <Quantity>1</Quantity>
+        <ProductIdentification>
+          <PartnerProductIdentification>
+            <OrderedProductIdentifier></OrderedProductIdentifier>
+            <ProprietaryProductIdentifier>C3GA</ProprietaryProductIdentifier>
+            <ProductDescription>Per Authorized User with 1 Year S&amp;S</ProductDescription>
+            <ProductTypeCode>Software</ProductTypeCode>
+            <ProductIdentifierTypeCode>MTM-FC</ProductIdentifierTypeCode>
+          </PartnerProductIdentification>
+        </ProductIdentification>
+        <UnitListPrice>
+          <FinancialAmount>
+            <GlobalCurrencyCode>KWON</GlobalCurrencyCode>
+            <MonetaryAmount>20,423.1</MonetaryAmount>
+          </FinancialAmount>
+          <PriceTerm>0</PriceTerm>
+        </UnitListPrice>
+      </ProductSubLineItem>
+    </ProductLineItem>
+    <ProductLineItem>
+      <ProductLineNumber>12000</ProductLineNumber>
+      <TransactionType>NEW</TransactionType>
+      <CPUSIUvalue>0</CPUSIUvalue>
+      <ProprietaryGroupIdentifier>2000</ProprietaryGroupIdentifier>
+      <Quantity>1</Quantity>
+      <ProductIdentification>
+        <PartnerProductIdentification>
+          <OrderedProductIdentifier>N/A</OrderedProductIdentifier>
+          <ProprietaryProductIdentifier>5648-F47</ProprietaryProductIdentifier>
+          <ProductDescription>IBM XL C/C++ FOR AIX SW S&amp;S(Reg):3 Yr</ProductDescription>
+          <ProductTypeCode>Software</ProductTypeCode>
+          <ProductIdentifierTypeCode>MTM-FC</ProductIdentifierTypeCode>
+        </PartnerProductIdentification>
+      </ProductIdentification>
+      <UnitListPrice>
+        <FinancialAmount>
+          <GlobalCurrencyCode>KWON</GlobalCurrencyCode>
+          <MonetaryAmount>N/C</MonetaryAmount>
+        </FinancialAmount>
+        <PriceTerm>0</PriceTerm>
+      </UnitListPrice>
+      <ProductSubLineItem>
+        <LineNumber>12001</LineNumber>
+        <TransactionType>ADD</TransactionType>
+        <Quantity>1</Quantity>
+        <ProductIdentification>
+          <PartnerProductIdentification>
+            <OrderedProductIdentifier></OrderedProductIdentifier>
+            <ProprietaryProductIdentifier>D7JL</ProprietaryProductIdentifier>
+            <ProductDescription>Authorized User</ProductDescription>
+            <ProductTypeCode>Software</ProductTypeCode>
+            <ProductIdentifierTypeCode>MTM-FC</ProductIdentifierTypeCode>
+          </PartnerProductIdentification>
+        </ProductIdentification>
+        <UnitListPrice>
+          <FinancialAmount>
+            <GlobalCurrencyCode>KWON</GlobalCurrencyCode>
+            <MonetaryAmount>5,654.1</MonetaryAmount>
+          </FinancialAmount>
+          <PriceTerm>0</PriceTerm>
+        </UnitListPrice>
+      </ProductSubLineItem>
+    </ProductLineItem>
+    <ProductLineItem>
+      <ProductLineNumber>13000</ProductLineNumber>
+      <TransactionType>NEW</TransactionType>
+      <CPUSIUvalue>0</CPUSIUvalue>
+      <ProprietaryGroupIdentifier>2000</ProprietaryGroupIdentifier>
+      <Quantity>1</Quantity>
+      <ProductIdentification>
+        <PartnerProductIdentification>
+          <OrderedProductIdentifier>N/A</OrderedProductIdentifier>
+          <ProprietaryProductIdentifier>5765-VE4</ProprietaryProductIdentifier>
+          <ProductDescription>IBM PowerVM V4</ProductDescription>
+          <ProductTypeCode>Software</ProductTypeCode>
+          <ProductIdentifierTypeCode>MTM-FC</ProductIdentifierTypeCode>
+        </PartnerProductIdentification>
+      </ProductIdentification>
+      <UnitListPrice>
+        <FinancialAmount>
+          <GlobalCurrencyCode>KWON</GlobalCurrencyCode>
+          <MonetaryAmount>N/C</MonetaryAmount>
+        </FinancialAmount>
+        <PriceTerm>0</PriceTerm>
+      </UnitListPrice>
+      <ProductSubLineItem>
+        <LineNumber>13001</LineNumber>
+        <TransactionType>ADD</TransactionType>
+        <Quantity>24</Quantity>
+        <ProductIdentification>
+          <PartnerProductIdentification>
+            <OrderedProductIdentifier></OrderedProductIdentifier>
+            <ProprietaryProductIdentifier>C3TF</ProprietaryProductIdentifier>
+            <ProductDescription>Per Proc Core Medium N/C HSE</ProductDescription>
+            <ProductTypeCode>Software</ProductTypeCode>
+            <ProductIdentifierTypeCode>MTM-FC</ProductIdentifierTypeCode>
+          </PartnerProductIdentification>
+        </ProductIdentification>
+        <UnitListPrice>
+          <FinancialAmount>
+            <GlobalCurrencyCode>KWON</GlobalCurrencyCode>
+            <MonetaryAmount>N/C</MonetaryAmount>
+          </FinancialAmount>
+          <PriceTerm>0</PriceTerm>
+        </UnitListPrice>
+      </ProductSubLineItem>
+    </ProductLineItem>
+    <ProductLineItem>
+      <ProductLineNumber>14000</ProductLineNumber>
+      <TransactionType>NEW</TransactionType>
+      <CPUSIUvalue>0</CPUSIUvalue>
+      <ProprietaryGroupIdentifier>2000</ProprietaryGroupIdentifier>
+      <Quantity>1</Quantity>
+      <ProductIdentification>
+        <PartnerProductIdentification>
+          <OrderedProductIdentifier>N/A</OrderedProductIdentifier>
+          <ProprietaryProductIdentifier>5773-PVE</ProprietaryProductIdentifier>
+          <ProductDescription>3-Year SWMA for PowerVM</ProductDescription>
+          <ProductTypeCode>Software</ProductTypeCode>
+          <ProductIdentifierTypeCode>MTM-FC</ProductIdentifierTypeCode>
+        </PartnerProductIdentification>
+      </ProductIdentification>
+      <UnitListPrice>
+        <FinancialAmount>
+          <GlobalCurrencyCode>KWON</GlobalCurrencyCode>
+          <MonetaryAmount>N/C</MonetaryAmount>
+        </FinancialAmount>
+        <PriceTerm>0</PriceTerm>
+      </UnitListPrice>
+      <ProductSubLineItem>
+        <LineNumber>14001</LineNumber>
+        <TransactionType>ADD</TransactionType>
+        <Quantity>24</Quantity>
+        <ProductIdentification>
+          <PartnerProductIdentification>
+            <OrderedProductIdentifier></OrderedProductIdentifier>
+            <ProprietaryProductIdentifier>A0NK</ProprietaryProductIdentifier>
+            <ProductDescription>Per Proc SW Maint Registration (Medium)</ProductDescription>
+            <ProductTypeCode>Software</ProductTypeCode>
+            <ProductIdentifierTypeCode>MTM-FC</ProductIdentifierTypeCode>
+          </PartnerProductIdentification>
+        </ProductIdentification>
+        <UnitListPrice>
+          <FinancialAmount>
+            <GlobalCurrencyCode>KWON</GlobalCurrencyCode>
+            <MonetaryAmount>3,640.5</MonetaryAmount>
+          </FinancialAmount>
+          <PriceTerm>0</PriceTerm>
+        </UnitListPrice>
+      </ProductSubLineItem>
+    </ProductLineItem>
+    <CFReportBLOB><![CDATA[
+003120250123ECMPWR  90501a250090AP7660 23                                                                                                   KRko                     00                                                                                                                                                
+030Unclassified          
+05         00                                                               
+05         00   Configuration ID: HH90NA1XF56WL000000   CEID: 10ailnjz
+05         10                                                               
+05         00   Created on Th Jan 23 2025 17:17:41 GMT+0900 (UTC) by Sang In
+05         00   Park                                                        
+05         00                                                               
+05         1U   *** This is a POWER SYSTEMS MACHINE - Please see System     
+05         0U   comments for the Operating System(s) ordered ***            
+05         1U   Machine Type 7042 is preferred, Software 5765-HMV is also   
+05         0U   acceptable.                                                 
+05         0U   The HMC machine code must be updated to the minimum required
+05         0U   code level                                                  
+05         0U   identified for the firmware level of the 9117/9119/9179     
+05         0U   systems.                                                    
+05         0U   See URL for  the required HMC code level.                   
+05         0U   http://www14.software.ibm.com/webapp/set2/flrt/home         
+05         0U   'Have an HMC that will support configured server(s)' has    
+05         0U   been selected.                                              
+05         1U   You have chosen IBM Expert Labs services.  Sellers must go  
+05         0U   to ibm.biz/systemsexpertlabsofferings-sales to download the 
+05         0U   Expert Labs authorization agreement to order the services.  
+05         0U   Clients can go to ibm.biz/systemsexpertlabsofferings to see 
+05         0U   the list of offerings.                                      
+05         1U   The shipment date may be delayed by up to 16 weeks, due to  
+05         0U   non-standard feature codes included in the configuration    
+05         0U   (depending on the parts and their availability in stock). It
+05         0U   is highly recommended to look for standard alternative      
+05         0U   parts. Please consult the Availability after Configuration  
+05         0U   Tool (ACT), https://www.ibm.com/servers/econfig/act/ for    
+05         0U   further lead time information. Before submitting the order  
+05         0U   make sure to inform the customer of potential delays. These 
+05         0U   are the non-standard feature codes in the configuration:    
+05         1U   Feature codes highlighted with a green star are standard and
+05         0U   are ready-to-build parts. If an order is configured with all
+05         0U   standard feature codes, it will typically ship within 10-15 
+05         0U   business days of the order, depending on the product.       
+05         0U   Feature codes without a green star are non-standard and are 
+05         0U   not held in inventory. If an order is configured with one or
+05         0U   more non-standard feature codes, its shipment date may be   
+05         0U   delayed by up to 16 weeks (depending on the parts and their 
+05         0U   availability in stock).                                     
+05         1U   MUST READ: IMPORTANT: ACTION IS NECESSARY to request IBM    
+05         0U   Expert Labs with this configuration!                        
+05         10000Customer Requested Arrival Date: 2025/02/06                 
+05         10000                                                            
+069999001MDDIBM_INC_SHIPPING^1^YES^IBM_FV_VISIBLE^1^FALSE^NO_INTEGRATION_HOST_PLATFORM_SIU_PROPOSED_ID^1^1^SV_DEFAULT_CATEGORIES^0^SQ_PROMOTION_CODE_CONTEXT_C^1^sq_promotion_code_context_none^SW_Global_06_swrs_cho_global_preference_control^1^sw_core_otc_charge_option^SW_Global_06_swrs_media_global_preference_control^1^swn_esd_media^SW_Global_06_swrs_language_global_preference_control^1^sw_core_language_prim_korean^SW_Global_06_swrs_maintenance_global_preference_control^1^sw_core_nim_maint_3yr^SW_Global_06_swrs_shipping_options_global_control^1^sw_core_shipping_option_3444^SW_Global_06_swrs_expedite_global_control^1^sw_core_shipping_option_no_expedite^SW_Global_06_swrs_suppress_global_control^1^sw_core_shipping_option_not_3480^SW_Global_06_swrs_preinstall_languages_control^1^sw_core_preinst_language_korean^SW_Global_06_swrs_cultural_languages_control^1^sw_core_cultural_std_language^SW_Global_06_swrs_support_global_preference_control^1^sw_9by5_support_service^SW_Global_06_swas_cho_global_preference_control^1^sw_core_otc_charge_option^SW_Global_06_swas_media_global_preference_control^1^swn_esd_media^SW_Global_06_swas_language_global_preference_control^1^sw_core_language_prim_english_double_byte_ul^SW_Global_06_swas_maintenance_global_preference_control^1^sw_core_nim_maint_1yr^SW_Global_06_swas_shipping_options_global_control^1^sw_core_shipping_option_3444^SW_Global_06_swas_expedite_global_control^1^sw_core_shipping_option_no_expedite^SW_Global_06_swas_support_global_preference_control^1^sw_9by5_support_service^IBM_WITHDRAWN_PRODUCTS_MODE^1^FALSE^SQ_DELETED_RACK_C^1^sq_mtm_7965_S42^ssd_compat_fatal_message:IBM_Must_Read_Message^1^TRUE^IBM_REDUCED_SEV_MSG_MS^4^sw_5639_xce_instructions_must_read_message^sq_EUA4_requires_drive_message_requirement^sq_denali_initial_order_tda_warning_message^sq_HMC_message_requirement_denali^PLAYBACK_INTERACTIVE_EVENTibm_generic_aggregate_msgsq_HMC_message_requirement_denali^1^sq_add_detailed_text_with_have_hmc_to_cfr_and_reduce_aggregate_severity^CFR_CSDML_COMPRESSED^20^PB+PA2hsBAHYMoOQOYNIN4NwHoEQGIC4Bg8gQ3AY2Mi24DO4iAqgVAIwC0Bw8/AfAqYDyU6ENoC+AhmNwDMWzgOpLCA6Ft5pAG2itxR0G5lnp7RY6AOAB0AX8O4Dv0XdGaLeSz8GSRgQLwCwATQCYAUyrQkYTrSNc1jCNYxBEGeBTS3bhicAYQjKKcKLGIU4zKEYYjeVYVjSnPR6HFRIaYReBTITQ7qbEXw7KJc1rcZMSJoPPgKIIcyrkLcLTeNPoryjZQhAATxLIIcgJeARNbGJaWzpmPgKCqZBbogPACCbOAK0rLozEAawqR6HopMjACOJuzq5sx6HmSAbCRqAGUgRAzmDshK3KLaEHsOhjiOJucmvsjknN4aeh5i0EQMyPDk2ukYRDbSpOaU2mx0DGQAZiKUotwiZCRkAGoiYm5rXHUgZCbIouksRABsJGNcZVJuIGQeXv5fAOoAyPx8AqAS33zqKugM03x7LmIm4KLkKOgyikxk0ngAoYLg6ugWyhR9gOQY4Z7yDN0qyjLaqNAuykroROCYQFjybMoy8MB0RuQuz5isothUykByJHAkeHCtyOoQfOyhnMoS6ER9pN+85bpBCttq2izKCkQM6bbLvud8dcLSGs/Gwgrr1pAAikI8dLC/mVeKDtcm6fPBwahA82UMqYASQ0iGtpDDctGkTkT3eW8eg94cDmLHJxER/VnUyiBDZqqRUkNHkCbHKfOxyabK7nmCOUgci0ytE8ACkCGY6spLZZKpSdlBLLKSAFsjKQwAaBNyk6o+D0HpgMZwWxuQiHB8AVKVuQUYwQQS49S5nMWUUKkzIiwzzZhexevFKdMspc5E3sJjFh8IXk4trEZJeZMxQgro0HM/qFQeWqwoYihJFEXBavEUdDy3Bgii7DAz4isoJdjqQBA8jrq6zwcKFTPoOyyEghJ6D21sNINZW08t4iq7K+WQbucVaX4RVxsjxy5zA7K0YPo+3vF0d54zXKRugiILQRARvXzK9iBuuFYc3053FurZ8AVa^7pEAWLsw108sjlfHmpOWNIL87ORpXy+B2l3Os3IMEy286fbdhjwAK13ZnI5gg8sTLSHBqH14cGe0ms+OymInMWMoEPmAwu4gnpFAENXEQGcGQyg10l5jT3K+NOjPL233l5qjatWYEMIsdZYvhVvwBFbj2JueEdK0zv1suhuEDbFNkePMY37U+szk8m5rHoPZFC0nppiBBlj3fMlwdOARXN1daYq2cVMIYZQMjsF1GxARXAEMYLZr6WgZLBjluG7iOtjL9o4aA84zhomWSl7NYXcfahyFhBqkUTGzHYZY3Cw9YxFjm+8tOzUKmQX5m3DoKnIEL+7ZG46UF4rLlFj7DsKuoo7oxmnjPHzQsqQn0CuSSOaCML1Hj0uT2NJikTVm73uRknr5HzkOion0JPLbMoMsz8OrdMZ6kTekQZMjouT/njNMMAogOKDxMrPssDHjzMp3NLZl8Fug/pBkMgdMKWEDnkQitgGOgbqATJMWt4WETWsL4OiXmYJtMGooTGIJET5uDzucdMqztzlEQGuoCMQ6kUNPD/NK5H0ANiPKAJFoTGEQn0Dui9KD7N0fNoUM4AJxrEUhObfuUOqy7qAJIZ0F8PNjil7yMsRl8suUEHw7JEUu7XHwApEvMMVuigqYCt4WHRmoaFqcyOkHsrXnqfESmnpjGLYt76MqSqEmMKqtwVNoAMUgkEWPEhtzMq0qGAOoawl8rurxqCynktui+t0mswMJ0oEE7OcpNMiHk+MoQKEqmMknkSOSDHlFukJngcJEwuSxpFIMsNKc0HUzJMYuk0tz4kTVmcbMjYGU3OEdn0KEC/N05sU6uj+udCt08MKuqEjoZIHkCHlGvMeOTksKqtsnJ1BulRMkONNDK08odTl9Dn0lPMROUuHlHsI6O8vngAJFJEEWKdKKEYKc0EUZuUIEVMkU2ETVmJUkVVOlHKE4tpat1QMoEkUoslYN1SNkjGE9GdFF8/vNjvMKnq0s1BMIpEVmnTMM7gup1qEqmdpKE/F8/tMTJFJH0wM^NcsMxPKJEVLHVKqdgEAbMMaHs1kD2oYIGlOMsSss4OTHt0fN1luQJulXnVtETpstEGE9GlvOTGn1PN1As8nsNsEFCMlnM9tst8oaYHlUF9pn0lNNwsNyOVIsOFMtJtkXHV0NkXEVgss1EVhkF2mLWH0JNL6uV5MM5OsgMtmEGAnV7n0iutuGE9Gt9t7jnlpkC/NtWsOAOl7ObCs+BnxmmATGuQuDyl9wMr0JFxHldsOGEFetmHKFftmIEF1OVhIoTGdNHpjG13uVbqFksoMt16EVsueUEV8H2VFr3HmDKE/KGfHtrM9/tr+PNzPE7s+UqEqm2WMstKCoNOEuRfO9dJFeOkxtmaIcztmbODXN1MIuckViIscG+eOlkOWMNtlOuNOV6vOmOdRs+nGE9G+oOVGKGkEQCM1rtuluDBsmBEWhqEqm+1Oi9F+XOZeJGYJGrPNzKdKIg8uwqtmtMN1kWJtMboYIHGwNOLt7akFPuuyEWgujpH2PMtEGM9GG6PNqEGSM23MuyuG4HWOnlaKAIIcrKy7nlUn2EMuXsOGH1xuWqMNyuBaqe9uQFu2+t8ZEGbsuJIuukGKHPBst4t/Ct15uvDkGOOehH3FHxmmM9GPGn1+sNWM3IEXEOUpsNSmMcHmjOV+HlGtOpskVOWFuXOuSeOmrt8yom+MtLEWIt2uIdjEF2mUcn2LMvUuCEN3Vts6MuNumTunEnnKGM9GXZHmRt1/J1XPOzMm4n3XqHKmXql+7H0usPNnmYuXgMuGt/huXQsvikHSN3jmedETVmQIEVjtPCOHmsOMtvnuXIsrLufXHnplucnndN+RKG2NuStu3sv5OnpK0qGP6l9aHnMHjvGVzTk+I+PW6NeQwAG4kSB87obAifYyvMZUesJVWZC7kfpjQyQOtdH+MKH1BWas5cvYOeQBc0EuRSjxE5Au03eQ4NbdIEnzy3Nxzcj5mgcyglY4IOj0XJ27YR5FAAlAAQgTHj9nBlqg1JlPQoDIdCpMJqWlwJyAA5Uu6QeP^HvHj1mGBrKLR1Qw3m8IIIuUJnUdaKEVScswmLL4LKDbGQ5jgG5ufienQOnJqxd1MGzYH50DqeQrZWouRsmUlTKChlPgxmzUijNwFWWApiEAiAM5EyeVzJhNWkLLYLs+DspRUY0TKELz5zjI75lfG6A3RHiKa6XCDp6MYwRyQMUMH1n0Hz52ba2NtfgRO2aVYsKpTN2J5E1ybW5NiZRrsztSCHjTHJsSMZu5L3/l8Fi+Gxe+FkjGfRidzXEDM298jSGRTjOwt/RUcGEamlwJiK0igU5wgYX3sSoXl7J1EhhjmWjLPI6uiS3KO560lOew4OSc35qyVDOSpfH5QW+oQtc27sL4EhvLg59sYciRmbG/OTOEMCBhItkNgYLGPo2nkN22N7FJFwk26QSbI+Fr/laCqg0dykwRNtZ2lMsRiJDZ1JNsj4hipPJLPKtnRRxfIF3aqwsydHhOkZXJ8qnIhylSYxXII1mjqHOR7bLBleg8ySc5OMMlENgpfJ9yd2oP4Zo8ukJWmPbqtwzBMaPdUJQnz33KAZ5MNhc8ykKbJTOUyGyVDK6VDlUYPpRZFGszT6NzKz91dY6TZblnus2y1lZ5MA+nYeyZYWTPM0XSWbrNtDFceTzPILn032SQR5OFyeC8t6bJyNMh2yczc8cxmW0yMMBbEUjj6ehEj9tjgQR6bp4MqiDNPRs9VQmuzy6Io4t1Dj4Zpm0Uvmq3siL5AJDeGGYrzQFvkM7OidIaHsaTCdKHKo3nWeSvZZ2ttDHSd7O04zbSeT7UKJJ0mmV/blD1loehwGPJ9l9GmGUbDRxwlK30eZXzOEaCJYphKs9jScUkUG2NzQCChrPSktBMcURcpcNr+WWXbw00ibkZ1CPKZKE3jxXDlOBIlIyzjb6bqcyWWc5jQZklYc09cpcN1P3SlBFUgtBMc1Db3VMLtGeiZBUAiqQhwzPKlOUT3OUTlU1hpqy1PdJjtNA290bhTlFkUYUiMZVEVCTykp6A9uqu8z3cqXn1Fi2RR5StyqIz^TYea5tM2mWmBjEBsSwoSgcqxn0/XeYjk+IgkK6VodqPkTxnSVhhW0xjYeQ2UKfOs7nmvTdRVQFSWo4MatuD7m0ejNXlwlk5V0UBUoYEDGbrlYA8qYyT+SKnHoD1N0DTWl0pARU6MLEmVVW+rjbM9yqM5tnIqsoYujyu7faZljwz1edKsHz2zNHBlZpvTe51kZLOsNZj2z7ZQJ2sMQQIPaQkUVjGVp5Ytyqs62NcLLNNez6uqGBAzskywMbbKM9r3mxzPSlDuKeVib7aH1gWElh9INhnEe24b6oNlBHSxBFb00tK4WTZaTMUsWWlzTcNQsghruPLWOF2T2era/o9iO5zSbJfGM1FaWzk7svpm5VlcrBukxjoO7lOVvrUwyJQ50EVvTW7DLcdlu0yzQcLhN1jzN2JrcZyVW23ITqWnt5HSfDLXw1tm4KdPLOO9gmSMZBYQ6vc02hIrDntvCBihjQg+lcoWMbaTvNyiK1RiLY8vAy31PbxMtqGR7R45QzRwbYCZV4OdtXfArvIR0vaiSnb74OUyjCnZEsUxgMRVvUMHsV2z2/7lZczdib37dFAMNXU6/xFLxzvK6z5MaYl9GHCFjlZsvn+yooYbbkS50TELpaJFrYRW9OL6OV/GW+zlhc6l66zxQ3BHmFHLIJ7hYiooz3LMQPHlzXDAZfjg+ui5UAcKbOlhWWnDDfExqmeptOcgOmLm205Fkoiwkc4teVqkUuU7GDxUc+tihgQOcNuSty/J55jggwOiY8IsFEVoyKKxk8o8t+32tPa4utwWW7jdfktGWYZdIHHs9yXC/DPcsyr66p9cr0qFSy/MyRZ4ix25XvdMeod8iBihlYpQqWoYoZb7sucmeoKGJAxzq3PXYZ7OGeCKsBkntWvQ30ZUM+pFG3K9jzR10ymp1RbqCmGJEW2Rllh5y83VycNHn1sS0ZZloxhxew6OZdEkWkDLMjpMJI0qyYGdMQOWgSLNSLj4g0IZ6dIHDNuEHDUB5hktGWZ6jbb+sOpT3FTTd0z^1seZNZcOH1z3J37Jqt50udYIdrdOFa0PQbTIwyJgRYncrgNus2XUx9qFDEgaa3ZbXJ2YHO1J9mIyvOwxBUK/t9zjzAjDdA8g007HNdBGOsW6ELLDlyge3w7dLYHitEVJ61nplmC8zBaYpssUXInbLFBmJQ3RVINCGxP2YDbzFpvAw0xcIicHgOFKL7LC5hQUoQvINCG+3CLZLfm8iiiwm5ctwMl4yLGLpgA+IAnAAWtynytT5zLmH9S3s58JZd0spLWnY5xu9UKCmRbYybl5RWXhjdFVzgw6QwckGMimznfZ9g5ylwzQiXz9suQ3PGTKCBF3IYaoad0M27GPkjLFJlisZxqcosuAtUziLCUQ+i8y8UY4wMO+GGGLIbAz2QQW7IlikW/HC8JFv50Pyywjb9wvOET516LuRG5Gy7rZeTufC2bkrLFY0NYQEsZt4OHK2/eTHxI+5czdEc+LH2UGWMh0QB4XU3CcbgTMJ11PTLops2raZ2+UNDOWymLFJFwJysuYdAc8OsO2UjP6mpRFAG4CrcwzIYUWfYjDlUyoQQMUM2KnmbnDnDdp9l2YePTPNeuWZUhmChvlpkYZ4mIOaoqOCLm7LhUi5y6w6ZOAvGYTzcadwVG6+fE5ZeXsvQXLdRAxQ1gO5cqZQMpnLGyLp5vVl8I59OPMzul7UXsjCElpBOh9nZcqOUyjIDxFyg226wyQZdEHuum6x5h4I82w5bAd8PvOwkXyTd1ND8qp9WPRjGXmCDtZx5pty0QVfPntmPny/Myh3VkNgaRqcNimPq2VCzLt9l52yd+c9pHngFoDh53J0UcpcKPvBs3RCDw5zw953izlDbPGF5JmXxx8OxhQUkdibGHIvpHPszD1VsuqejGM9NodxTn2p7nBt2We+dZ20HnvWl3rvh5hukRLnRfmtPlGH57fiJlqkZ/SMSYGP1CKhbF1x47+rP9PPsssAmS2zlpZwykdMPb/wt1BTLtTTIw0waedtZe9t3bz365E3IwcYeZHdMssu0GHXJF^11puGhuDHiABevUyP2MjYLg/coGat7+Do6uROim78rc/uRP/tzzxaj6rNJOA8qgpYwv/PD9DCK6htIsLarkz45MbpDVTu9E4QDIZrLfAQevUGytpo8wfONt7frdAY8QKNhaBak8rQIMpEahAk2vcsjDCsLuhoKMMC7e0m5QMsKmjk/ayqznT97o24ZP5Mj2RzAW6s4nr/B8e2YFonj/byy82qikTLZ8dehpfl7GrKic3trl7PzCx0plfIcDrpBsbK2mrNqg603wRusHRFAazm0Fqbh5B8QM7JzaLJBYwwKmj16RA0wvuKcJKS8syqpGUG56GMatCuSzag0O5OPujgagVMatnnrJJA9aeFaIafRfCI5FGF8Abu+25MossGihAO6QbHEJhnBy2vrEUKJE/yWkkHkKjc0a2wVnTIjKIyYQssMGTJAKyw4ocJRE1chhdHEJhpDqxPzub3SsTyWwHsMF7hAi5K8M7O7K7grQWmMP7kvWyRAnq6boRehxBkDvCHEKRIrGrtihCc4O3OsKDxBK6mPlsE7DEYywUuURydCsdQ+n0ULYr85QMN8IyRC05Q4HsSp1BqRRCGISBxCYbRDsrzhFDufQeFqWrDFE5I7N7frbCAQQ0q0FpnEkyQCO8DbLEEkwutz+JxCYbxZOUMjk68Wwpl8Njoku3xcsyyrLEgwwsHj9Tm7A5PQsMLbYawkxguhTZxCYcRiEUIJ4coYGQHkPTC1I2w+ObkB8nkXxkPLc7K/W7w3srqChDkRRXmb8ZtCa5QxOTrbLFm8RPspfJbDyXxvnyhTbF06NxK0FphF67xxEDA6hHIQRMGIVJgrabQwt7a6hDGRRrq0RSHAs2RUN5+7lFIwwJucRLDAqYx5sLsLDCQ2RpKb05EWKZxzGUaxBF2wlSmB6h5G02tcNsbjo4GhwXNkgDgxs3xVMMQDvF+exWqEezg9oZxzGchrpHiwyHlsWzZIsyxRt8ZTPEeewdnkNRnIM5RoOUVhEXOoSOMLKpnHMaSPvLnp5^GwWxjq0FDlFw4OcNseDzJirQWmklLKxy5QZnsjaHEu4SOmEfJrJg4NaK0fxrDORMvsMgbJCu2CPIcNatJo6G6qDSjCfAoPYnoYxug4wsqkTvTkyQRO+OTgDLGK0rhorn55GcfPgMroR9K05PDNKRhu7u5PEnomje6UwuWnjxrM6afPkuSDKhKcRFim7mjg9oRSpOj/h6AezOOsaEjzJwwkApzwJ5KyePjs0sp5LqyuTkBihw5o5SwEQoTS3mXuJs0uxeROfICEBihu6M4S1n0ETg5wzS3t7njhKEwy5LT3hfHceJ+Hku7k3U5uhssvDSkYcn1kDo6o4g3yxNj4yk9+eCyML5TDIQ3kyqElrk8ubK2m8EJ4/q5Spt0EjnII2EjGL/RfMYoQVMsqzcoqhwAl6P6hKY5RJu8jRFJYhyfMLtJtM+cygssZjZNKWxFtkkblJqyu9tsm7hMS2SkGMnR86eQR6oc2LlM8RIrHEc7fH25R0uU1LOacYyIF807lIE2yJuSuiHIq6s9t8GDfIw5TXMMaLfM4hzgssLxsracR9ODAahH4QSHNk2yHCGrSlPKZzK/62zmNMABnN8ePIPLYShM6yzrEU4ZlNoeyTqx/pbJmwxbukZLhJszRlns9TDGaXzGF8NzDIO5SeEU2CTGmewPkU4ZnPSRRaHh+iHKSwz2vM757DQ6SQNkpBrPGkPlt86iTPwRFimT1LSkYcRNuUdDfCe2w7PEdZ8dgWx2q07x9HezT4EU/itHkeS6F8I7lPspwuKchSKtkcTrm0/bxQeoAIFs27r
+069999001MDDOe4RGt8kqdFK5xuocf7rREywiuDJyRFWyxxoc6rdGERThm9DznNI6luGM5KtQkeK4EUorbPC3TVGVAjDM26RLJNA6LQ4RThnFGDJKO60ZFskTrRQ5TcuUqbbN2yzauodaHO6wz/nzhB81+yydskShFPup0NocTJBLyc0fnUUyhRAhtqNk3DpPcyzdM1CjxQeh0rOtIbpKW5QYuU6TlJWp0NNj6BFQQc^K2nM4jhOy5TjEUfrCdwWxvK1GihNQRU0tlAZ5QukUVkE4CTR4hrimFMplSm5xuqFKphKI20jHs+LZKQYUcuVDLZIS2UxopHBm/GcusuVBjhE620HOdGLKcWW0Qsrcx9QmzyTEVCrDIKeU4MMjLDOm6UdqdKBjHwRIrHLZB9MKyv7OsTznUOfUIIc5zLUUeUattPRFUa2SkGVPrJScp0xN8DxFIWYUymtOzpDKYwel85TfRIwyjHUUyHSS2UrvMcDnGey0mu816nVI6NuGdQRtVQ5LLmJfR5IiyzwMs45EaGh0uMtTpfPo5SVMtFiTTmY1KEB05vVw0rumMbJfVW4T3s9RjxS2azxqEtCKzoauNHk0LpLaRSqMr3DLV6fOfJTZx5LopTMKTexAeSYSvsooDy+I0y+nzpjLK2eTMuUs7C5kehLmQCRtWioROMrvbNMOyUbs5lKKhQZVfnzg55MapVtMrwhBW4cPhuDpLO+KRN6F8xzKKOfSzOji7ogKZAJHNdDlUIy11Mr26+48RU3OqHyVWwXz5qCpalXkzPgtJwJkrcQTKPNb7G6WeSyMtcRfMAeNtMgpxjMm4TCHlaTyy8zV1stax43GlWDK1GhehspWEssyLJYoZV6srxTfMsRV8KUzBfYkoVnobRZnX+3zit7frNYyRWCMrkKVY4w0lHleLK+QeV8tzdrTYWYy9MtbzhXs01wHliDlMefV9n0wLTZsb2VOFM7fZYy2BMcuDhN462CmVd55AEoWEMtmalW202bHFkR7LCz17l8vzLYioIwnliZ7XMYoZkUV5FLY82MMtobfMQy0jstl5laOXzWOSzalY+5Susgpxk5Sy2cMtkbPaefVwuVnh5XG6V+EB5JlYqwyon1S7lKmzWWkE7braMaPPqVsDK4ayWxGVppFL4x2Hl9mjG5g5VyOTjB7XMaW2OSZRFauQD7strLJXYRGhoqFKChSeULqFqShZQZCYGdoDK18eUas1uDpQE6ofIgZqE9eoXEsNcpEfUaTBs^Ntp5YuQXBMLf7LWqRWXHwgCJckeXEMLmLlb6RXLG9xjkZ65OOMtwbLY0rC7ooO6hcOX2DuTG6hco5XRIoZZo9S4WLKFdLlbey3TkVzqLdUhXJsN0LpX6aWqkEe5FcC3NvMNza/YGQW4srkKJc+X3WN8Iyhdc6V+mr2bDcwoXZulabNce8y4tiE6JeGrWOqDPqheMQHkmtv7KqkRXesKHDDd+x2iMtrZ9c8oXVq16Dldaw3ckF6ZldI6Gwt9oTDew32tHtPbrcioXuMNmJekAoXpNNhZrKg5XAH1tzpeWy3akF4J9e2hXcOVvjpeOaXwtJ9rLYCw3yMlwh858iXnsN9Kheiw3vtN9hrfuyoFuV2jDf0y3UMKCaFfo6W1NN9htgE50AEVai/eA6XIMt4ShfQ2VYH1JZ5bSfWfMgpxrdiw3kuVgDlgI6OdL+Bzzea63zoWBB9gqe1zG15DlfceXMt13zpg2x3snt8zKHMYhbHMojIiI6AzEVzqeDoygEkAkzeBU6BxEAhbcF80hBt4BJaAMpjSugEhAGa2BVumD55amRH1G16jcoKRXrNo27Lfi6YHnwmBsFcYYVsoBTGDy4IikVzqkCo1gDJIBrIKG6DwFoAycRcQAOMIYbeAS84nNw0zOBW6AEMmHqhcUbIDuF2Tlgy6X4MOApFdsphXINubLaUy15tNhZseQ5S9pjxZFZKy2Zl9k7Dcqihlm0tTDgw32VuEwzLiI84Ost4SdROy1OqCIbLiS5BRNI5zpiKp4csoOSIBW7iwIoJbYAY5udHl0DlfqQHkm+ETLeqfX3vNrDDjCQX5GoIBhiQ5g2NI5reAaRXOqYBjMBY7pCKAljYAYwhfED47iBU0iWMmLbDjchhIG+LrDji4WguGObDkY6Yiot255kK6YEsgpxvjg5YRqF5TzkW6YTN98pFVA64PHmU59hARH1G7tThi8345Mt/LplcyX9njcaJf62YJHkxpfja5XXoeT5xgWfKFM15jhaKy4IIWTrlmAZAPGGYR^5ccy46OGYp9fmeZZHmHyKGWcZQOWVbli+85WurvrLgM2XnKGCLrS681Yn1np5mghxYGmZSgbYzZiMt7SLlMX3iODJyhfWyCnHGWrDlCy3GqGcDLmYy5xImXjrm0fYJl+X7pX6cYLuWabflu5YNOuaxFdsiZ3MtYChf+5ZDNNhZzkQ3Ygn2RRBc06Zcsua7rliX5yMtxpfniQHknOaTLkSeYSMN67poERZ8KGbLLn05XvOWfjIKcc32suhShlYQaAuue5BfkigimoQB5Wyy4ys1hTIRqYu1OWNLfZIX2oOVtBfoO05+mmb7ldMw5SPOOp8IAp4xnmjjNLspWlsmj5vbumY1F+kbLX0eYKHmbpkhma6Tt98bpoaQaMqelhfoK5FbqVujdZqyaPnGmLfpEfWzsumhfpKyaJm2nDhlG6adOmUqnp4rXut7a6lp+xieNJwJmzGRIsMtsh7ac02dF9vTK3u5aJHtcxy7u4ZbOGUTLlw66MOmpZro2X6euj3zLo6y2QHonxlbGzOkMtsrTqspWTKGcx7q0cakMurzlKqRYxGusKtqa4MBqWp7KgKZtFkWqbNrQe6qsdvKlrWw4AMmiZzrc5Z7OWuBBp2a65MN/zla+y6yOVsJ7rMZahM9sx5Z2y6iqGthEUyYZ/OiGqhos3YSuur7zpUi6NIOMjNpcy4zMhGpljQy6qEVvDDLGX6rubx6hZQZhbkVqx9oA3bJOWwLprAg7LMtcSlpee6zGmxLTrUy42KGxqKZyYaEt2f55oW24hsOlLhmai7KnmlrLtQy7MHusxrtWx69su1rDr6eifGGijdtiobIsOhjrsm4baqepjDsI36nMuwzLbqe6zG23bDs6pa+OWrJEUyZ3duGrjLnU5aUOmpTzsoqhAGuR7HiU6YWkF+SkDusADKoIqEAMigBugOrcHIQA7t4CrXhmpglOgMx5meobQGmx56QiebZMr2zDtoy5xIYWyXtO5W0KW1JEUyaTJuWkLPsUX7PH2bihvSZa/umMDpuq^4baqoQBpuw5Y9t+SRBu2iAhEADSmhSQOoum8LCAKQbxsYADXvK6CHt4Bp5vQw5PGdxZFtEeb2HstzLnYe4UHyzJgxorU2OSXDJhY04+POlSru8QYjmA7CEAMpASN4A7CTo2CeIgBbnwWQNhsuY7prsaZVMuirlmoQaLuW0rzsohoDGW+LLpopb5opnJvrOqTKs++6luc6ZUHonxpcu5Z6OGrrlsAy3OEGjKHxiebbuW+TLtyRFMm++rLs2maZH2ojc4qfb8sPCBpq2w50uV0rfpy67iMu95vU4fV4F9jzLuS3agHonxvs0za8kWzjZMuy7euW56KZyaZ5svFjfnq6b+OvKR7wsigTG/Kh5aQ5bCs2y7No8e8smm5jZy6zS/qG1yGFSabosPJ7pfE4akuvMpFlgyuQofIRfrE0uTOXIjNzYRcjGvNxFjWzc4MO3xEUya4gOmyDlxa3bSMvIDplKh89K2ubLcapa6kBdpmgMb9AF+mbdyWeaaqG0Brtg6dDN/Mbzmq5cXuG2qH0Ww7juGujLyux6oMhGpu9S5b7NO1jN0E5cvoYVJruA6dLuHHzpzI5dNMvKZlxk3dJqXGiGFyc9In3JTHb26cdEXQhrv289MsvRLzxgb80F9rzfuQzc1suspEUyccjs3LaZySebFt3SZfqMeifGudDlx6y7pt/KLl1Ye8zIfTjZl6X8rM3XzlsORdgGXWR52Ix9aH2WaKZya8nOXZLlyg4c7OXZhFzwfEHGXVzHz4y7lEXYBn2oX78HnSjDwgc9ssvMTh1U8svMnDbfwE6YiqBGDKFSQBUmQRLEFQWgbN41KMAWxEVoYADQFW3AENgAyCF8wg9MoBJ5V2e8KMO9x7zMnAIIPcDK8Ky9xIqbhhW6zdhN+oZ52qy6sOnWqKZyc8wt24Ll0OwiqsndjdoGylEIYhbL3gZhII5OhAEgW96OQ9iN3s5CeIffDCAa3d9EAQDICi4DTOUojNnCe+BGOwbZ2eoWks3aLL4MhiYGHUTLyQ3+F^F/cpf2MRFMnPObl206c6srvbJ4mRXOqHd5mAMZ+MMXebgPA6ADI3jrKAMh+PtwtbZ32yeRuiJhfWUy63svXLhtqneBnnIbLxmy8iovg5z3Ipccn3a6H5aYdbkAvzJ5wQX5KHnRB3ij+MmQDrh58QAONJOjl480d8svBKD344eSHnf5Fgax4TkXbyKSeY+UOud55ZkzeVt3LBENWaWGOXUbHt4zdSunhqH5aY+qNxHzJ6s6d3Ifixn52Zd5EHjTh64jegEAEzR7A2eiMPfrl5Ky8KkXs6d6WX89svgrd1ey+nIb8hj6gy8vOnuZokaQXeH20bD4ky49NOSLd4ofFKsvi5l72Zett/erT68y+gtHwBB5Ew/BHnsjN5MRfCmPtLLog39esu3DNz8ipuGLxDL5ez8cMvxp96kaAJGfurD8k55IOGJZB6uh+8kHrLF563/NMXe7R86g+xOnoytwy39lsvpLLnEnfDK3Rjlp8y9PsqApouKRa8KnG7T1Iy2osPQaL4OafXtoWrJ7u86VKHrBn54Qe+N/27l6+w+QMvsLJ6Ky9/F/o7lx+v4OOHpRj9GfcqqHlTL9My9fov1Bp8Yze5H31phx4y90svZTg5wyfnOGZqh+gZfMFvjbp5+0/NkHv7D+q2fAuHsZf+y6dVsv3x75Og+COcyDl2ki/UGv8bL+S5dTGg4ZE4SUG4Ta2zdG/rK3vNgACW/5PkrjK8sNGT5E/GeVhzC3NZX1h4zdNACBu/MZW9rpAEPXZptAGPHpjc+JZn06GEwMnlzM8JZ31bM/kPIB5i8PdHVLK/oZXpC+/bZYAqXAHPGq5ALtNASBy/9cmkig5xNGqRA+QPHCZE9lb2V7woPRQ9yXAlUnWBorFcnuDDANZoDqgsoNASBrARPXgDpATIns6G3wPICzG7hbntqKTcM2kDK+qaX5DlAqYX5SGuLOIHZFAvZGXSsF3QYAycQqL3w7m2fYWTxoCpOYJTM+heFB5kLuNnADS+UInnLkALbQZDyAGTwIp^AAdIAQCSEBL4KB85McmYBoEwNIKjK+EeFB5gCQNk/zYy9UGPLm+xdG7ToxFQQhawAGUCF7SRFIA7bKAVaQFDy4pIIE5o/mbniDe6YIHFzK/3InbxhBpNYLDg+ydIN6S4EUIOToCEUwbzGHdeYO7SOBNGIxFABcniLbADdXO7xBoMgWxrCAdINzy0qQYOBAInaYOanCGaYOx44PcoMho7oboPTg7qIIPi/AjPXCxhB/PHsjI/qZV7SDCUUIQjSAnIIOjHCHPITLo/ENID563rUIATLASdYRzmqaMIUJe/1eXdbK+TcIQLzCTSYQbCIldIQrgHcaYTBfBiPHczlCaOYMzC8BIoPxlCQPIUTLC1dISTgzNQYUrDC5aYU6nCXZgER5CqIIE5s6WPYVrlCMZYV7k7deIGKgGaVIRDIEvNAWxnDAdIHrxDUVgDZ5DNaYRJs4rboTjLAhcn7TG9meIbapDWPQS5pCQIoRbfB7bnRC/CfIns6hDVPIbrJDXNnZDK/ncnbbLAiY4cbmqaRQZqtDcL4Xpe8yRSbhtCbdIEDlDycocTfAwc4eqhDtL4fChArNoVhEc2PnyLbCNcoabnEAVoe6s/BdCYShEDOYbLrCwZFIDKchUIgKtELaXax5APN29RFEFPIFzNBVc4hKpDlIntxu6FPYaDfDpYW4blEIZIiB8EAUIiTC6dZWgyhArN4Z5FEXUIVx7A8dYh50imRYeypEbRSbhu6oPYjzhCdbodTHD0ZIkSLEuPIdx7DmN4b7pD8dHmzlD+ZIJjCIBUIkjY8pcmiLo+ON4PLpE7aV/DlE9ZXyqLE3L4gTDBINCAxtEOcokJ1EtUIoDq9qL19TDFLN4fZ7EyZYcLo/2X4dbxDkPInBFEcOIprLB9eIrJfFKcn/5u80ZYeLpE8dIq7HE1Oop6tEKYYkrkZlUIFZxEWRTvJ9EGZYaTLFdc4jR5FaRSbhxEdIolLlDRPYlblFOc0bqLFJVoibK8MPn1pxEoRYth5EYZYM7nFwL4r7o^+OOImJFF0b4j7bEHZYt7JE2UIqDK+kcGcrDFLOInR7FVcofrpFkb4f7JGJVos7ZFBb14rDGNNYri/FYc4wKtF6c4KLkzANQCRpGYY4srmjdOYMphCRaXDjgzNTgBDu77SXAiYE2ZQJLK9Bb3e7eAqbn+itGbPoMboQFNQR5FDocImbDEgZYxB0imOY0R5DEc4NrTGkZV7SdGmIIMCwAGTI1LcAKZY1bk8eb41ro+7YYtDpEMYYJBqrnIo2bLFWeXXC/GZZIkRzG4L4WZA9VZYYrTG7PXCydG9QYSiZHAc44blHDdQ17K/YVo155C+dI2JhFUIowrhG0bYw6/HNOo25o8tPI3LG3ZaY6ZE7eTo6qTGoaSKrdHBIAEzfGsdY7TlEvQ2I5xGfb4yR1HkNE1agS3bzfrJCjPY6jKA6II3xABEaY9jnHYZY1brHwPIuKGxHOY+bJE+bAuhpHlL46Dc92ZY6Te7teWlSdHqWI37TH+ZY4TLIAbo1zDHGaYiigsoNVhjg3ScoyDzHMY40DocDOY56s+8cH9LLIKbnyqdINII/rGAUc4/5BHudZAJfGCPnqRqWZIo5TlIYIITzHIaciuhzIcYVmKhBsY487fILcI0rLH7QY6zTIPII9zlHZbpCTZGVcIxjk6mNQXRFIqdIsbzIZb4+jnGhNJA6tIdZXm7LIfIlzqdIhTI67LIQIJErdI6dYqKgz7dHuZq/FIIFqhEqIoJbK+VOZF7ZBrcnDTLJHIF+SdJJaZG6GHgZZCLpHFbJHbLEmYY5BjGOIo8DLHLIJFjfJCdJDZpJEYZGDlJYc43TfIzZY3jLI1SY9bHIjZZJaGAMdZEytHcL4fKGCuMYoh7GPdJIBBJmZJArqDrOZKzq9qUJGLk4BbpEDLJvWJBzHJxIJHDLJeZY7bDITZYvZ4zdNYABBJScoupFJUIlzpzJ+ZWPDlJrY5GTdKCd406xKEZY1RBKGIJJjpJfdZJzlFCPpFBjHfRYvyhJTZojLJHONJNLZJXb4/DLJ^ZdGIqdJbY5QqHJdIJTTLKIbJMDlFpYZMRxIEZZKppKkdZP7lKTcpQJFJIZZQZBIiZZTCHKrQ5ObdJNZYxbLJhcpHpjFhbocDlIrbomjfJncpFxpKzZZSTfKmc5NjdKVII/iZJKIJTKHK8dJTbLK+cpV7lI9MotaGnYZZMrdLEZJPjKDmNJY58rwUJQDTBZIJLTLK4TJZqHK7b44jLKtdZTjfGWcpaZjKxIpSBpLaPCAChLccIWzhI0d5SxBK5bo9qHLhdZOjDKJc4zjpGxMovqHLVcpYbDG1X48bnJDNI+zkTWcpWrTLddJVDLLfaZLjfHvbpXp8/ecpTp5KLMowiLKgcpRzNKiOo+phGjb5Np7H6d5dyZLgb5gbpLQPpgrfLldJKBlJjRZhLfGGZYty/L6dJNBpL8b0gLfLJY5ShFK3d5iDTMCcpHLpMTPHNLfMVPpFBlJ4IpMjlL4bY8THItaS4ZzKRPpbblL+cJdjLJud5kTHKqb5iTLLjZZaLpHHcpaZtLnIF+RzMvPJdTlMxdIYzLMzIJZjTMjZZQ7lHxNYBRBKNb5jJ7F2ZY2znL7MJhrdLLQZGzHM1cpkjLM3PpijhI8dJKBpL2MT8rNMLc4vCmBDMZoppMIQ5e7pJ6bpa7LFIU5rJ5ICNQmBrM7dGUqaCuWprRtNjeWyiQBdPJsJpKfQ5rjTFGdIyLJLYPggCkaLPI8zlK2IF+SMDQbGTKTHaZ2LLTCnbwFBAEmYW8hACrZGHDKFfZZqJ5MmcJqZ9IoNoeDdLCdJrrDL5Y5lrcUVRQIqvAVL5E55KLNptZjNWZYwDJE2UwACvOLVpOqg5xNQWxxNncG4qvOTYZeZ9GwIBdpqwqIpH7TNteZILJNvRZxSXNFN5ahjOPYYYLxAxU5ySXOjMZy7KziU51B5NhN5qpExCZZjTHOIZ1dqnOsL5xihIVN5rZjOldIbTnD1U52atOUYY5BvMXQ5tjKwDdJtzLNfV5zLZKudJnLpJQN5lKLMYcI8LLOwb5YrSlX^U53TDOaPI7pBOcN5wjpFFZZ37zOgZZ4KXOjN51R65mU55jZPDaZCjCyeNSAxxPWIns6nPYdZcjhOCPJRZvLBdJ6LmwMZpq7ocDRZ0R5NhOJ0hFOvPZpK/MbciuiLPoL52jDPbOIuaLPHZZazDOHb55TdOJU577LM4aZ7TlGdOJ1x9FtPZ9jHOxIlwqnP4PpqTLK/dJKBxO2Ip9ZFKPIGnavPCdZ8DLQDPpFBxO9MZ27rEsc5rCvQJZZ/LLKKUJCpxPGQ53znPlZZyB1EtU6AJ5OBZaBZ5KLOJ6B7J5aZz5BJ7ZZ6h5PpN57rxOnV6CJ9QCcpaTpQEOKEjnO5V6Ex5QbcqFB9QMOaFTJORV6Fhe68cJ8KhIVOZ9R9P9IqA7o1LV6GSgbWcKGjDPbOZ+SHQWPmYbLQYc6CCXNFOZ/h5F/YZ0znQrS6IZnQwOqDKvQ6ckVLhQ8cozpzQNIqAzNPmcp9ynQaL6GbLQcUKGprRJc6IR5NhOaDxFMqdJwzbMsb5+zPOyV6JbenQcKJrpGxOZxxFRQZaILpPnU6KahQ7ZaKrDQ9OKK7pRnV6MDgkXcKMRBOcOZ8Z7QfZZ6RBQhImMSvRuZVFLLRqcmYBsTLcJC7pRcZZ5LJOhU6NDlRMZaPLoQFNm0JBNHcJ5B7P+b6LxFQAV6O7khtUJJ589SNnx7hR8aaEDdNeIqOyXHxNn1xFOeZaOjdSRIKBCXSTMKJ59Q3ZqKLTPLV6RTopeb5k54zdNo2RBSFZZ+jbRdZJ0KIQpS2HqQZ/RABDtGpOgDTcB+OgODmGmbaVjSqlRQZZE/EIqAzKyCbwBTqG6aQXxEudMAIBjNMImSbLN/cgAxiqid016JSqaSKp1SwdAG6mx+baYZEiEMikRmflZaWrmwbaaXBAvyMAIBklEdY4LkAlZAk7SFrZKaLSBTbAKLyAlb2F7kZDaZu7KLMPh15jS7IJnhgzJXxXaKBCLRI5hS/YT7iJTBYwBB1TDOjqLgdlaQE6qANaaWKGQHaSg5gflZ^I/JFPeUgCRBBfMUojLTKdaW7I+VMAIBpTPcwOq+GAZgbLJTUcyJTCAiXw8DIiIZAG7TTachlJjTjcklaJTlZQG6rTrdAG6KfebwBqrUJIqY5EZsNqd7LKneWyiccFMAAxbS+PHsjLT1cg/TTTMdGIpgBANafLKAJX6fbTTTX2GrnT+eaa7kGAcqbLcxYZabZ4K0MagrKIaRKg51TnRahbdTGIETBkVtMk0ChJTZKeDxAxTqiZBBfMqejcAVbGQbrT2IqXJgrnPHsjrTQX6jzcxaX6kDgAFYaf7fTYIhbLTUDIhoZlUoIBFiJUqVahJ1ToYTybfUMbgPxFUOIDtZhUQc5ZREu2Tqmha87PKizdU3b6WzlUYZKe5gASN6jjlTRZQFDTUfZHEzhVBeakTJUBOgC7oAIZxIJ8OvM6o7oFBRKlSTHwbgciJUqRaliGeVIkcpmggNTxiRSpZQybHTmSatbCAFRKtrwdScz5zODccEjpshMMquTCY6RKtTc8kbqtjLV0ZahTxV5aT77PV7YUlxyhMOavzkn2RK
+062572001MDDwDo4IbAO7LWDOqpbcelYQ65EjlNUz5vWKZFJyJWMZQBLdWCdqVaLVuYayRAj3M1BLIGwODZBeqzYacjLWPSauzZWOdqzTxWFbwBqHVvIEe5omTaUyRjWVd6YDLWPQxFJ0KVQxFJEivMikRlVbIjeiRVzdqVaHWwUBGCHWyIEe5rW0MDzBfWhcqgzLWvYQOh1WxYQOhEivMK2hiI5L637LUpZa4LkD6UK3TDXEIEe5tXGNK1rDWidq3DDXCUK5jlTMcD2hjXGOK6DlXAdq6TlXLQwhaHW7cD2hvW0MgSJfXIIKpDLXKZFHaHXdYUlxEr9Ma8B8m/dKtLLXjOq4blXVYTKppXfMDxigsoNoKZFSVc6C7DRGZImyaAcTaSZpQ2PKIrpO4ZK+yMBDPJARsfkIq+Z9RAYa+p1EtTa+55X+NKIihKhZaMzlPuTbAhfPwcqPRpQFPqTbLYIaUq6bYKVp3bk6mNo^MpFYAPGZbDYCc4vCbYRYZ5pfJ2NpsRFYVUGdbDYXdJ86bYZbJ7LLQTYWTxtCKIKUblMrZaPzLFITbELrQKcqFx4nkcAWqJUqRB4h0B3aQBTWbcMK1bIFONhYxfXhdK9TtSrRLGCI4mazbhiPIaWqJiUIL7G7yLmRLF7kPlOrGLm4LIq4plTIMTExfZAcLFzLWPRLHTTYyIkV5ic0abHxxXYZa5LtY5crIaJY7Iq4pnZHObKJBXidrKbSBkOrIjXY8NaZBlXHPq9LzZBZbJblZUabJpAj3MLJ7I2ZMbLDpY4aaYSJZMc7IpAj3MUL5EKZMq9B5YtZQDKJZCabLaJZVILMprZeM7NDzZhdrLTtTmRLOrhXWN7LxpZ4cLJTtZ6ZSMrTZkcD2hhZuRRnJkGsL7JLLZyZbMTTZ0abQbCZVMazx63LIq2zDV/Za9ahXUZDbhqfSM6/5faIPQB6JUqQ63KHXcYa6aGELTAQCdaUN6ZBvZfPLOJ7aYZbSSHabcq7aSBEQRJ5EivNrMx65ZMbP7LaJdq7TJXkYbTiTanTjbhxTtZHUJnasPbUbtauOq9jIo7TLTxEivOF3bS1RN60B9ZgcLQDTTCQ7TSSdUcrUyZa6IEe5zaFQwXJra1Iq0rTbBYbWCHbCTLYrge0NbGh65ZN7ZKJaZYbZjDawTLZzCZVNbRxE5GOLaTLakSbYbJa5QbVBBXONbUBzbadrW6haTOhSqZbWciZRxY9ZBGpwPrL7S5FbKY6cyHbCQ7ZqDbecD2hzaVOLOCRW3abZblamQ7dycbcOTu7S1ROLGx9SNNKMh9YOYbD7lPuQ3ZzrYrdGsbM9sY3UB6CXNmI5FALcFnLG9xZX/zo9zNgmBxRscrf5u67UKNLk/CZrgbLSDNXYKo/HY7hLlBHcrCZpRyIqLbTSQYZ+rJOhQ7gDLQSc3/TK9NZoDBsC4Irg7K1pY7izK2MYUzTlWLZbbaHb2IkV5pbYRQ9xrahSLebHbsYbajlbEQbd7DbXNSkRtJ3IrS^DlcpdrcSHalZLbqcbcNrWZ7cFNbeTDaRdrnSTbcOnrrEEsQ3oTc76IrXZgUiNCtx9Q3ZKmTmqaUH9iO9aLX9xBdEcn6jc9DIHzzhMEPKFroapYVSDlXZabejJavcgfSM9AQ7ozKGBcD2hxb4ZIa5gtVPrpbLURcH9aG+0M36Jk+ZcnjjS/wQ7rzY/zdJkpfRUcjubDdYZbKTTdaOrXB1dRZX+Lc9DIkV5zaqIntxhUwcpRzJdMZIkShdOYn2zldqYn3DC/yILqjpduULiDpdXclMDLdyY7mLlb1Ya4SNddaHwBFcsN7pJgYmPrsjnVSIH2aSAIM3vSPdPcHvrTdraH3LI/XcqtDzZ5abuahbjRrxrC/yIkV5rd5RX/hFQGZLvp0pUQ7s5k/tcLzDFeCbrqaC+6ZZwBfdvdLw7Ii+Ya6LTeeQ7nZ1d1Q7thFapMbpJiqWPIFzJemc1O6HeoR7y7e/TZXzjDeDQb1rleccLYDHeKZLrbIA3Rr0Ddd3IEe5va8ZIa5jQ/PFGrJe7dEMqHe9YrwDo/vYr1bc8hQb4R4qPcrxBBZZab2aTdDRr5DddHIEe5xbHNJHx9eSY5kBBeUZXy6Pe+crwLldSbr6rJebPL67JexcrrLHfFOruiNfcZbr7CZVObc57DmMVQbfNIIgwDneTdHvCTeVIH2pA/Scr8zLfAbr1jJfpL4fCQd0YbEhrYNPK/TrQPdJ86c/AYZNTfMfcpubpf4Zb8jFfSILupBd2br9DC+fL4Xqk6OaRwJsCuNIFLLcnciDKRcwZQG6HbtYbxjS+bQ72xBWqObmxre5UKmLLdlZV7Shd/IL/bpfTcr87K/WYcCKtJ1SFOLpZpY79qhaTIr0RtdJM7l7DdBab7SHXlciZRtfyIntxktVL7dSJbTcrxblXtcrcxjgxNrcLTg0Ya5rhdgOLpJlZIPrX7LatacILlg9ZSqRydGaYRJlW+Pg0jyFMX49zdVeZw/LCRFPgAA^IBM_UNIQUE_ID_COUNTER^1^654^IBM_UNIQUE_ENCLOSURE_ID_COUNTER^1^8
+07011                                                6911301                         
+011INITIAL ORDER CONFIGURATION                                                       
+060094001MDDISS_PRIMARY_SIU^1^TRUE^ISS_PRIMARY_MTM^1^labs_6911_301^ISS_SIU_TYPE^1^css_base_siu
+3869113011    12                   SVRP       11
+956911301                   000000000           NT6911NON-SIU0                    20250206                                                    IBM Expert Labs Project Unit for IBM Power Systems
+060114001MDDCSS_MTM_CONTEXTS_MC^4^sq_selected_power^ibm_region_ap^ibm_country_korea^sq_promotion_code_context_none
+060042001BED102^^01F3FFFFFC78^01F3FFFFFC78
+96SVRP                                            IBM Expert Labs - 1 Remote Project Unit for IBM Power
+07019Server 1                                        9080HEX                         
+011INITIAL ORDER CONFIGURATION                                                       
+063550001MDDIBM_PLATFORM^1^SQ^CFR_SYSTEM_XML_ID^1^EC2^SWN_CATEGORIES_MC^3^ibm_sw_core_category_fp^ibm_sw_core_category_oss^ibm_sw_core_category_tc^sw_rs_5765_cmt:new_maintenance^1^three_year_registration^sw_rs_5765_cmt:existing_maintenance^1^swn_maint_not_applicable^sw_rs_5765_vc2:new_maintenance^1^three_year_registration^sw_rs_5765_vc2:existing_maintenance^1^swn_maint_not_applicable^sw_rs_5639_1ceSWN_MTM_EXPLICIT_SELECTED_SHIPPING_OPTION^1^sw_core_shipping_option_default^swn_verify_auto_added_recommended_software_message_displayed_B^1^TRUE^sw_rs_5765_g98SWN_MTM_EXPLICIT_SELECTED_ENTS_ALL_CTRL_VALUES_KEY_S^1^sw_rs_5765_g98_f03_entitlement^sw_rs_5765_g98SWN_MTM_EXPLICIT_SELECTED_ENTS_QTY_ALL_CTRL_VALUES_KEY_S^1^24^sw_rs_5765_h39SWN_MTM_EXPLICIT_SELECTED_ENTS^1^sw_rs_5765_h39_f00_entitlement^sw_rs_5765_h39SWN_MTM_EXPLICIT_SELECTED_ENTS_QTY^1^13^sw_non_partition_aix_73_sipo_specSWN_EXPLICIT_SELECTED_MEDIA_OPTION^1^swn_esd_media^sw_non_partition_aix_lop_sipo_specSWN_EXPLICIT_SELECTED_MEDIA_OPTION^1^swn_esd_media^sw_non_partition_aix_lop_sipo_specSWN_MTM_EXPLICIT_SELECTED_SHIPPING_OPTION^1^sw_core_shipping_option_3444^swn_siu_wizardSWN_EXPLICITLY_SELECTED_MTM^2^sw_rs_5765_j18^sw_rs_5765_h39^sw_rs_5765_j18SWN_MTM_EXPLICIT_SELECTED_ENTS^2^sw_rs_5765_j18_f00_entitlement^sw_rs_5765_j18_f01_entitlement^sw_rs_5765_j18SWN_MTM_EXPLICIT_SELECTED_ENTS_QTY^2^1^0^sw_rs_5765_j18SWN_EXPLICIT_SELECTED_MEDIA_OPTION^1^swn_esd_media^sw_rs_5765_j18SWN_MTM_EXPLICIT_SELECTED_SHIPPING_OPTION^1^sw_core_shipping_option_3444^sw_rs_5765_g98:new_maintenance^1^three_year_new_aix_registration^sw_rs_5765_g98:existing_maintenance^1^swn_maint_not_applicable^sw_rs_5765_ve4:new_maintenance^1^three_year_registration^sw_rs_5765_ve4:existing_maintenance^1^swn_maint_not_applicable^sw_rs_5765_j18:new_maintenance^1^three_year_registration^sw_rs_5765_j18:existing_maintenance^1^swn_maint_not_applicable^sw_rs_5765_h39:new_maintenance^1^three_year_registration^sw_rs_5765_h39:existing_maintenance^1^swn_maint_not_applicable^SWN_CONTEXT_SOFTWARE_OBJECTS_KEY_S^1^ibm_sq_platform_type:9080:9080HEX:sw_rs_version_73:{}:FALSE:rs_processor_group_f5:{rs_processor_group_f5,as4_processor_group_p30}:ibm_sw_preload:rs_sp_sw_preload_proxy:::FALSE:_:DEFAULT:FALSE:TRUE:FALSE:0:rs_processor_group_f5:{rs_processor_group_f5,as4_processor_group_p30}^SWN_PROCESSED_SOFTWARE_OBJECTS_KEY_S^18^swn_pec_mtm_1yr_aix_i_default_provider_group^swn_pec_mtm_2yr_aix_i_default_provider_group^swn_pec_mtm_3yr_aix_i_default_provider_group^swn_pec_mtm_4yr_aix_i_default_provider_group^swn_pec_mtm_5yr_aix_i_default_provider_group^swn_pec_mtm_1yr_linux_default_provider_group^swn_pec_mtm_3yr_linux_default_provider_group^swn_pec_mtm_5yr_linux_default_provider_group^swn_pec_mtm_1yr_sap_default_provider_group^swn_pec_mtm_2yr_sap_default_provider_group^swn_pec_mtm_3yr_sap_default_provider_group^swn_pec_mtm_4yr_sap_default_provider_group^swn_pec_mtm_5yr_sap_default_provider_group^sw_5765_cmt_default_on_selected_hw_editions_provider_group^sw_5765_ve4_default_and_require_editions_provider_group^sw_5639_xce_on_p10_default_editions_provider_group^sw_5765_vc2_default_editions_provider_group^sw_5639_rle_f01_f06_non_hpc_solution_default_editions_provider_group^SW_TYPE^1^SQ^SW_MODEL^2^9080^HEX^SW_PRIMARY_VR_C^1^sw_rs_version_73^SW_PG_C^1^rs_processor_group_f5^sw_non_partition_aix_73_sipo_specSWN_MTM_EXPLICIT_SELECTED_SHIPPING_OPTION^1^sw_core_shipping_option_3444^SWN_EXPLICITLY_DELETED_MTMS^2^sw_rs_5765_vc2^sw_rs_5765_cmt^SWN_EXPLICITLY_DELETED_FEATURE_KEY_S^1^sw_rs_5765_j18_f01_entitlement
+089080 HEX    10265       61107       12146       14650       15000       16671       46672       89169       19440      249716       1AKNC       1EB46      28EBAB       1EC6K       6EC6N       1EC72      14ECLS       6ECLX       2ECW0      10EDBK       1EDFP       2EDN1       1EDP2       1EDPB      24EFCH       1EHSD       1EJ24       8EJBC       1EM5Z       1EMFM       8EN1A      10ENZ0       3ENZF       6EPVT      24ER21       1ES5A      12ESM1       2ESR0       1ESWK      39EUA4       1EUA5       1
+05         10019**CONFIGURATION CONTAINS AIX AS PRIMARY OPERATING SYSTEM**  
+05         10019Internal Load Source                                        
+05         10019Memory Activation                                           
+959080HEX                   000000000            T9080NEW CPU1                    20250206            019                                     9080 Model HEX
+064691001MDDSHIPPING_FEATURECODE^1^AKNC^SQ_MTM_RACKING_INFO_MS^45^sq_denali_2_cec_case_dummy_container_parent^1@1^sq_mtm_7965_S42:SQ_Rack_MTM 0x000003B6349BE4C0 [sq_mtm_7965_S42]^0^16^sq_denali_EDN1_case^1@1^sq_denali_1_cec_case_dummy_container_parent:SQ_Denali_Server_MTM 0x000003B633E5C3C0 [sq_mtm_9080_HEX]^1^1^sq_denali_EDN1_case^1@2^sq_denali_2_cec_case_dummy_container_parent:SQ_Denali_Server_MTM 0x000003B633E5C3C0 [sq_mtm_9080_HEX]^1^2^sq_splitter_io_drawer^1@1^sq_mtm_7965_S42:SQ_Rack_MTM 0x000003B6349BE4C0 [sq_mtm_7965_S42]^0^2^sq_nimitz_io_drawer^1@1^sq_mtm_7965_S42:SQ_Rack_MTM 0x000003B6349BE4C0 [sq_mtm_7965_S42]^0^28^sq_nimitz_io_drawer^1@2^sq_mtm_7965_S42:SQ_Rack_MTM 0x000003B6349BE4C0 [sq_mtm_7965_S42]^0^32^sq_nimitz_io_drawer^1@3^sq_mtm_7965_S42:SQ_Rack_MTM 0x000003B6349BE4C0 [sq_mtm_7965_S42]^0^36^sq_nimitz_io_drawer^1@4^sq_mtm_7965_S42:SQ_Rack_MTM 0x000003B6349BE4C0 [sq_mtm_7965_S42]^0^40^sq_mtm_9080_HEX^1@SQ_Denali_Server_MTM 0x000003B633E5C3C0 [sq_mtm_9080_HEX]^sq_denali_1_cec_case_dummy_container_parent:SQ_Denali_Server_MTM 0x000003B633E5C3C0 [sq_mtm_9080_HEX]^1^2^ibm_id_S^1^SQ_Denali_Server_MTM 0x000003B641C6CE40 [sq_mtm_9080_HEX]^SERVICE_INTEGRATOR_RELATED_HW^1^9080HEX-3-5^IBM_HOST_ID^1^3^SQ_MTM_AUTO_ADD_STATUS_B^1^FALSE^SQ_MTM_MEMORY_EXPLICIT_SELECTION_B^1^TRUE^SQ_MTM_MES_UPGRADE_STARTED_B^1^FALSE^SQ_MTM_PHYSICAL_SELECTION_MC^19^sq_processor_card_backplane_40way_0p0ghz_p10_ddr3_EDP2^sq_one_way_processor_activation_for_EDP2^sq_memory_128gb_4u_16gb_DDR5_2_rank_EMFM^sq_1gb_DDR5_memory_activation_EDA9^sq_0p8tb_4k_nvmeU2_seahawk3_kingfisher_non_OS400_ssd^sq_poseidon2_nvme_ssd_boot_drive_EC7Q^sq_usb_external_docking_station_enhanced_rdx_EUA5^sq_usb_external_docking_station_enhanced_rdx_EUA4^sq_splitter_io_drawer^sq_nimitz_io_drawer^sq_nimitz_drawer_fanout_module_backplane^sq_2port_25gb_ethernet_connectx_6_lx_sfp28_no_crypto_pcie4_manatee^sq_10gb_optical_trancsceiver_EB46^sq_pcie3_8x_2port_32gbs_short_fibre_channel_adapter_lp_capable^sq_brazos_reserve_brick_space^sq_card_pcie_2port_usb_short_clover^sq_shipping_and_handling_aknc_prm_indicator^sq_pseries_aix_partition_specify^sq_1p6m_internal_usb_cable^SQ_MTM_EXPLICIT_SELECTION_QTYS_MF^19^1^24^8^512^12^0^1^1^1^3^6^14^28^10^0^6^1^6^1^SQ_MTM_EXPLICIT_SELECTION_MC^19^sq_processor_card_backplane_40way_0p0ghz_p10_ddr3_EDP2^sq_one_way_processor_activation_for_EDP2^sq_memory_128gb_4u_16gb_DDR5_2_rank_EMFM^sq_1gb_DDR5_memory_activation_EDA9^sq_0p8tb_4k_nvmeU2_seahawk3_kingfisher_non_OS400_ssd^sq_poseidon2_nvme_ssd_boot_drive_EC7Q^sq_usb_external_docking_station_enhanced_rdx_EUA5^sq_usb_external_docking_station_enhanced_rdx_EUA4^sq_splitter_io_drawer^sq_nimitz_io_drawer^sq_nimitz_drawer_fanout_module_backplane^sq_2port_25gb_ethernet_connectx_6_lx_sfp28_no_crypto_pcie4_manatee^sq_10gb_optical_trancsceiver_EB46^sq_pcie3_8x_2port_32gbs_short_fibre_channel_adapter_lp_capable^sq_brazos_reserve_brick_space^sq_card_pcie_2port_usb_short_clover^sq_shipping_and_handling_aknc_prm_indicator^sq_pseries_aix_partition_specify^sq_1p6m_internal_usb_cable^SQ_MTM_BASE_FEATURE_QTYS_MF^1^0^SQ_MTM_BASE_FEATURES_MS^1^XX^SQ_MTM_BASE_SERIAL_NUMBER_S^1^^SQ_MTM_UNIQUE_TAG_S^1^SQ_Denali_Server_MTM 0x000003B633E5C3C0 [sq_mtm_9080_HEX]^SQ_MTM_WIZARD_NAME_S^1^Server 1^SQ_MTM_DESCRIPTION_S^1^Server 1^SQ_MTM_CONTEXTS_MC^46^sq_selected_power^ibm_region_ap^ibm_country_korea^sq_promotion_code_context_none^ibm_INITIAL^sq_model_9080_HEX_alias^sq_build_to_order_express_type^sq_standard_config^sq_no_data_protection^sq_no_rack_identifier_selected^sq_ibm_rack_mount_drawer_bezel_and_hardware_hex^sq_internal_load_source_specify^sq_no_load_source^sq_iopless_cec^sq_iopless_towers^sq_language_langgroup_korean^sq_software_preload_required^sq_no_rack_identifier_4650^sq_sandhill_nvme_7mm_sas_dasd_backplane_EJBC^sq_nimitz_io_drawer^sq_splitter_io_drawer^sq_sys_to_splitter_cable_ECLX^sq_sys_to_splitter_cable_ECLS^sq_usb_external_docking_station_enhanced_rdx_EUA4^sq_force_manual_memory_context^sq_mtm_9080_HEX^sq_synergy_system^sq_model_9080_HEX^sq_one_way_processor_activation_for_EDP2^sq_memory_context_ddr3^sq_processor_card_backplane_40way_0p0ghz_p10_ddr3_EDP2^sq_DDR5_memory_context^sq_0p8tb_4k_nvmeU2_seahawk3_kingfisher_non_OS400_ssd^sq_iscsi_san_boot_context^sq_2port_25gb_ethernet_connectx_6_lx_sfp28_no_crypto_pcie4_manatee^sq_10gb_optical_trancsceiver_EB46^sq_san_boot_context^sq_pcie3_8x_2port_32gbs_short_fibre_channel_adapter_lp_capable^sw_rs_version_73^sq_aix_operating_system^sq_rs_primary_productline_context^sq_aix_primary_os_context^sq_pseries_aix_partition_specify^sq_processor_virtualization_context^sq_advanced_power_virtualization_enterprise_EPVT^sq_manual_memory_context^CFR_PRODUCT_XML_ID^1^EC1
+060041001BED3^7^01F3FFFFFCC0^01F3FFFFFCC0
+060031001OUTMNAME001008Server 1
+960265                                            AIX Partition Specify
+961107                                            USB 500 GB Removable Disk Drive
+962146                                            Primary OS - AIX
+964650                                            Rack Indicator- Not Factory Integrated
+965000                                            Software Preload Required
+966671                                            Power Cord 2.7M (9-foot), Drawer to IBM PDU,  250V/10A
+966672                                            Power Cord 2M (6.5-foot), Drawer to IBM PDU,  250V/10A
+969169                                            Order Routing Indicator- System Plant
+969440                                            New AIX License Core Counter
+969716                                            Language Group Specify - Korean
+96AKNC                                            Premium S&H Indicator
+96EB46                                            10GbE Optical Transceiver SFP+ SR
+96EBAB                                            IBM Rack-mount Drawer Bezel and Hardware
+96EC6K                                            PCIe2 2-Port USB 3.0 Adapter
+96EC6N                                            E1080 Control Unit External USB Enablement Cable
+96EC72                                            PCIe4 2-Port 25/10/1 GbE RoCE SFP28 Adapter
+96ECLS                                            3.0M CXP x16 Copper Cable Pair for PCIe4 Expansion Drawer
+96ECLX                                            3.0M Active Optical Cable x16 Pair for PCIe4 Expansion Drawer
+96ECW0                                            Optical Wrap Plug
+96EDBK                                            2 x SMP cable brackets for non-IBM Rack
+96EDFP                                            Flexible service processor
+96EDN1                                            5U System node Indicator drawer
+96EDP2                                            40-core (4x10) 3.65 to 3.90 GHz (max) Power10 Processor with 5U system node drawer
+96EDPB                                            1 core Processor Activation for #EDP2
+96EFCH                                            System Node to System Control Unit Cable Set for Drawer 1
+96EHSD                                            Power AIX Segment Indicator
+96EJ24                                            PCIe x16 to CXP Converter Card, Supports optical cables
+96EJBC                                            4-NVMe U.2 (7mm) Flash drive bays
+96EM5Z                                            512 GB DDR5 Memory Activations for HEX
+96EMFM                                            128 GB (4x32GB) DDR5 Memory DDIMM
+96EN1A                                            PCIe3 32Gb 2-port Fibre Channel Adapter
+96ENZ0                                            PCIe Gen4 I/O Expansion Drawer
+96ENZF                                            PCIe4 6-Slot Fanout Module for PCIe Gen4 I/O Expansion Drawer
+96EPVT                                            PowerVM V4
+96ER21                                            Field Integration of Rack and Server
+96ES5A                                            Enterprise 800GB SSD PCIe4 NVMe U.2 module for AIX/Linux
+96ESM1                                            ESM Module w/PCIe4 x16 2-port connection to CXP Converter Adapter
+96ESR0                                            EXP24U.2 NVMe SAS Storage Enclosure
+96ESWK                                            AIX Update Access Key (UAK)
+96EUA4                                            RDX USB External Docking Station
+96EUA5                                            Standalone USB DVD drive w/cable
+087226 1U3    11107       59600       19848       1AKNC       1EU03       1
+9572261U3                   000000000            T9080NEW CPU0                    20250206                                                    Multi-media Storage Enclosure
+061123001MDDibm_soswos_parent_id_S^1^SQ_Denali_Server_MTM 0x000003B641C6CE40 [sq_mtm_9080_HEX]^ibm_connection_specification_mS^3^SQ_Denali_Server_MTM 0x000003B633E5C3C0 [sq_mtm_9080_HEX]^ibm_usb_cmp^1^IBM_MTM_NAME^1^^SSD_RACK_CB^1^1^ibm_parent_id_S^1^SQ_Denali_Server_MTM 0x000003B641C6CE40 [sq_mtm_9080_HEX]^SHIPPING_FEATURECODE^1^AKNC^SERVICE_INTEGRATOR_RELATED_HW^1^72261U3-3-170^SB_RELATED_HW^1^72261U3-3-170^HB_RELATED_HW^1^72261U3-3-170^IBM_MTM_CONTEXTS_MC^14^sq_selected_power^ibm_region_ap^ibm_country_korea^sq_promotion_code_context_none^ibm_INITIAL^ssd_7226_1U3_cabinet^sq_model_9080_HEX^sw_rs_version_73^sq_aix_operating_system^sq_rs_primary_productline_context^sq_aix_primary_os_context^sq_pseries_aix_partition_specify^sq_processor_virtualization_context^sq_advanced_power_virtualization_enterprise_EPVT^SSD_MTM_EXPLICIT_SELECTION_QTYS_MF^4^1^5^1^0^SSD_MTM_EXPLICIT_SELECTION_MC^4^ssd_7226_eu03_rdx_docking^ssd_7226_1107_rdx_500gb^ssd_7226_AKNC^ssd_7226_AKCH^SQ_MTM_CONTEXTS_MC^2^ibm_INITIAL^ssd_7226_1U3_cabinet^SQ_MTM_UNIQUE_TAG_S^1^ssd_Cabinets_7226 0x000003B6348A4740 [ssd_7226_1U3_cabinet]^IBM_HOST_ID^1^3
+060041001BED3^8^01F3FFFFFFA8^01F3FFFFFFA8
+961107                                            500 GB Removable RDX Drive
+969600                      N                     Attached to AIX System
+969848                                            Rack Device to PDU Cord
+96AKNC                                            Premium S&H Indicator
+96EU03                                            RDX 3.0 Removable Disk Docking Station
+475692A6P    11101       12282       12284       12322       12324       12375       12376       12377       13435       13450       1
+955692A6P                   000000000           NT9080NEW CPU0                    20250206                                                    System Software
+060114001MDDSWN_MTM_CONTEXTS_MC^4^sq_selected_power^ibm_region_ap^ibm_country_korea^sq_promotion_code_context_none
+060040001BED3^^01F3FFFFFFF0^01F3FFFFFFF0
+961101                      N                     DVD Process No Charge
+962282                      N                     IBM PowerVM V4 VIOS
+962284                      N                     IBM PowerVM V4 Expansion Pack
+962322                      N                     IBM PowerHA SystemMirror Std Ed V7.2 (5765-H39)
+962324                      N                     NovaLink (5765-PVS/PVE/VE3/VE4)
+962375                      N                     AIX 7.3 Base Install
+962376                      N                     AIX 7.3 Expansion Pack
+962377                      N                     AIX 7.3 Standard Edition Specify (5765-G98)
+963435                      N                     DVD/CD-ROM
+963450                      N                     Electronic Delivery
+475765G98    12377       13500       1C1AW      24
+955765G98                   000000000           NT9080NEW CPU0                    20250206                                                    IBM AIX 7 Standard Edition
+060390001MDDSWN_MTM_CONTEXTS_MC^14^sq_selected_power^ibm_region_ap^ibm_country_korea^sq_promotion_code_context_none^sw_software_p_series_type^ibm_INITIAL^sq_model_9080_HEX^sw_rs_version_73^sq_aix_operating_system^sq_rs_primary_productline_context^sq_aix_primary_os_context^sq_pseries_aix_partition_specify^sq_processor_virtualization_context^sq_advanced_power_virtualization_enterprise_EPVT
+060042001BED3^16^01F3FFFFFFA8^01F3FFFFFFA8
+962377                      N                     AIX 7.3 Standard Edition Specify
+963500                      N                     Preload Specifier
+96C1AW                                            Per Processor Power - Medium
+475773SM3    11256      24
+955773SM3                   000000000           NT9080NEW CPU0                    20250206                                                    3-Year SWMA for 5765-C34/E61/E62/G03/G62/G98
+060181001MDDRELATED_SW^1^5765G98^SW_CORRESPONDING_LICENSE_MTM^1^sw_rs_5765_g98^SWN_MTM_CONTEXTS_MC^4^sq_selected_power^ibm_region_ap^ibm_country_korea^sq_promotion_code_context_none
+060040001BED3^^01F3FFFFFC98^01F3FFFFFC98
+961256                                            Per Processor 3 Yr SWMA Medium Power Reg
+085313 HPO    10647       10967       11073       12308       15000       15986       19209       1
+955313HPO                   000000000           NT9080NEW CPU0                    20250206                                                    IBM Power Software HIPO
+060148001MDDSWN_EXT_MTM_VR^1^sw_rs_version_73^SWN_MTM_CONTEXTS_MC^4^sq_selected_power^ibm_region_ap^ibm_country_korea^sq_promotion_code_context_none
+060040001BED3^^01F3FFFFFD90^01F3FFFFFD90
+960647                      N                     9080-HEX Routing Code
+960967                      N                     Base OS
+961073                      N                     OS Specify code for AIX 7.3
+962308                      N                     IBM PowerHA SystemMirror Std Ed V7.2 (5765-H39)
+965000                      N                     Preload
+965986                      N                     Korean Preinstall PII Language
+969209                      N                     HW not Rack Integrated
+4756391CE    15809       1F5GD       1
+9556391CE                   000000000           NT9080NEW CPU0                    20250206                                                    RocketCE AI on IBM Power Support 1Y
+060390001MDDSWN_MTM_CONTEXTS_MC^14^sq_selected_power^ibm_region_ap^ibm_country_korea^sq_promotion_code_context_none^sw_software_p_series_type^ibm_INITIAL^sq_model_9080_HEX^sw_rs_version_73^sq_aix_operating_system^sq_rs_primary_productline_context^sq_aix_primary_os_context^sq_pseries_aix_partition_specify^sq_processor_virtualization_context^sq_advanced_power_virtualization_enterprise_EPVT
+060042001BED3^25^01F3FFFFFF90^01F3FFFFFF90
+965809                      N                     Product Registration Card
+96F5GD                                            SW Support 1 Year Per Medium Server
+475765H39    13500       1C1EL      13
+955765H39                   000000000           NT9080NEW CPU0                    20250206                                                    IBM PowerHA SystemMirror Standard Edition V7
+060152001MDDSWN_MTM_CONTEXTS_MC^6^sq_selected_power^ibm_region_ap^ibm_country_korea^sq_promotion_code_context_none^sw_software_p_series_type^ibm_INITIAL
+060042001BED3^32^01F3FFFFFC70^01F3FFFFFC70
+963500                      N                     Preload Specifier
+96C1EL                                            Per Proc w 1Yr SW Maint (Medium)
+475662H23    10704      13
+955662H23                   000000000           NT9080NEW CPU0                    20250206                                                    3-Year Registration SWMA for 5765-H39/H23
+060181001MDDRELATED_SW^1^5765H39^SW_CORRESPONDING_LICENSE_MTM^1^sw_rs_5765_h39^SWN_MTM_CONTEXTS_MC^4^sq_selected_power^ibm_region_ap^ibm_country_korea^sq_promotion_code_context_none
+060040001BED3^^01F3FFFFFF98^01F3FFFFFF98
+960704                                            Per Proc SW Maint 3Y Reg (Medium)
+475765J18    13435       13450       15806       1C3GA       1
+955765J18                   000000000           NT9080NEW CPU0                    20250206                                                    IBM Open XL C/C++ for AIX V17
+060390001MDDSWN_MTM_CONTEXTS_MC^14^sq_selected_power^ibm_region_ap^ibm_country_korea^sq_promotion_code_context_none^sw_software_p_series_type^ibm_INITIAL^sq_model_9080_HEX^sw_rs_version_73^sq_aix_operating_system^sq_rs_primary_productline_context^sq_aix_primary_os_context^sq_pseries_aix_partition_specify^sq_processor_virtualization_context^sq_advanced_power_virtualization_enterprise_EPVT
+060042001BED3^31^01F3FFFFFE40^01F3FFFFFE40
+963435                      N                     DVD
+963450                      N                     Electronic Delivery
+965806                      N                     Multilingual DVD
+96C3GA                                            Per Authorized User with 1 Year S&S
+475648F47    1D7JL       1
+955648F47                   000000000           NT9080NEW CPU0                    20250206                                                    IBM XL C/C++ FOR AIX SW S&S(Reg):3 Yr
+060181001MDDRELATED_SW^1^5765J18^SW_CORRESPONDING_LICENSE_MTM^1^sw_rs_5765_j18^SWN_MTM_CONTEXTS_MC^4^sq_selected_power^ibm_region_ap^ibm_country_korea^sq_promotion_code_context_none
+060040001BED3^^01F3FFFFFC58^01F3FFFFFC58
+96D7JL                                            Authorized User
+475765VE4    1C3TF      24
+955765VE4                   000000000           NT9080NEW CPU0                    20250206                                                    IBM PowerVM V4
+060390001MDDSWN_MTM_CONTEXTS_MC^14^sq_selected_power^ibm_region_ap^ibm_country_korea^sq_promotion_code_context_none^sw_software_p_series_type^ibm_INITIAL^sq_model_9080_HEX^sw_rs_version_73^sq_aix_operating_system^sq_rs_primary_productline_context^sq_aix_primary_os_context^sq_pseries_aix_partition_specify^sq_processor_virtualization_context^sq_advanced_power_virtualization_enterprise_EPVT
+060042001BED3^22^01F3FFFFFF08^01F3FFFFFF08
+96C3TF                      N                     Per Proc Core Medium N/C HSE
+475773PVE    1A0NK      24
+955773PVE                   000000000           NT9080NEW CPU0                    20250206                                                    3-Year SWMA for PowerVM
+060181001MDDRELATED_SW^1^5765VE4^SW_CORRESPONDING_LICENSE_MTM^1^sw_rs_5765_ve4^SWN_MTM_CONTEXTS_MC^4^sq_selected_power^ibm_region_ap^ibm_country_korea^sq_promotion_code_context_none
+060040001BED3^^01F3FFFFFDF0^01F3FFFFFDF0
+96A0NK                                            Per Proc SW Maint Registration (Medium)
+98  197
+993899561074
+]]></CFReportBLOB>
+  </CFData>
+</CFXML>

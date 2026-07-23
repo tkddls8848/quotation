@@ -1,0 +1,10 @@
+.venv/
+__pycache__/
+*.pyc
+build/
+dist/
+*.spec
+# 골든 .xlsx 변환 캐시 (xls2xlsx.ps1 로 재생성 가능)
+.cache/
+# 변환 결과물
+out/
