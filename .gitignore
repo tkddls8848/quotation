@@ -1,13 +1,18 @@
 .venv/
 __pycache__/
 *.pyc
+.pytest_cache/
+
+# 빌드 산출물
 build/
 dist/
-*.spec
-# 골든 .xlsx 변환 캐시 (xls2xlsx.ps1 로 재생성 가능)
+
+# 골든 .xlsx 변환 캐시 (tools/xls2xlsx.ps1 로 재생성 가능)
 .cache/
+
 # 변환 결과물
 out/
 
-# �μ� ���� �ӽ� ���⹰
-.pytest_cache/
+# QuotationTool.spec 은 직접 작성한 빌드 정의이므로 추적한다.
+# PyInstaller 가 자동 생성하는 spec 만 제외한다.
+launcher.spec
