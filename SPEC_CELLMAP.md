@@ -42,12 +42,60 @@ CFXML
           ProductIdentification, UnitListPrice?, MaintenanceUnitListPrice?)
 ```
 
+### 1.0 TransactionType 과 증설 견적 ✅ (골든 `1080MES`)
+
+신규 견적은 `NEW`/`ADD` 만 쓰지만, **증설 견적**은 기존 구성과 증설 후 구성을
+참조용으로 함께 담는다.
+
+| TransactionType | 뜻 | 견적서 포함 |
+|---|---|---|
+| `BASE` | 기존 구성 | ❌ **제외** |
+| `PROPOSED` | 증설 후 구성 | ❌ **제외** |
+| `UPGRADE` | 장비 업그레이드 (본체) | ✅ |
+| `DISCO` | 단종/철거 라인 | ✅ |
+| `NEW` | 신규 추가 라인 | ✅ |
+| 서브라인 `CONVERSION` / `ADD` | 교체·추가 부품 | ✅ 정상 표기 |
+| 서브라인 `REMOVE` | **제거 부품** | ✅ **음수 + 붉은 글꼴** (§1.0.2) |
+
+`1080MES` 예: 29라인 중 BASE 11 + PROPOSED 13 을 빼고 **증설분 5라인만** 견적한다.
+
+#### 1.0.1 장비군 묶기와 이름 ✅
+
+- 그룹은 `ProprietaryGroupIdentifier` 로 나누되, **본체 라인(`CPUSIUvalue = 1`)이
+  없는 그룹은 앞 그룹에 붙인다.** `1080MES` 의 DISCO/NEW 그룹(26000)이 UPGRADE
+  그룹(25000)과 한 장에 나오는 이유다. 결과는 상세 시트 1장.
+- **증설 견적의 장비 이름은 BASE/PROPOSED 구성의 본체 라인에서 딴다.**
+  UPGRADE 라인 설명은 `9080 Model HEU` 로 장비 이름이 없지만, 골든의 시트명은
+  `SERVER 1` 이다. 이는 BASE 라인 `Server 1:Server 1:IBM Power E1080` 에서 온다.
+  참조 구성이 없는 신규 견적은 종전대로 그룹 첫 라인에서 딴다.
+
+> ⚠️ 장비 여러 대를 한 번에 증설하는 XML 샘플이 없다. 현재는 BASE 본체 라인을
+> 문서 순서대로 그룹에 짝지어 이름을 붙인다. 그런 문서가 나오면 재검증이 필요하다.
+
+#### 1.0.2 제거(REMOVE) 부품 표기 ✅
+
+```
+E열 수량  기준행에 가격 있음 -> "=-1*E8"    부호를 뒤집는다
+          기준행이 무가격     -> "=-1"       (DISCO 블록)
+F열 단가  비움          G열 금액  비움
+글꼴색    C~G 전부 FFFF0000 (빨강)
+```
+> XML 의 `Quantity` 는 **양수**로 들어온다. 표시할 때 부호를 뒤집는다.
+> 제거 부품에는 `UnitListPrice` 가 없어 단가·금액 칸은 자연히 비고, 합계에도 0 으로 든다.
+
+#### 1.0.3 총합계 수식이 시트마다 다르다 ✅
+
+합계가 하나뿐일 때 **TOTAL 시트는 `=SUM(G13)`**, **상세 시트는 `=G10`** 을 쓴다.
+둘 이상이면 양쪽 다 열거형(`=SUM(G41,G51)`)이다.
+
+---
+
 ### 1.1 2005년 가정과 다른 점 — **리팩토링 필수 반영 사항**
 
 | 항목 | 2005년 EXE 가정 | 2026년 실제 | 조치 |
 |---|---|---|---|
 | 인코딩 | `EUC-KR` 하드코딩 | **`UTF-8`** | 선언 인코딩 자동 판별 (EUC-KR 파일도 계속 수용) |
-| TransactionType | BASE/PROPOSED/REMOVE/HARDWARE/FMOD/DISCO/CONVERSION/UPGRADE | **`NEW`**(라인) / **`ADD`**(서브라인) | NEW/ADD를 1급 처리, 구 키워드는 호환 유지 |
+| TransactionType | BASE/PROPOSED/REMOVE/HARDWARE/FMOD/DISCO/CONVERSION/UPGRADE | 신규 견적은 `NEW`/`ADD`, **증설 견적은 구 키워드를 그대로 쓴다** | §1.0 참조. 구 키워드가 실제로 쓰이므로 전부 처리한다 |
 | DOCTYPE | 없음 가정 | **인라인 DTD 존재** | `resolve_entities=False`, `load_dtd=False` 로 파싱 (XXE 차단) |
 | MonetaryAmount | 숫자 | **천단위 콤마 포함 문자열** `"88,971.5"`, **`"N/C"`** 리터럴 | 전용 파서 필요 (§1.2) |
 | GlobalCurrencyCode | — | `KWON` (KRW 아님) | 통화 코드는 표시에 사용 안 함 |

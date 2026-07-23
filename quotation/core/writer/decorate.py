@@ -28,6 +28,8 @@ FILL_ORANGE = PatternFill("solid", fgColor="FFFFCC99", bgColor=Color(indexed=64)
 
 #: Software 구간은 파란 글꼴이다.
 BLUE = "FF0000FF"
+#: 제거(REMOVE) 부품은 붉은 글꼴이다.
+RED = "FFFF0000"
 
 ROW_H_DATA = 12.0
 ROW_H_TOTAL = 20.1
@@ -62,6 +64,8 @@ class Layout:
     blue_rows: list[int] = field(default_factory=list)
     #: 파란 글꼴을 B열(구간 라벨)까지 적용하는가. 상세 시트만 True.
     blue_includes_label: bool = False
+    #: 제거(REMOVE) 부품 행. 붉은 글꼴로 표시한다.
+    red_rows: list[int] = field(default_factory=list)
     grand_row: int = 0
     supply_row: int = 0
     #: 상세 시트는 헤더 아래 테두리를 medium 으로 다시 그린다 (템플릿은 double)
@@ -170,19 +174,25 @@ def _apply_row_fills(ws: Worksheet, layout: Layout) -> None:
                 ws[f"{col}{row}"].fill = PatternFill()
 
 
-def _apply_blue(ws: Worksheet, layout: Layout) -> None:
-    """Software 구간은 글꼴색을 파랑으로 바꾼다. H열은 제외한다.
-
-    TOTAL 시트는 C~G 만, 상세 시트는 구간 라벨(B)까지 파랗다.
-    """
-    cols = "BCDEFG" if layout.blue_includes_label else "CDEFG"
-    for row in layout.blue_rows:
+def _recolor(ws: Worksheet, rows, cols: str, color: str) -> None:
+    for row in rows:
         for col in cols:
             cell = ws[f"{col}{row}"]
             f = cell.font
             if f.name is None:
                 continue
-            cell.font = Font(name=f.name, size=f.size, bold=f.bold, color=BLUE)
+            cell.font = Font(name=f.name, size=f.size, bold=f.bold, color=color)
+
+
+def _apply_blue(ws: Worksheet, layout: Layout) -> None:
+    """Software 구간은 파랑, 제거 부품은 빨강.
+
+    파랑은 TOTAL 시트에서 C~G 만, 상세 시트에서는 구간 라벨(B)까지 적용한다.
+    빨강은 파랑보다 나중에 칠한다. S/W 구간에서 제거된 부품도 빨갛게 나와야 한다.
+    """
+    _recolor(ws, layout.blue_rows,
+             "BCDEFG" if layout.blue_includes_label else "CDEFG", BLUE)
+    _recolor(ws, layout.red_rows, "CDEFG", RED)
 
 
 def _decorate_trailer(ws: Worksheet, layout: Layout) -> None:

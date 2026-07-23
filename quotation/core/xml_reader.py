@@ -21,6 +21,7 @@ XP_LINE_ITEM = ".//ProductLineItem"
 XP_SUB_LINE_ITEM = "./ProductSubLineItem"
 
 XP_LINE_NUMBER = "./ProductLineNumber"
+XP_SIU = "./CPUSIUvalue"
 XP_TXN_TYPE = "./TransactionType"
 XP_GROUP_ID = "./ProprietaryGroupIdentifier"
 XP_QUANTITY = "./Quantity"
@@ -85,11 +86,37 @@ def _parse_line(el) -> LineItem:
         maintenance=parse_amount(_text(el, XP_MA_AMOUNT) or None),
         maintenance_term=_text(el, XP_MA_TERM),
         subs=tuple(_parse_sub(s) for s in el.findall(XP_SUB_LINE_ITEM)),
+        siu=_int(el, XP_SIU, default=0),
     )
 
 
-def _build_groups(items: list[LineItem]) -> tuple[Group, ...]:
-    """ProprietaryGroupIdentifier 로 묶는다. 문서 등장 순서를 유지한다."""
+def _reference_names(items: list[LineItem]) -> list[str]:
+    """증설 견적의 장비 이름. 기존(BASE)/증설후(PROPOSED) 구성의 본체 라인에서 딴다.
+
+    증설 라인(UPGRADE)의 Description 은 '9080 Model HEU' 처럼 장비 이름이 없다.
+    골든은 시트를 'SERVER 1' 로 부르는데, 그 이름은 BASE 구성의 본체 라인
+    'Server 1:Server 1:IBM Power E1080' 에서 온다.
+    """
+    seen: set[str] = set()
+    names: list[str] = []
+    for it in items:
+        if it.is_reference and it.siu == 1:
+            key = item_key(it.description)
+            if key not in seen:
+                seen.add(key)
+                names.append(key)
+    return names
+
+
+def _build_groups(items: list[LineItem],
+                  reference_names: list[str]) -> tuple[Group, ...]:
+    """ProprietaryGroupIdentifier 로 묶는다. 문서 등장 순서를 유지한다.
+
+    두 가지 보정이 있다.
+      - 본체 라인(CPUSIUvalue=1)이 없는 그룹은 앞 그룹에 붙인다. 증설 견적에서
+        DISCO/NEW 그룹이 UPGRADE 그룹과 한 장에 나오는 이유다.
+      - 증설 견적이면 장비 이름을 BASE/PROPOSED 구성에서 가져온다.
+    """
     ordered: list[str] = []
     buckets: dict[str, list[LineItem]] = {}
     for it in items:
@@ -99,11 +126,23 @@ def _build_groups(items: list[LineItem]) -> tuple[Group, ...]:
             ordered.append(key)
         buckets[key].append(it)
 
+    # 본체 라인이 없는 그룹은 앞 그룹으로 합친다
+    merged: list[str] = []
+    for gid in ordered:
+        has_body = any(i.siu == 1 for i in buckets[gid])
+        if merged and not has_body:
+            buckets[merged[-1]].extend(buckets[gid])
+        else:
+            merged.append(gid)
+
     groups: list[Group] = []
     taken: set[str] = set()
-    for gid in ordered:
+    for index, gid in enumerate(merged):
         members = buckets[gid]
-        key = item_key(members[0].description)
+        if index < len(reference_names):
+            key = reference_names[index]
+        else:
+            key = item_key(members[0].description)
         name = unique_sheet_name(key, taken)
         taken.add(name)
         groups.append(Group(group_id=gid, item_key=key, sheet_name=name,
@@ -159,6 +198,13 @@ def parse(source: str | Path) -> Quotation:
     if not elements:
         raise QuotationXmlError("견적서 작성을 위한 Item을 찾을 수 없습니다.")
 
+    all_items = [_parse_line(e) for e in elements]
+    # 증설 견적은 기존(BASE)·증설후(PROPOSED) 구성을 참조용으로 함께 담는다.
+    # 견적서에는 실제 증설분만 넣는다.
+    quoted = [i for i in all_items if not i.is_reference]
+    if not quoted:
+        raise QuotationXmlError("견적서 작성을 위한 Item을 찾을 수 없습니다.")
+
     info = _proprietary_info(cfdata)
     return Quotation(
         document_id=_text(root, "./thisDocumentIdentifier"
@@ -168,5 +214,5 @@ def parse(source: str | Path) -> Quotation:
         configurator_id=info.get("Configurator Identifier", ""),
         checksum=info.get("Checksum", ""),
         shipping=_parse_shipping(cfdata),
-        groups=_build_groups([_parse_line(e) for e in elements]),
+        groups=_build_groups(quoted, _reference_names(all_items)),
     )

@@ -8,15 +8,31 @@ from openpyxl import load_workbook
 from openpyxl.utils import get_column_letter
 
 
+def _color(c):
+    if c is None:
+        return None
+    try:
+        return c.rgb if isinstance(c.rgb, str) else f"idx{c.indexed}"
+    except (TypeError, ValueError):
+        return "?"
+
+
 def facts(c):
-    f = c.font
+    """셀의 겉모습 전부. 글꼴만 보면 채우기·테두리 변경을 놓친다."""
+    f, fill, b = c.font, c.fill, c.border
     return {
         "값": c.value,
         "글꼴": f.name,
         "크기": f.size,
         "볼드": bool(f.b),
+        "글꼴색": _color(f.color),
         "서식": c.number_format,
         "가로": c.alignment.horizontal,
+        "세로": c.alignment.vertical,
+        "줄바꿈": bool(c.alignment.wrap_text),
+        "채우기": (fill.patternType, _color(fill.fgColor)) if fill else None,
+        "테두리": tuple(getattr(getattr(b, s), "style", None)
+                     for s in ("left", "right", "top", "bottom")),
     }
 
 

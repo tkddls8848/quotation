@@ -236,6 +236,20 @@ def test_missing_line_items(tmp_path):
         xml_reader.parse(p)
 
 
+def test_reference_only_document_is_rejected(tmp_path):
+    """BASE/PROPOSED 뿐이면 견적할 것이 없다."""
+    p = tmp_path / "ref.xml"
+    p.write_text(
+        "<CFXML><CFData>"
+        "<ProductLineItem><ProductLineNumber>1000</ProductLineNumber>"
+        "<TransactionType>BASE</TransactionType></ProductLineItem>"
+        "<ProductLineItem><ProductLineNumber>2000</ProductLineNumber>"
+        "<TransactionType>PROPOSED</TransactionType></ProductLineItem>"
+        "</CFData></CFXML>", encoding="utf-8")
+    with pytest.raises(xml_reader.QuotationXmlError, match="Item을 찾을 수 없습니다"):
+        xml_reader.parse(p)
+
+
 def test_malformed_xml(tmp_path):
     p = tmp_path / "bad.xml"
     p.write_text("<CFXML><CFData>", encoding="utf-8")
@@ -250,7 +264,7 @@ def test_euckr_xml_is_accepted(tmp_path):
         '<?xml version="1.0" encoding="EUC-KR"?>'
         "<CFXML><CFData><ProductLineItem>"
         "<ProductLineNumber>1000</ProductLineNumber>"
-        "<TransactionType>BASE</TransactionType>"
+        "<TransactionType>NEW</TransactionType>"
         "<ProprietaryGroupIdentifier>1000</ProprietaryGroupIdentifier>"
         "<Quantity>1</Quantity>"
         "<ProductIdentification><PartnerProductIdentification>"

@@ -14,6 +14,14 @@ HARDWARE = "Hardware"
 SOFTWARE = "Software"
 SERVICES = "Services"
 
+#: 증설 견적에서 견적 대상이 아닌 TransactionType.
+#: BASE 는 기존 구성, PROPOSED 는 증설 후 구성이다. 둘 다 참조용이라 견적서에
+#: 넣지 않는다. 실제 견적 대상은 UPGRADE / DISCO / NEW 등 나머지다.
+REFERENCE_TXN = frozenset({"BASE", "PROPOSED"})
+
+#: 제거되는 부품. 수량을 음수로 적고 붉게 표시한다.
+REMOVE_TXN = "REMOVE"
+
 
 @dataclass(frozen=True)
 class SubLineItem:
@@ -26,6 +34,11 @@ class SubLineItem:
     description: str
     unit_price: Amount = None
     maintenance: Amount = None
+
+    @property
+    def is_removal(self) -> bool:
+        """제거되는 부품인가. XML 의 수량은 양수이고 표시할 때 음수로 바꾼다."""
+        return self.txn_type == REMOVE_TXN
 
     def amount(self, parent_quantity: int) -> Decimal:
         """금액 = (서브수량 x 부모수량) x 단가.
@@ -51,6 +64,13 @@ class LineItem:
     maintenance: Amount = None
     maintenance_term: str = ""
     subs: tuple[SubLineItem, ...] = ()
+    #: CPUSIUvalue. 1 이면 장비 본체 라인이다 (증설 견적의 장비군 판별에 쓴다).
+    siu: int = 0
+
+    @property
+    def is_reference(self) -> bool:
+        """기존(BASE)·증설후(PROPOSED) 구성. 견적서에 넣지 않는다."""
+        return self.txn_type in REFERENCE_TXN
 
     @property
     def is_hardware(self) -> bool:

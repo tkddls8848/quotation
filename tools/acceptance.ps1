@@ -23,6 +23,14 @@ Copy-Item (Join-Path $root "samples\X-ROIS 통합서버#2.xml") "$work\입력\X-
 Check "GUI EXE" (Test-Path $gui)
 Check "CLI EXE" (Test-Path $cli)
 
+# 템플릿은 한 번 만들어지면 사용자 편집 보존을 위해 덮어쓰지 않는다.
+# 그래서 지난 시험에서 만들어진 낡은 사본이 남아 있을 수 있다. 지우고
+# 번들본으로 다시 만들게 해 seeding 경로까지 함께 검증한다.
+$distTemplate = Join-Path $root "dist\견적서_template.xlsx"
+if (Test-Path $distTemplate) { Remove-Item $distTemplate -Force }
+& $cli (Join-Path $root "samples\FS5045_260722.xml") -o "$work\seed" | Out-Null
+Check "템플릿 자동 생성" (Test-Path $distTemplate)
+
 "`n=== 2. 한글 경로 일괄 변환"
 & $cli "$work\입력\FS5045_260722.xml" "$work\입력\X-ROIS 통합서버#2.xml" -o "$work\출력" | Out-Null
 Check "종료 코드 0" ($LASTEXITCODE -eq 0) "실제=$LASTEXITCODE"

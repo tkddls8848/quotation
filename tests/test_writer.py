@@ -23,6 +23,7 @@ TEMPLATE = CACHE / "견적서_template.xlsx"
 CASES = [
     ("FS5045_260722", dt.date(2026, 7, 23)),
     ("X-ROIS 통합서버#2", dt.date(2026, 7, 23)),
+    ("1080MES", dt.date(2026, 7, 23)),  # 증설 견적 (BASE/PROPOSED/UPGRADE/REMOVE)
 ]
 
 pytestmark = pytest.mark.skipif(

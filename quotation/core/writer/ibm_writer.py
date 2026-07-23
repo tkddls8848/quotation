@@ -20,7 +20,7 @@ from openpyxl.styles import Alignment, Font
 from openpyxl.workbook import Workbook
 from openpyxl.worksheet.worksheet import Worksheet
 
-from ..models import Group, LineItem, Quotation
+from ..models import Group, LineItem, Quotation, SubLineItem
 from ..money import NO_CHARGE, Amount, is_priced
 from . import drawings
 from .decorate import Layout, decorate
@@ -181,7 +181,7 @@ def _write_total_sheet(ws: Worksheet, quote: Quotation, today: dt.date,
         row += 1
 
     _write_footer(ws, row, subtotal_rows, FMT_TOTAL_NUM, merges, lay,
-                  discount=discount)
+                  discount=discount, always_sum=True)
     return merges, lay
 
 
@@ -207,7 +207,7 @@ def _write_detail_sheet(ws: Worksheet, group: Group, today: dt.date,
 
         for item in items:
             block_start = row
-            row = _write_item_block(ws, item, row, is_hw)
+            row = _write_item_block(ws, item, row, is_hw, lay)
             if is_hw:
                 # H/W 만 블록별 합계행을 가진다. 서브라인이 없으면 스페이서 1행.
                 last = max(row - 1, block_start + 1)
@@ -251,8 +251,8 @@ def _write_detail_sheet(ws: Worksheet, group: Group, today: dt.date,
     return merges, lay
 
 
-def _write_item_block(ws: Worksheet, item: LineItem, row: int,
-                      is_hw: bool) -> int:
+def _write_item_block(ws: Worksheet, item: LineItem, row: int, is_hw: bool,
+                      lay: Layout) -> int:
     """ProductLineItem 1건 + 서브라인 기록.
 
     유지정비료(H·I열)는 기록하지 않는다. XML 에 MaintenanceUnitListPrice 가
@@ -269,22 +269,27 @@ def _write_item_block(ws: Worksheet, item: LineItem, row: int,
     for sub in item.subs:
         _put(ws, f"C{row}", sub.part_number, fmt=FMT_TEXT, font=FONT_DATA)
         _put(ws, f"D{row}", sub.description, font=FONT_DATA)
-        _put(ws, f"E{row}", _sub_quantity(sub.quantity, base, item, is_hw),
+        _put(ws, f"E{row}", _sub_quantity(sub, base, item, is_hw),
              font=FONT_DATA)
         _amount_cell(ws, f"F{row}", sub.unit_price, FMT_DETAIL_NUM)
         _write_g(ws, row, sub.unit_price)
+        if sub.is_removal:
+            lay.red_rows.append(row)
         row += 1
 
     return row
 
 
-def _sub_quantity(quantity: int, base: int, item: LineItem, is_hw: bool):
+def _sub_quantity(sub: SubLineItem, base: int, item: LineItem, is_hw: bool):
     """서브라인 수량 셀. 골든이 세 형태를 쓴다 (SPEC_CELLMAP.md §4.5).
 
         H/W + 기준행에 가격 있음 -> "=8*E8"   부모 수량 상대 참조
         H/W + 기준행이 N/C       -> "=1"      참조 없는 수식
         S/W                      -> 1         상수
+
+    제거(REMOVE) 부품은 부호를 뒤집는다. XML 의 수량은 양수로 들어온다.
     """
+    quantity = -sub.quantity if sub.is_removal else sub.quantity
     if not is_hw:
         return quantity
     if is_priced(item.unit_price):
@@ -303,10 +308,15 @@ def _write_g(ws: Worksheet, row: int, price: Amount):
 # --- 공통 꼬리말 --------------------------------------------------------------
 
 def _write_footer(ws: Worksheet, row: int, subtotal_rows: list[int], fmt: str,
-                  merges: list[str], lay: Layout, *, discount: Decimal):
+                  merges: list[str], lay: Layout, *, discount: Decimal,
+                  always_sum: bool = False):
+    """총합계 / 공급가 / 하단 비고 병합 + 인쇄 영역.
+
+    합계가 하나뿐일 때 TOTAL 시트는 `=SUM(G13)` 을, 상세 시트는 `=G10` 을 쓴다.
+    """
     _put(ws, f"B{row}", LBL_GRAND, align=CENTER, font=FONT_LABEL)
     _merge_across(merges, "B", "F", row)
-    if len(subtotal_rows) == 1:
+    if len(subtotal_rows) == 1 and not always_sum:
         g_formula = f"=G{subtotal_rows[0]}"
     else:
         g_formula = f"=SUM({','.join(f'G{r}' for r in subtotal_rows)})"
