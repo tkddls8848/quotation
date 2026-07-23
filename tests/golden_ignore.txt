@@ -2,14 +2,51 @@
 #
 # 원본 프로그램의 버그 또는 골든 파일의 수기 편집으로 판단되는 셀만 넣는다.
 # 근거는 SPEC_CELLMAP.md §7 에 남길 것.
+#
+# FS5045_260722(2026년, 현행 템플릿)은 예외 0건으로 완전히 일치한다.
+# 아래는 전부 X-ROIS 통합서버#2(2025년) 한 파일에만 있는 이상치다.
+# 같은 파일 안에서도 시트마다 다르고 FS5045 에는 대응물이 전혀 없어,
+# 프로그램 출력이 아니라 사람이 손댄 흔적으로 판단한다.
 
-# X-ROIS: D20 하나만 글꼴이 돋움 9 이고 나머지 D열 전체는 Tahoma 9 다.
-# 값은 '10GbE Optical Transceiver SFP+ SR' (33자). 최장 설명도 아니고
-# (D45 는 65자인데 Tahoma), 한글도 없고, WrapText 도 동일하다.
-# 이 셀만 골라낼 데이터상 근거가 없어 골든의 수기 편집으로 판단한다.
-# FS5045 에는 같은 유형의 이상치가 없다.
+# (1) SERVER 1 D20 만 글꼴이 돋움 9 이고 나머지 D열 전체는 Tahoma 9 다.
+# 값은 '10GbE Optical Transceiver SFP+ SR'(33자). 최장 설명도 아니고
+# (D45 는 65자인데 Tahoma) 한글도 없어 셀을 골라낼 근거가 없다.
 SERVER 1!D20
 
-# (이력) X-ROIS SERVER 1!E59:E65 를 '원인 불명 이상치'로 등록했다가 철회했다.
+# (2) SERVER 1 C22 만 배경이 없다. 같은 블록의 다른 서브라인 행은 모두 칠해져
+# 있다. 스페이서 행도 아니다 (9080-HEX 블록은 8~49행이 전부 실제 서브라인).
+SERVER 1!C22
+
+# (3) SERVER 1 I94~I108 에만 배경이 칠해져 있다. I열은 원래 MA 기간을 적는
+# 행에만 칠한다 (I51). FS5045 에는 이런 구간이 없다.
+SERVER 1!I94
+SERVER 1!I95
+SERVER 1!I96
+SERVER 1!I97
+SERVER 1!I98
+SERVER 1!I99
+SERVER 1!I100
+SERVER 1!I101
+SERVER 1!I102
+SERVER 1!I103
+SERVER 1!I104
+SERVER 1!I105
+SERVER 1!I106
+SERVER 1!I107
+SERVER 1!I108
+
+# (4) EXPERT LABS 시트만 헤더 아래 굵은 선이 지워져 있다. 나머지 상세 시트
+# 3개(FS5045 2개 + SERVER 1)는 모두 medium/색인0 이다.
+EXPERT LABS PROJECT UNIT FO!D6
+EXPERT LABS PROJECT UNIT FO!H6
+EXPERT LABS PROJECT UNIT FO!B7
+EXPERT LABS PROJECT UNIT FO!C7
+EXPERT LABS PROJECT UNIT FO!D7
+EXPERT LABS PROJECT UNIT FO!E7
+EXPERT LABS PROJECT UNIT FO!F7
+EXPERT LABS PROJECT UNIT FO!G7
+EXPERT LABS PROJECT UNIT FO!H7
+
+# (이력) SERVER 1!E59:E65 를 '원인 불명 이상치'로 등록했다가 철회했다.
 # H/W 구간에서 기준행이 N/C 이면 서브 수량을 '={수량}' 으로 쓴다는 규칙이
 # 밝혀져 설명이 되었다.

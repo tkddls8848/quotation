@@ -81,6 +81,39 @@ def _norm_fmt(f):
     return f
 
 
+def _color(c):
+    """Color -> 비교 가능한 튜플. rgb/theme/indexed 를 구분해 읽는다."""
+    if c is None:
+        return None
+    kind = getattr(c, "type", None)
+    try:
+        if kind == "rgb":
+            return ("rgb", c.rgb)
+        if kind == "theme":
+            return ("theme", c.theme, c.tint)
+        if kind == "indexed":
+            return ("indexed", c.indexed)
+    except (TypeError, ValueError):
+        return (kind, "?")
+    return (kind,)
+
+
+def _fill(cell):
+    f = cell.fill
+    if f is None or f.patternType is None:
+        return None
+    return (f.patternType, _color(f.fgColor), _color(f.bgColor))
+
+
+def _border(cell):
+    b = cell.border
+    out = []
+    for side in ("left", "right", "top", "bottom"):
+        s = getattr(b, side, None)
+        out.append((getattr(s, "style", None), _color(getattr(s, "color", None))))
+    return tuple(out)
+
+
 def compare_sheet(name, gs, as_, rep: Report, ignore: set[str]):
     # 병합 영역
     g_merges = {str(r) for r in gs.merged_cells.ranges}
@@ -101,6 +134,13 @@ def compare_sheet(name, gs, as_, rep: Report, ignore: set[str]):
         elif (gw is None) != (aw is None):
             rep.add(name, f"{letter}:{letter}", "열너비", gw, aw)
 
+    # 행 높이
+    for row in range(1, MAX_ROW + 1):
+        gh = gs.row_dimensions[row].height if row in gs.row_dimensions else None
+        ah = as_.row_dimensions[row].height if row in as_.row_dimensions else None
+        if gh != ah:
+            rep.add(name, f"{row}행", "행높이", gh, ah)
+
     # 셀
     for row in range(1, MAX_ROW + 1):
         for col in range(1, MAX_COL + 1):
@@ -116,6 +156,12 @@ def compare_sheet(name, gs, as_, rep: Report, ignore: set[str]):
                 rep.add(name, addr, "값/수식", gv, av)
                 continue  # 값이 다르면 서식 비교는 노이즈
 
+            # 테두리·채우기는 값이 없는 셀에도 그려진다 (표 괘선).
+            if _border(g) != _border(a):
+                rep.add(name, addr, "테두리", _border(g), _border(a))
+            if _fill(g) != _fill(a):
+                rep.add(name, addr, "채우기", _fill(g), _fill(a))
+
             if gv is None:
                 continue
 
@@ -123,9 +169,14 @@ def compare_sheet(name, gs, as_, rep: Report, ignore: set[str]):
             if gf != af:
                 rep.add(name, addr, "숫자서식", gf, af)
 
-            if (g.alignment.horizontal or "general") != (a.alignment.horizontal or "general"):
-                rep.add(name, addr, "가로정렬",
-                        g.alignment.horizontal, a.alignment.horizontal)
+            ga, aa = g.alignment, a.alignment
+            if (ga.horizontal or "general") != (aa.horizontal or "general"):
+                rep.add(name, addr, "가로정렬", ga.horizontal, aa.horizontal)
+            if (ga.vertical or "bottom") != (aa.vertical or "bottom"):
+                rep.add(name, addr, "세로정렬", ga.vertical, aa.vertical)
+            if bool(ga.wrap_text) != bool(aa.wrap_text):
+                rep.add(name, addr, "줄바꿈", bool(ga.wrap_text),
+                        bool(aa.wrap_text))
 
             if bool(g.font.bold) != bool(a.font.bold):
                 rep.add(name, addr, "Bold", bool(g.font.bold), bool(a.font.bold))
@@ -135,6 +186,10 @@ def compare_sheet(name, gs, as_, rep: Report, ignore: set[str]):
 
             if float(g.font.size or 0) != float(a.font.size or 0):
                 rep.add(name, addr, "글꼴크기", g.font.size, a.font.size)
+
+            if _color(g.font.color) != _color(a.font.color):
+                rep.add(name, addr, "글꼴색", _color(g.font.color),
+                        _color(a.font.color))
 
 
 def compare(golden_path, actual_path, ignore: set[str]) -> Report:
