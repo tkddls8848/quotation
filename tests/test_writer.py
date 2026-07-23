@@ -6,6 +6,7 @@ import sys
 from pathlib import Path
 
 import pytest
+from openpyxl import load_workbook
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
@@ -20,10 +21,13 @@ SAMPLES = ROOT / "samples"
 CACHE = ROOT / "cache" if (ROOT / "cache").exists() else ROOT / ".cache"
 TEMPLATE = CACHE / "견적서_template.xlsx"
 
+#: (골든 이름, 그 골든을 만든 날짜). C3 에 그날 날짜가 들어가므로 맞춰야 한다.
 CASES = [
     ("FS5045_260722", dt.date(2026, 7, 23)),
     ("X-ROIS 통합서버#2", dt.date(2026, 7, 23)),
     ("1080MES", dt.date(2026, 7, 23)),  # 증설 견적 (BASE/PROPOSED/UPGRADE/REMOVE)
+    ("FS9500_2TB_19.2TB 12ea_U150TB_16port (수익영역 스토리지 Active)_251223",
+     dt.date(2025, 12, 23)),  # 장비군 1개, 이름·괄호·공백이 섞인 화일명
 ]
 
 pytestmark = pytest.mark.skipif(
@@ -42,13 +46,34 @@ def _build(name: str, today: dt.date, tmp_path: Path) -> Path:
 WRITTEN_HEADER_CELLS = {"TOTAL": {"B2", "C3"}, "detail": {"C1", "C3", "H7"}}
 
 
+#: 대조할 골든이 없는 샘플. 최소한 오류 없이 변환되는지는 지킨다.
+SMOKE_ONLY = ["운영 DB서버 #1_251223"]
+
+
+@pytest.mark.parametrize("name", SMOKE_ONLY)
+def test_converts_without_error(name, tmp_path):
+    """골든이 없어 값 대조는 못 하지만 변환 자체는 깨지면 안 된다."""
+    from quotation.core import convert
+
+    source = SAMPLES / f"{name}.xml"
+    if not source.exists():
+        pytest.skip(f"샘플 없음: {source.name}")
+    xml = tmp_path / source.name
+    xml.write_bytes(source.read_bytes())
+
+    result = convert.convert(xml, today=dt.date(2025, 12, 23))
+    assert result.output.is_file()
+    assert result.group_count > 0
+    # TOTAL + 상세 + 숨김 template
+    assert len(load_workbook(result.output).sheetnames) == result.group_count + 2
+
+
 def test_template_header_passes_through(tmp_path):
     """템플릿 1~7행의 글꼴·서식이 산출물에 그대로 전달되는지.
 
     템플릿 글꼴을 고치면 결과에 바로 반영되어야 한다. writer 가 값을 쓰는
     몇 셀만 예외다. 이 테스트가 있어야 템플릿 수정이 조용히 무시되지 않는다.
     """
-    from openpyxl import load_workbook
     from openpyxl.utils import get_column_letter
 
     actual = _build("FS5045_260722", dt.date(2026, 7, 23), tmp_path)

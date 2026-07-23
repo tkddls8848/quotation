@@ -9,6 +9,27 @@ import pytest
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 
+
+def _point_at_tcl() -> None:
+    """한 프로세스에서 Tk 를 두 번 만들면 tk.tcl 을 못 찾는 일이 있다.
+
+    venv 에서 실행할 때 TCL_LIBRARY/TK_LIBRARY 가 비어 있어 생기는 문제라,
+    기본 Python 설치의 경로를 직접 알려 준다.
+    """
+    import os
+
+    base = Path(sys.base_prefix) / "tcl"
+    if not base.is_dir():
+        return
+    for var, pattern in (("TCL_LIBRARY", "tcl8.*"), ("TK_LIBRARY", "tk8.*")):
+        if os.environ.get(var):
+            continue
+        found = sorted(p for p in base.glob(pattern) if p.is_dir())
+        if found:
+            os.environ[var] = str(found[-1])
+
+
+_point_at_tcl()
 tk = pytest.importorskip("tkinter")
 
 
