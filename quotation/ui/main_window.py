@@ -11,8 +11,6 @@ from __future__ import annotations
 import logging
 import os
 import queue
-import subprocess
-import sys
 import threading
 import tkinter as tk
 from pathlib import Path
@@ -42,7 +40,7 @@ class MainWindow(ttk.Frame):
         self.xml_path = tk.StringVar()
         self.out_dir = tk.StringVar(value=self.cfg.last_output_dir)
         self.discount = tk.StringVar(value=self.cfg.discount)
-        self.open_folder = tk.BooleanVar(value=self.cfg.open_folder_when_done)
+        self.open_result = tk.BooleanVar(value=self.cfg.open_result_when_done)
         self.status = tk.StringVar(value="변환할 XML 화일을 선택하십시오.")
         self.template_label = tk.StringVar(value=str(paths.template_path()))
 
@@ -94,8 +92,8 @@ class MainWindow(ttk.Frame):
             side="left", padx=(6, 2))
         ttk.Label(options, text="%  (0~99, 소수점 1자리)",
                   foreground="#777").pack(side="left", padx=(0, 16))
-        ttk.Checkbutton(options, text="완료 후 폴더 열기",
-                        variable=self.open_folder).pack(side="left")
+        ttk.Checkbutton(options, text="완료 후 견적서 열기",
+                        variable=self.open_result).pack(side="left")
         row += 1
 
         # 견적서 번호(NO : Trialinfo-YY-)와 머리말의 '담당 : ...' 은 템플릿에서
@@ -231,13 +229,12 @@ class MainWindow(ttk.Frame):
 
         self.cfg.remember(Path(self.xml_path.get()), result.output)
         self.cfg.discount = self.discount.get().strip()
-        self.cfg.open_folder_when_done = self.open_folder.get()
+        self.cfg.open_result_when_done = self.open_result.get()
         config_mod.save(self.cfg)
 
-        if self.open_folder.get():
-            _reveal(result.output)
-        else:
-            messagebox.showinfo(TITLE, f"견적서를 만들었습니다.\n\n{result.output}")
+        # 알림창은 띄우지 않는다. 만든 견적서를 바로 연다.
+        if self.open_result.get():
+            _open(result.output)
 
     def _on_error(self, message: str):
         self._set_busy(False)
@@ -251,15 +248,12 @@ class MainWindow(ttk.Frame):
         self.master.config(cursor="watch" if busy else "")
 
 
-def _reveal(path: Path):
-    """탐색기에서 결과 파일을 선택된 상태로 연다."""
+def _open(path: Path):
+    """만든 견적서를 기본 프로그램(Excel)으로 연다."""
     try:
-        if sys.platform == "win32":
-            subprocess.run(["explorer", "/select,", str(path)], check=False)
-        else:
-            os.startfile(path.parent)  # noqa: S606
+        os.startfile(path)  # noqa: S606
     except OSError as exc:
-        log.warning("결과 폴더를 열지 못했습니다: %s", exc)
+        log.warning("견적서를 열지 못했습니다: %s", exc)
 
 
 def run(prefill: str | None = None) -> int:

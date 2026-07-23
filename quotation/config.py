@@ -21,7 +21,8 @@ class Config:
     last_input_dir: str = ""
     last_output_dir: str = ""
     discount: str = ""
-    open_folder_when_done: bool = True
+    #: 변환이 끝나면 만든 견적서를 바로 연다. 알림창은 띄우지 않는다.
+    open_result_when_done: bool = True
     migrated_from_ini: str = ""
     recent_files: list[str] = field(default_factory=list)
 

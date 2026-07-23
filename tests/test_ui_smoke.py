@@ -34,6 +34,30 @@ def test_window_builds(root):
     assert "선택" in win.status.get()
     # 견적번호·담당자를 고칠 수 있도록 템플릿 경로를 보여 준다
     assert win.template_label.get().endswith(".xlsx")
+    assert win.open_result.get() is True
+
+
+def test_success_opens_the_quote_without_a_popup(root, monkeypatch, tmp_path):
+    """완료 시 알림창을 띄우지 않고 만든 견적서를 연다."""
+    import datetime as dt
+
+    from quotation.core import convert
+    from quotation.ui import main_window
+
+    popups: list[str] = []
+    opened: list = []
+    monkeypatch.setattr(main_window.messagebox, "showinfo",
+                        lambda t, m: popups.append(m))
+    monkeypatch.setattr(main_window, "_open", opened.append)
+
+    win = main_window.MainWindow(root)
+    result = convert.convert(ROOT / "samples" / "FS5045_260722.xml",
+                             out_dir=tmp_path, today=dt.date(2026, 7, 23))
+    win.xml_path.set(str(ROOT / "samples" / "FS5045_260722.xml"))
+    win._on_done(result)
+
+    assert popups == [], "알림창이 떴다"
+    assert opened == [result.output], "만든 견적서를 열지 않았다"
 
 
 def test_convert_without_file_warns(root, monkeypatch):
