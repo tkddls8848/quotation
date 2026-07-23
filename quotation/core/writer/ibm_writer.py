@@ -126,8 +126,7 @@ def _merge_across(pending: list[str], left: str, right: str, row: int):
 
 # --- TOTAL 시트 ---------------------------------------------------------------
 
-def _write_total_sheet(ws: Worksheet, quote: Quotation, today: dt.date,
-                       discount: Decimal):
+def _write_total_sheet(ws: Worksheet, quote: Quotation, today: dt.date):
     merges: list[str] = []
     lay = Layout(first_row=FIRST_DATA_ROW)
 
@@ -181,14 +180,13 @@ def _write_total_sheet(ws: Worksheet, quote: Quotation, today: dt.date,
         row += 1
 
     _write_footer(ws, row, subtotal_rows, FMT_TOTAL_NUM, merges, lay,
-                  discount=discount, always_sum=True)
+                  always_sum=True)
     return merges, lay
 
 
 # --- 상세 시트 ----------------------------------------------------------------
 
-def _write_detail_sheet(ws: Worksheet, group: Group, today: dt.date,
-                        discount: Decimal):
+def _write_detail_sheet(ws: Worksheet, group: Group, today: dt.date):
     merges: list[str] = []
     lay = Layout(first_row=FIRST_DATA_ROW, fix_header_bottom=True,
                  blue_includes_label=True, top_black=True)
@@ -246,8 +244,7 @@ def _write_detail_sheet(ws: Worksheet, group: Group, today: dt.date,
             lay.blue_rows.extend(range(sec_start, row + 1))
         row += 1
 
-    _write_footer(ws, row, section_total_rows, FMT_DETAIL_NUM, merges, lay,
-                  discount=discount)
+    _write_footer(ws, row, section_total_rows, FMT_DETAIL_NUM, merges, lay)
     return merges, lay
 
 
@@ -308,7 +305,7 @@ def _write_g(ws: Worksheet, row: int, price: Amount):
 # --- 공통 꼬리말 --------------------------------------------------------------
 
 def _write_footer(ws: Worksheet, row: int, subtotal_rows: list[int], fmt: str,
-                  merges: list[str], lay: Layout, *, discount: Decimal,
+                  merges: list[str], lay: Layout, *,
                   always_sum: bool = False):
     """총합계 / 공급가 / 하단 비고 병합 + 인쇄 영역.
 
@@ -323,17 +320,11 @@ def _write_footer(ws: Worksheet, row: int, subtotal_rows: list[int], fmt: str,
     _put(ws, f"G{row}", g_formula, fmt=fmt, font=FONT_DATA_BOLD)
     lay.grand_row = row
     lay.bf_rows.append(row)
-    grand_row = row
     row += 1
 
+    # 공급가는 언제나 공란이다 (골든 전부 그러하다). 수기로 적는 칸이다.
     _put(ws, f"B{row}", LBL_SUPPLY, align=CENTER, font=FONT_LABEL)
     _merge_across(merges, "B", "F", row)
-    # 할인이 없으면 공급가는 공란이다 (골든 2건 모두 그러하다).
-    # ⚠️ 할인 적용 골든이 없어 이 수식은 미검증이다 (SPEC_CELLMAP.md §7).
-    if discount:
-        rate = (Decimal(1) - discount / Decimal(100)).normalize()
-        _put(ws, f"G{row}", f"=G{grand_row}*{rate}", fmt=fmt, align=GENERAL,
-             font=FONT_DATA_BOLD)
     lay.supply_row = row
     lay.bf_rows.append(row)
     row += 1
@@ -352,8 +343,7 @@ def _finish(ws: Worksheet, merges: list[str], lay: Layout) -> None:
 
 
 def build(quote: Quotation, template: str | Path,
-          *, today: dt.date | None = None,
-          discount: Decimal = Decimal(0)) -> Workbook:
+          *, today: dt.date | None = None) -> Workbook:
     today = today or dt.date.today()
     wb = load_workbook(template)
 
@@ -365,13 +355,13 @@ def build(quote: Quotation, template: str | Path,
     template_ws["H7"].value = None
     template_ws.merge_cells("H6:H7")
 
-    _finish(total_ws, *_write_total_sheet(total_ws, quote, today, discount))
+    _finish(total_ws, *_write_total_sheet(total_ws, quote, today))
 
     details = []
     for group in quote.groups:
         ws = wb.copy_worksheet(template_ws)
         ws.title = group.sheet_name
-        _finish(ws, *_write_detail_sheet(ws, group, today, discount))
+        _finish(ws, *_write_detail_sheet(ws, group, today))
         details.append(ws)
 
     template_ws.sheet_state = "hidden"
@@ -380,9 +370,8 @@ def build(quote: Quotation, template: str | Path,
 
 
 def write(quote: Quotation, template: str | Path, out_path: str | Path,
-          *, today: dt.date | None = None,
-          discount: Decimal = Decimal(0)) -> Path:
-    wb = build(quote, template, today=today, discount=discount)
+          *, today: dt.date | None = None) -> Path:
+    wb = build(quote, template, today=today)
     out = Path(out_path)
     out.parent.mkdir(parents=True, exist_ok=True)
     wb.save(out)

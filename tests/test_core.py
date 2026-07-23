@@ -13,9 +13,6 @@ sys.path.insert(0, str(ROOT))
 from quotation.core import xml_reader  # noqa: E402
 from quotation.core.money import NO_CHARGE, parse_amount, to_decimal  # noqa: E402
 from quotation.core.naming import item_key, sheet_name  # noqa: E402
-from quotation.core.pricing import (  # noqa: E402
-    DiscountError, apply_discount, parse_discount,
-)
 
 SAMPLES = ROOT / "samples"
 FS5045 = SAMPLES / "FS5045_260722.xml"
@@ -303,29 +300,3 @@ def test_xxe_is_blocked(tmp_path):
     except xml_reader.QuotationXmlError:
         return  # 파싱 거부도 정상
     assert "TOPSECRET" not in str(q.groups[0].items[0].line_number)
-
-
-# --- 할인율 ------------------------------------------------------------------
-
-@pytest.mark.parametrize("raw,expected", [
-    ("", Decimal(0)), (None, Decimal(0)),
-    ("10", Decimal("10")), ("25.5", Decimal("25.5")),
-    ("99", Decimal("99")), ("0.1", Decimal("0.1")), ("15%", Decimal("15")),
-])
-def test_parse_discount_ok(raw, expected):
-    assert parse_discount(raw) == expected
-
-
-def test_discount_over_99_rejected():
-    with pytest.raises(DiscountError, match="99보다 클수 없습니다"):
-        parse_discount("99.1")
-
-
-def test_discount_two_decimals_rejected():
-    with pytest.raises(DiscountError, match="소숫점 1자리만"):
-        parse_discount("10.25")
-
-
-def test_apply_discount():
-    assert apply_discount(Decimal("1000"), Decimal("25.5")) == Decimal("745.000")
-    assert apply_discount(Decimal("1000"), Decimal(0)) == Decimal("1000")

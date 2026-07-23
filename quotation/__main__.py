@@ -1,7 +1,9 @@
-r"""진입점. 인자가 없으면 GUI, 있으면 CLI 로 동작한다.
+"""진입점. 인자가 없으면 GUI, 있으면 CLI 로 동작한다.
 
-    QuotationTool.exe                       -> GUI
-    QuotationTool.exe a.xml b.xml -o out\   -> 일괄 변환
+    QuotationTool.exe                  -> GUI
+    QuotationTool-cli.exe a.xml b.xml  -> 일괄 변환
+
+견적서는 언제나 XML 과 같은 폴더에 저장된다.
 """
 from __future__ import annotations
 
@@ -12,7 +14,6 @@ from pathlib import Path
 
 from . import __version__, logging_setup
 from .core import convert
-from .core.pricing import DiscountError
 from .core.xml_reader import QuotationXmlError
 
 
@@ -20,10 +21,6 @@ def _cli(argv: list[str]) -> int:
     parser = argparse.ArgumentParser(
         prog="QuotationTool", description="eConfig XML 을 견적서로 변환합니다.")
     parser.add_argument("xml", nargs="+", type=Path, help="입력 XML 화일")
-    parser.add_argument("-o", "--out-dir", type=Path,
-                        help="저장 폴더 (기본: XML 과 같은 폴더)")
-    parser.add_argument("-d", "--discount", default="",
-                        help="할인율 %% (0~99, 소수점 1자리)")
     parser.add_argument("-t", "--template", type=Path,
                         help="견적서 템플릿 (기본: EXE 옆의 견적서_template.xlsx)")
     parser.add_argument("-v", "--version", action="version",
@@ -33,12 +30,10 @@ def _cli(argv: list[str]) -> int:
     failed = 0
     for xml in args.xml:
         try:
-            result = convert.convert(
-                xml, out_dir=args.out_dir, discount=args.discount,
-                template=args.template)
+            result = convert.convert(xml, template=args.template)
             print(f"OK   {xml.name} -> {result.output}  "
                   f"(장비군 {result.group_count}개, {result.elapsed:.2f}초)")
-        except (QuotationXmlError, DiscountError, OSError) as exc:
+        except (QuotationXmlError, OSError) as exc:
             print(f"실패 {xml.name}: {exc}", file=sys.stderr)
             failed += 1
     return 1 if failed else 0

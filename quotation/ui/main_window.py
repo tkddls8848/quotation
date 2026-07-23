@@ -19,7 +19,6 @@ from tkinter import filedialog, messagebox, ttk
 from .. import config as config_mod
 from .. import paths
 from ..core import convert
-from ..core.pricing import DiscountError
 from ..core.xml_reader import QuotationXmlError
 
 log = logging.getLogger(__name__)
@@ -38,8 +37,6 @@ class MainWindow(ttk.Frame):
         self._busy = False
 
         self.xml_path = tk.StringVar()
-        self.out_dir = tk.StringVar(value=self.cfg.last_output_dir)
-        self.discount = tk.StringVar(value=self.cfg.discount)
         self.open_result = tk.BooleanVar(value=self.cfg.open_result_when_done)
         self.status = tk.StringVar(value="변환할 XML 화일을 선택하십시오.")
         self.template_label = tk.StringVar(value=str(paths.template_path()))
@@ -72,26 +69,13 @@ class MainWindow(ttk.Frame):
             row=row, column=2)
         row += 1
 
-        ttk.Label(self, text="저장 폴더").grid(row=row, column=0, sticky="w",
-                                            pady=(6, 0))
-        ttk.Entry(self, textvariable=self.out_dir).grid(
-            row=row, column=1, sticky="ew", padx=6, pady=(6, 0))
-        ttk.Button(self, text="폴더 선택…", command=self._pick_out_dir).grid(
-            row=row, column=2, pady=(6, 0))
-        row += 1
-
-        ttk.Label(self, text="(비워 두면 XML 과 같은 폴더에 저장합니다)",
+        ttk.Label(self, text="견적서는 XML 과 같은 폴더에 저장됩니다.",
                   foreground="#777").grid(row=row, column=1, sticky="w",
-                                          padx=6, pady=(2, 8))
+                                          padx=6, pady=(4, 8))
         row += 1
 
         options = ttk.Frame(self)
         options.grid(row=row, column=0, columnspan=3, sticky="ew", pady=(4, 6))
-        ttk.Label(options, text="할인율").pack(side="left")
-        ttk.Entry(options, textvariable=self.discount, width=7).pack(
-            side="left", padx=(6, 2))
-        ttk.Label(options, text="%  (0~99, 소수점 1자리)",
-                  foreground="#777").pack(side="left", padx=(0, 16))
         ttk.Checkbutton(options, text="완료 후 견적서 열기",
                         variable=self.open_result).pack(side="left")
         row += 1
@@ -151,14 +135,6 @@ class MainWindow(ttk.Frame):
         except OSError as exc:
             messagebox.showerror(TITLE, f"템플릿을 열지 못했습니다.\n{exc}")
 
-    def _pick_out_dir(self):
-        initial = self.out_dir.get() or self.cfg.last_output_dir
-        chosen = filedialog.askdirectory(
-            title="저장 폴더 선택",
-            initialdir=initial if initial and Path(initial).is_dir() else None)
-        if chosen:
-            self.out_dir.set(chosen)
-
     # --- 변환 ----------------------------------------------------------------
 
     def _start(self):
@@ -173,24 +149,20 @@ class MainWindow(ttk.Frame):
             messagebox.showerror(TITLE, f"화일을 찾을 수 없습니다.\n{xml}")
             return
 
-        out_dir = self.out_dir.get().strip() or None
-        target = convert.output_path_for(xml, Path(out_dir) if out_dir else None)
+        target = convert.output_path_for(xml)
         if target.exists() and not messagebox.askyesno(
                 TITLE, f"이미 있는 화일을 덮어씁니다.\n\n{target.name}\n\n계속할까요?"):
             return
 
         self._set_busy(True)
-        threading.Thread(target=self._worker,
-                         args=(xml, out_dir, self.discount.get()),
-                         daemon=True).start()
+        threading.Thread(target=self._worker, args=(xml,), daemon=True).start()
 
-    def _worker(self, xml: Path, out_dir, discount: str):
+    def _worker(self, xml: Path):
         try:
             result = convert.convert(
-                xml, out_dir=out_dir, discount=discount,
-                progress=lambda p, m: self._events.put(("progress", p, m)))
+                xml, progress=lambda p, m: self._events.put(("progress", p, m)))
             self._events.put(("done", result))
-        except (QuotationXmlError, DiscountError) as exc:
+        except QuotationXmlError as exc:
             self._events.put(("error", str(exc)))
         except PermissionError:
             self._events.put((
@@ -227,8 +199,7 @@ class MainWindow(ttk.Frame):
             f"견적서작성을 완료하였습니다.  장비군 {result.group_count}개 · "
             f"{result.elapsed:.1f}초")
 
-        self.cfg.remember(Path(self.xml_path.get()), result.output)
-        self.cfg.discount = self.discount.get().strip()
+        self.cfg.remember(Path(self.xml_path.get()))
         self.cfg.open_result_when_done = self.open_result.get()
         config_mod.save(self.cfg)
 

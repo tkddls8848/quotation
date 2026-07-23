@@ -16,10 +16,10 @@ IBM eConfig Export XML 을 견적서 Excel 로 변환한다.
 | 항목 | 설명 |
 |---|---|
 | XML 화일 | 변환할 eConfig Export XML |
-| 저장 폴더 | 비워 두면 XML 과 같은 폴더에 저장 |
-| 할인율 | 0~99, 소수점 1자리. 입력하면 `공급가` 행이 채워진다 |
 | 완료 후 견적서 열기 | 변환이 끝나면 만든 견적서를 바로 연다 (알림창은 뜨지 않는다) |
 | 템플릿 열기 | 견적서 번호와 담당자 이름을 고칠 때 쓴다 (아래 참조) |
+
+**견적서는 언제나 XML 과 같은 폴더에 저장된다.** 이름도 같고 확장자만 `.xlsx` 다.
 
 ### 템플릿 — 견적서 번호와 담당자 수정
 
@@ -40,13 +40,13 @@ IBM eConfig Export XML 을 견적서 Excel 로 변환한다.
 
 ### CLI (일괄 변환)
 ```
-QuotationTool-cli.exe a.xml b.xml -o 출력폴더
-QuotationTool-cli.exe *.xml -d 15.5
+QuotationTool-cli.exe a.xml b.xml
+QuotationTool-cli.exe *.xml
 ```
+각 견적서는 해당 XML 옆에 만들어진다.
+
 | 옵션 | 설명 |
 |---|---|
-| `-o, --out-dir` | 저장 폴더 (기본: XML 과 같은 폴더) |
-| `-d, --discount` | 할인율 % |
 | `-t, --template` | 템플릿 경로 (기본: EXE 옆의 `견적서_template.xlsx`) |
 
 종료 코드: `0` 전부 성공 / `1` 하나 이상 실패
@@ -63,7 +63,7 @@ QuotationTool-cli.exe *.xml -d 15.5
 | 위치 | 내용 |
 |---|---|
 | EXE 옆 `견적서_template.xlsx` | **템플릿. 처음 실행 시 자동 생성, 사용자가 고치는 화일** |
-| `%LOCALAPPDATA%\QuotationTool\config.json` | 설정 (최근 경로, 할인율, 옵션) |
+| `%LOCALAPPDATA%\QuotationTool\config.json` | 설정 (최근 경로, 옵션) |
 | `%LOCALAPPDATA%\QuotationTool\logs\` | 로그, 일자별 30일 보관 |
 
 구버전 `견적서생성기.ini` 가 남아 있으면 최초 실행 시 자동으로 값을 옮긴다.
@@ -97,7 +97,6 @@ quotation/
     models.py      LineItem / SubLineItem / Group / Quotation
     naming.py      종목 키(27자) 및 시트명
     xml_reader.py  eConfig XML 파서 (XXE 차단, 인코딩 자동 판별)
-    pricing.py     할인율 검증
     convert.py     변환 오케스트레이션
     writer/
       ibm_writer.py  견적서 생성 (openpyxl 전용)
@@ -132,3 +131,5 @@ tests/               단위 및 골든 회귀 테스트
 | 일괄 변환 | 불가 | CLI 지원 |
 | 삼성 SDS 양식 | 있음 | **제거** (2026-07-23 결정) |
 | 유지정비료(H·I열) | 채움 | **제거** (2026-07-23 결정). H열은 빈 칸으로 남는다 |
+| 할인율 | 입력란 있음 | **제거** (2026-07-23 결정). `공급가` 행은 수기 입력 |
+| 저장 위치 | 선택 가능 | **XML 과 같은 폴더로 고정** (2026-07-23 결정) |

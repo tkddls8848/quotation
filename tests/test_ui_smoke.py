@@ -50,10 +50,13 @@ def test_success_opens_the_quote_without_a_popup(root, monkeypatch, tmp_path):
                         lambda t, m: popups.append(m))
     monkeypatch.setattr(main_window, "_open", opened.append)
 
+    source = ROOT / "samples" / "FS5045_260722.xml"
+    xml = tmp_path / source.name
+    xml.write_bytes(source.read_bytes())
+
     win = main_window.MainWindow(root)
-    result = convert.convert(ROOT / "samples" / "FS5045_260722.xml",
-                             out_dir=tmp_path, today=dt.date(2026, 7, 23))
-    win.xml_path.set(str(ROOT / "samples" / "FS5045_260722.xml"))
+    result = convert.convert(xml, today=dt.date(2026, 7, 23))
+    win.xml_path.set(str(xml))
     win._on_done(result)
 
     assert popups == [], "알림창이 떴다"

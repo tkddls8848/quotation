@@ -28,9 +28,11 @@ def quote():
 
 @pytest.fixture(scope="module")
 def book(tmp_path_factory):
-    out = convert.convert(SAMPLE, out_dir=tmp_path_factory.mktemp("up"),
-                          today=TODAY).output
-    return load_workbook(out)
+    # 산출물은 XML 옆에 생기므로 샘플을 임시 폴더로 복사해 변환한다
+    work = tmp_path_factory.mktemp("up")
+    xml = work / SAMPLE.name
+    xml.write_bytes(SAMPLE.read_bytes())
+    return load_workbook(convert.convert(xml, today=TODAY).output)
 
 
 # --- 참조 구성 제외 -------------------------------------------------------------

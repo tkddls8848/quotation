@@ -19,8 +19,6 @@ log = logging.getLogger(__name__)
 @dataclass
 class Config:
     last_input_dir: str = ""
-    last_output_dir: str = ""
-    discount: str = ""
     #: 변환이 끝나면 만든 견적서를 바로 연다. 알림창은 띄우지 않는다.
     open_result_when_done: bool = True
     migrated_from_ini: str = ""
@@ -28,9 +26,9 @@ class Config:
 
     MAX_RECENT = 8
 
-    def remember(self, input_path: Path, output_path: Path):
+    def remember(self, input_path: Path):
+        # 저장 위치는 XML 과 같은 폴더로 고정이라 따로 기억할 것이 없다.
         self.last_input_dir = str(input_path.parent)
-        self.last_output_dir = str(output_path.parent)
         recent = [str(input_path)]
         recent += [p for p in self.recent_files if p != str(input_path)]
         self.recent_files = recent[: self.MAX_RECENT]
@@ -81,9 +79,7 @@ def _migrate_legacy_ini(cfg: Config) -> None:
                 low = key.strip().lower()
                 if not value:
                     continue
-                if "discount" in low or "할인" in low:
-                    cfg.discount = value.strip()
-                elif "path" in low or "dir" in low or "경로" in low:
+                if "path" in low or "dir" in low or "경로" in low:
                     if Path(value).is_dir():
                         cfg.last_input_dir = value.strip()
 

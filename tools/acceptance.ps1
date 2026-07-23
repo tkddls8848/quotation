@@ -28,43 +28,46 @@ Check "CLI EXE" (Test-Path $cli)
 # 번들본으로 다시 만들게 해 seeding 경로까지 함께 검증한다.
 $distTemplate = Join-Path $root "dist\견적서_template.xlsx"
 if (Test-Path $distTemplate) { Remove-Item $distTemplate -Force }
-& $cli (Join-Path $root "samples\FS5045_260722.xml") -o "$work\seed" | Out-Null
+Copy-Item (Join-Path $root "samples\FS5045_260722.xml") "$work\seed.xml"
+& $cli "$work\seed.xml" | Out-Null
 Check "템플릿 자동 생성" (Test-Path $distTemplate)
 
 "`n=== 2. 한글 경로 일괄 변환"
-& $cli "$work\입력\FS5045_260722.xml" "$work\입력\X-ROIS 통합서버#2.xml" -o "$work\출력" | Out-Null
+& $cli "$work\입력\FS5045_260722.xml" "$work\입력\X-ROIS 통합서버#2.xml" | Out-Null
 Check "종료 코드 0" ($LASTEXITCODE -eq 0) "실제=$LASTEXITCODE"
-Check "산출물 2건" ((Get-ChildItem "$work\출력" -Filter *.xlsx).Count -eq 2)
+Check "산출물 2건" ((Get-ChildItem "$work\입력" -Filter *.xlsx).Count -eq 2)
 
 "`n=== 3. 골든 대조 (EXE 산출물)"
 foreach ($n in @("FS5045_260722", "X-ROIS 통합서버#2")) {
     $out = & $py (Join-Path $root "tools\compare.py") `
-        (Join-Path $root ".cache\$n.xlsx") "$work\출력\$n.xlsx" `
+        (Join-Path $root ".cache\$n.xlsx") "$work\입력\$n.xlsx" `
         --ignore-file (Join-Path $root "tests\golden_ignore.txt") 2>&1
     Check "골든 일치: $n" ($LASTEXITCODE -eq 0) ($out -join " ")
 }
 
 "`n=== 4. 오류 처리"
 Set-Content "$work\입력\깨진.xml" "<CFXML></CFXML>" -Encoding UTF8
-$err = & $cli "$work\입력\깨진.xml" -o "$work\출력" 2>&1
+$err = & $cli "$work\입력\깨진.xml" 2>&1
 Check "잘못된 XML 은 종료 코드 1" ($LASTEXITCODE -eq 1) "실제=$LASTEXITCODE"
 Check "원본 오류 문구 유지" ("$err" -match "CFData을 찾을수 없습니다")
 
-& $cli "$work\입력\FS5045_260722.xml" -o "$work\출력" -d 10.25 2>&1 | Out-Null
-Check "잘못된 할인율 거부" ($LASTEXITCODE -eq 1) "실제=$LASTEXITCODE"
+& $cli "$work\입력\FS5045_260722.xml" -o "$work\출력" 2>&1 | Out-Null
+Check "저장 폴더 옵션은 없다" ($LASTEXITCODE -ne 0) "실제=$LASTEXITCODE"
 
 "`n=== 5. Excel 이 떠 있는 상태에서 변환 (원본의 핵심 장애)"
 $e = New-Object -ComObject Excel.Application
 $e.Visible = $false
 $e.DisplayAlerts = $false
 # 방금 만든 견적서를 Excel 로 열어 둔 채 같은 원본을 다시 변환한다
-$held = $e.Workbooks.Open("$work\출력\FS5045_260722.xlsx")
+$held = $e.Workbooks.Open("$work\입력\FS5045_260722.xlsx")
 try {
-    & $cli "$work\입력\X-ROIS 통합서버#2.xml" -o "$work\출력2" | Out-Null
+    New-Item -ItemType Directory -Force "$work\입력2" | Out-Null
+    Copy-Item (Join-Path $root "samples\X-ROIS 통합서버#2.xml") "$work\입력2\"
+    & $cli "$work\입력2\X-ROIS 통합서버#2.xml" | Out-Null
     Check "Excel 실행 중에도 변환 성공" ($LASTEXITCODE -eq 0) "실제=$LASTEXITCODE"
 
     # 열려 있는 대상 파일에 덮어쓰기를 시도하면 명확히 실패해야 한다
-    $locked = & $cli "$work\입력\FS5045_260722.xml" -o "$work\출력" 2>&1
+    $locked = & $cli "$work\입력\FS5045_260722.xml" 2>&1
     Check "잠긴 대상은 명확한 오류" ($LASTEXITCODE -eq 1) "실제=$LASTEXITCODE"
 }
 finally {
