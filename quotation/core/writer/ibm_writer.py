@@ -106,7 +106,8 @@ def _merge_across(ws: Worksheet, left: str, right: str, row: int):
 
 # --- TOTAL 시트 ---------------------------------------------------------------
 
-def _write_total_sheet(ws: Worksheet, quote: Quotation, today: dt.date):
+def _write_total_sheet(ws: Worksheet, quote: Quotation, today: dt.date,
+                       discount: Decimal = Decimal(0), with_ma: bool = True):
     _put(ws, "B2", f"NO : Trialinfo-{today:%y}-", align=LEFT)
     _put(ws, "C3", today.isoformat(), fmt=FMT_TEXT, align=LEFT, font=FONT_DATE)
 
@@ -138,7 +139,7 @@ def _write_total_sheet(ws: Worksheet, quote: Quotation, today: dt.date):
         group_end = row - 1
 
         maintenance = group.maintenance_amount()
-        if maintenance != 0:
+        if with_ma and maintenance != 0:
             _put(ws, f"H{group_start}", _num(maintenance),
                  fmt=FMT_TOTAL_NUM, align=RIGHT, font=FONT_DATA)
         _merge(ws, "H", group_start, group_end)
@@ -159,12 +160,14 @@ def _write_total_sheet(ws: Worksheet, quote: Quotation, today: dt.date):
         _merge(ws, "B", group_start, row)
         row += 1
 
-    _write_footer(ws, row, group_subtotal_rows, FMT_TOTAL_NUM, with_ma=True)
+    _write_footer(ws, row, group_subtotal_rows, FMT_TOTAL_NUM, with_ma=True,
+                  discount=discount)
 
 
 # --- 상세 시트 ----------------------------------------------------------------
 
-def _write_detail_sheet(ws: Worksheet, group: Group, today: dt.date):
+def _write_detail_sheet(ws: Worksheet, group: Group, today: dt.date,
+                        discount: Decimal = Decimal(0), with_ma: bool = True):
     # 제목은 시트명(대문자) 이다. TOTAL 시트 B열의 종목 키(원본 대소문자)와 다르다.
     _put(ws, "C1", f"({group.sheet_name})", fmt=FMT_TEXT, align=CENTER,
          font=FONT_TITLE)
@@ -180,7 +183,7 @@ def _write_detail_sheet(ws: Worksheet, group: Group, today: dt.date):
 
         for item in items:
             block_start = row
-            row = _write_item_block(ws, item, row, is_hw)
+            row = _write_item_block(ws, item, row, is_hw, with_ma)
             if is_hw:
                 # H/W 만 블록별 합계행을 가진다. 서브라인이 없으면 스페이서 1행.
                 last = max(row - 1, block_start + 1)
@@ -218,11 +221,11 @@ def _write_detail_sheet(ws: Worksheet, group: Group, today: dt.date):
         row += 1
 
     _write_footer(ws, row, section_total_rows, FMT_DETAIL_NUM,
-                  with_ma=True, ma_fmt=FMT_DETAIL_MA)
+                  with_ma=True, ma_fmt=FMT_DETAIL_MA, discount=discount)
 
 
 def _write_item_block(ws: Worksheet, item: LineItem, row: int,
-                      is_hw: bool) -> int:
+                      is_hw: bool, with_ma: bool = True) -> int:
     """ProductLineItem 1건 + 그 ProductSubLineItem 들을 기록. 다음 행 번호를 돌려준다."""
     base = row
     _put(ws, f"C{row}", item.part_number, fmt=FMT_TEXT, align=CENTER,
@@ -231,7 +234,7 @@ def _write_item_block(ws: Worksheet, item: LineItem, row: int,
     _put(ws, f"E{row}", item.quantity, align=CENTER, font=FONT_DATA)
     _amount_cell(ws, f"F{row}", item.unit_price, FMT_DETAIL_NUM)
     _write_g(ws, row, item.unit_price)
-    if is_priced(item.maintenance):
+    if with_ma and is_priced(item.maintenance):
         _put(ws, f"H{row}", _num(item.maintenance), fmt=FMT_DETAIL_MA,
              align=RIGHT, font=FONT_DATA)
         if item.maintenance_term:
@@ -246,7 +249,7 @@ def _write_item_block(ws: Worksheet, item: LineItem, row: int,
              align=CENTER, font=FONT_DATA)
         _amount_cell(ws, f"F{row}", sub.unit_price, FMT_DETAIL_NUM)
         _write_g(ws, row, sub.unit_price)
-        if is_priced(sub.maintenance):
+        if with_ma and is_priced(sub.maintenance):
             _put(ws, f"H{row}", _num(sub.maintenance), fmt=FMT_DETAIL_MA,
                  align=RIGHT, font=FONT_DATA)
         row += 1
@@ -281,7 +284,8 @@ def _write_g(ws: Worksheet, row: int, price: Amount):
 # --- 공통 꼬리말 --------------------------------------------------------------
 
 def _write_footer(ws: Worksheet, row: int, subtotal_rows: list[int],
-                  fmt: str, *, with_ma: bool, ma_fmt: str | None = None):
+                  fmt: str, *, with_ma: bool, ma_fmt: str | None = None,
+                  discount: Decimal = Decimal(0)):
     """총합계 / 공급가 / 하단 비고 병합 + 인쇄 영역."""
     ma_fmt = ma_fmt or fmt
 
@@ -299,8 +303,19 @@ def _write_footer(ws: Worksheet, row: int, subtotal_rows: list[int],
              font=FONT_DATA_BOLD)
     row += 1
 
+    grand_row = row - 1
     _put(ws, f"B{row}", LBL_SUPPLY, align=CENTER, font=FONT_LABEL)
     _merge_across(ws, "B", "F", row)
+    # 할인이 없으면 공급가는 공란이다 (골든 2건 모두 그러하다). 할인을 입력한
+    # 경우에만 총합계에 할인을 적용한다.
+    # ⚠️ 할인 적용 골든이 아직 없어 이 수식은 미검증이다 (SPEC_CELLMAP.md §7).
+    if discount:
+        rate = (Decimal(1) - discount / Decimal(100)).normalize()
+        _put(ws, f"G{row}", f"=G{grand_row}*{rate}", fmt=fmt, align=GENERAL,
+             font=FONT_DATA_BOLD)
+        if with_ma:
+            _put(ws, f"H{row}", f"=H{grand_row}*{rate}", fmt=ma_fmt,
+                 align=GENERAL, font=FONT_DATA_BOLD)
     row += 1
 
     ws.merge_cells(f"B{row}:H{row + TRAILER_ROWS - 1}")
@@ -311,7 +326,8 @@ def _write_footer(ws: Worksheet, row: int, subtotal_rows: list[int],
 # --- 진입점 ------------------------------------------------------------------
 
 def build(quote: Quotation, template: str | Path,
-          *, today: dt.date | None = None) -> Workbook:
+          *, today: dt.date | None = None, discount: Decimal = Decimal(0),
+          include_maintenance: bool = True) -> Workbook:
     """견적서 워크북을 만든다 (저장은 호출자 몫)."""
     today = today or dt.date.today()
     wb = load_workbook(template)
@@ -324,13 +340,13 @@ def build(quote: Quotation, template: str | Path,
     template_ws["H7"].value = None
     template_ws.merge_cells("H6:H7")
 
-    _write_total_sheet(total_ws, quote, today)
+    _write_total_sheet(total_ws, quote, today, discount, include_maintenance)
 
     details = []
     for group in quote.groups:
         ws = wb.copy_worksheet(template_ws)
         ws.title = group.sheet_name
-        _write_detail_sheet(ws, group, today)
+        _write_detail_sheet(ws, group, today, discount, include_maintenance)
         details.append(ws)
 
     # 시트 순서: TOTAL, 상세…, template(숨김)
@@ -340,8 +356,10 @@ def build(quote: Quotation, template: str | Path,
 
 
 def write(quote: Quotation, template: str | Path, out_path: str | Path,
-          *, today: dt.date | None = None) -> Path:
-    wb = build(quote, template, today=today)
+          *, today: dt.date | None = None, discount: Decimal = Decimal(0),
+          include_maintenance: bool = True) -> Path:
+    wb = build(quote, template, today=today, discount=discount,
+               include_maintenance=include_maintenance)
     out = Path(out_path)
     out.parent.mkdir(parents=True, exist_ok=True)
     wb.save(out)
