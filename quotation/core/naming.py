@@ -1,19 +1,26 @@
 """종목 키 / 시트명 생성 — SPEC_CELLMAP.md §2.1.
 
+순서가 중요하다. **31자로 자른 뒤에 "IBM " 을 뗀다.**
+
     "4680-3P4 #1:IBM Storage FlashSystem 5045 SFF Control Enclosure"
-        -> 종목키 "4680-3P4 #1"      시트명 "4680-3P4 #1"
-    "Server 1:Server 1:9080 Model HEX"
-        -> 종목키 "Server 1"          시트명 "SERVER 1"
+        -> ":" 앞 -> "4680-3P4 #1"                      시트명 "4680-3P4 #1"
+    "TS4300 Tape Library Base Module with Expert Care"
+        -> 31자   -> "TS4300 Tape Library Base Module"  시트명 대문자
+    "No CPUSIU for the following products:IBM 18 TB Ultrium 9 ..."
+        -> ":" 앞 -> 31자 -> "No CPUSIU for the following pro"
     "IBM Expert Labs Project Unit for IBM Power Systems"
-        -> 종목키 "Expert Labs Project Unit fo"
-           시트명 "EXPERT LABS PROJECT UNIT FO"
+        -> 31자   -> "IBM Expert Labs Project Unit fo"
+        -> IBM 제거 -> "Expert Labs Project Unit fo" (27자)
+
+마지막 예가 순서를 증명한다. "IBM " 을 먼저 떼고 31자로 자르면 31자가 되는데
+골든은 27자다.
 """
 from __future__ import annotations
 
 import re
 
-#: 종목 키 최대 길이. 두 골든 샘플에서 27자로 확인됨 (SPEC_CELLMAP.md §7-3).
-ITEM_KEY_MAX = 27
+#: 종목 키 최대 길이. Excel 시트명 제한과 같다.
+ITEM_KEY_MAX = 31
 
 #: Excel 시트명 제한
 SHEET_NAME_MAX = 31
@@ -27,9 +34,7 @@ def item_key(description: str) -> str:
     text = (description or "").strip()
     if ":" in text:
         text = text.split(":", 1)[0].strip()
-    else:
-        text = _IBM_PREFIX.sub("", text).strip()
-    return text[:ITEM_KEY_MAX]
+    return _IBM_PREFIX.sub("", text[:ITEM_KEY_MAX]).strip()
 
 
 def sheet_name(key: str) -> str:

@@ -28,6 +28,8 @@ CASES = [
     ("1080MES", dt.date(2026, 7, 23)),  # 증설 견적 (BASE/PROPOSED/UPGRADE/REMOVE)
     ("FS9500_2TB_19.2TB 12ea_U150TB_16port (수익영역 스토리지 Active)_251223",
      dt.date(2025, 12, 23)),  # 장비군 1개, 이름·괄호·공백이 섞인 화일명
+    ("TS4300_FC LTO9 6ea_LTO9 40ea_cleaning 5ea_구성파일_260706",
+     dt.date(2026, 7, 23)),  # 'No CPUSIU' 그룹, H/W 블록 1개 구간
 ]
 
 pytestmark = pytest.mark.skipif(

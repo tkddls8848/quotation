@@ -61,9 +61,13 @@ CFXML
 
 #### 1.0.1 장비군 묶기와 이름 ✅
 
-- 그룹은 `ProprietaryGroupIdentifier` 로 나누되, **본체 라인(`CPUSIUvalue = 1`)이
-  없는 그룹은 앞 그룹에 붙인다.** `1080MES` 의 DISCO/NEW 그룹(26000)이 UPGRADE
-  그룹(25000)과 한 장에 나오는 이유다. 결과는 상세 시트 1장.
+- 그룹은 `ProprietaryGroupIdentifier` 로 나눈다.
+- **증설 견적에서만** 본체 라인(`CPUSIUvalue = 1`)이 없는 그룹을 앞 그룹에 붙인다.
+  `1080MES` 의 DISCO/NEW 그룹(26000)이 UPGRADE 그룹(25000)과 한 장에 나오는 이유다.
+  결과는 상세 시트 1장.
+  > ⚠️ 신규 견적에는 이 병합을 적용하면 안 된다. `TS4300` 골든의
+  > `No CPUSIU for the following products` 그룹(9000)은 본체 라인이 없지만
+  > **제 장을 갖는다.** 병합을 무조건 적용하면 이 그룹이 사라진 것처럼 보인다.
 - **증설 견적의 장비 이름은 BASE/PROPOSED 구성의 본체 라인에서 딴다.**
   UPGRADE 라인 설명은 `9080 Model HEU` 로 장비 이름이 없지만, 골든의 시트명은
   `SERVER 1` 이다. 이는 BASE 라인 `Server 1:Server 1:IBM Power E1080` 에서 온다.
@@ -138,17 +142,23 @@ F열 단가  비움          G열 금액  비움
 1) ":" 가 있으면 → 첫 ":" 앞부분을 취함
      "4680-3P4 #1:IBM Storage FlashSystem 5045 SFF Control Enclosure" → "4680-3P4 #1"
      "Server 1:Server 1:9080 Model HEX"                              → "Server 1"
-2) 없으면 → 선두 "IBM " 제거
-     "IBM Expert Labs Project Unit for IBM Power Systems"
-       → "Expert Labs Project Unit for IBM Power Systems"
-3) 27자로 절단
-       → "Expert Labs Project Unit fo"     ← TOTAL 시트 B열 값 (원본 대소문자 유지)
+2) 31자로 절단
+3) 그 다음에 선두 "IBM " 제거   ← 순서가 중요하다
 4) 시트명 = 위 결과를 대문자 변환
-       → "EXPERT LABS PROJECT UNIT FO"
-       → "SERVER 1",  "4680-3P4 #1"(이미 대문자)
 ```
-⚠️ 절단 길이 27자는 두 샘플에서 일치 확인. 다른 길이 케이스가 나오면 재확인 필요.
-⚠️ 그룹 키는 `ProprietaryGroupIdentifier`이며, 종목 키는 **그룹의 첫 ProductLineItem** 의 Description에서 뽑는다.
+
+| Description | 31자 절단 | IBM 제거 = 종목 키 | 길이 |
+|---|---|---|---|
+| `IBM Expert Labs Project Unit for IBM Power Systems` | `IBM Expert Labs Project Unit fo` | `Expert Labs Project Unit fo` | 27 |
+| `TS4300 Tape Library Base Module with Expert Care` | `TS4300 Tape Library Base Module` | 그대로 | 31 |
+| `No CPUSIU for the following products:IBM 18 TB …` | `No CPUSIU for the following pro` | 그대로 | 31 |
+
+> ⚠️ 초판에 **"27자 절단"으로 적었으나 틀렸다.** X-ROIS 하나만 보고 정한 값인데,
+> 그 27자는 31자로 자른 뒤 `IBM ` 4자를 뗀 결과였다. TS4300 골든의 31자 키가
+> 이를 드러냈다. `IBM ` 을 먼저 떼면 X-ROIS 키가 31자가 되어 골든과 어긋난다.
+
+⚠️ 그룹 키는 `ProprietaryGroupIdentifier`이며, 종목 키는 **그룹의 첫 ProductLineItem** 의
+Description 에서 뽑는다 (증설 견적은 예외 — §1.0.1).
 
 ---
 
@@ -418,18 +428,18 @@ S/W 구간                       ->  1          상수
 **해소됨 (Phase 3, 골든 diff 0건 달성)**
 - ~~F/G/H 병합 범위 판정 기준~~ → 확정: F·G는 H/W·S/W 구간 단위, H는 그룹 단위. 분류는 `ProductTypeCode == "Hardware"` 여부 (§3.2)
 - ~~서브라인 0건 시 스페이서 행~~ → 확정 (§4.4)
-- ~~합계 수식 범위형/열거형 규칙~~ → 확정: H/W는 열거, S/W는 범위, 구간 1개면 직접 참조 (§4.4)
+- ~~합계 수식 범위형/열거형 규칙~~ → 확정 (§4.4). **H/W 라인이 하나뿐이면 블록별
+  합계행 없이 범위형 하나만 쓴다** (TS4300 `NO CPUSIU` 시트에서 확인)
 - ~~`SERVER 1!E59:E65` 의 `=1`~~ → **원본 버그 아님.** 규칙으로 설명됨 (§4.5)
-- ~~종목 키 27자 절단~~ → 두 골든 모두 27자로 일치. 시트명 31자 제한과는 별개
+- ~~종목 키 27자 절단~~ → **정정: 31자다** (§2.1). 27은 `IBM ` 을 뗀 뒤의 길이였다
 - `Services` 는 **S/W 구간**이다 (X-ROIS `EXPERT LABS` 시트 `B8 = "S/W"`)
 
 **남은 미검증 (샘플 부재)**
-1. 서브라인 레벨 `MaintenanceUnitListPrice` — 두 샘플 모두 없음. 기준행과 동일 규칙으로 구현해 둠
-2. 할인율 적용 — `*(1-J행)` 수식 미검증 (§7 사용자 확인 3)
+1. 서브라인 레벨 `MaintenanceUnitListPrice` — 어느 골든에도 없음. 어차피 유지정비료는
+   견적서에서 제외하기로 했다
 
 **사용자 확인 필요**
-3. 할인율 적용 견적 샘플 — 두 샘플 모두 할인 미적용
-4. `공급가` 행이 항상 공란(수기 입력)인지
+2. `공급가` 행이 항상 공란(수기 입력)인지
 5. `ProprietaryShippingInformation`(배송비 KWON 1,826.9 / 4,820.49)이 견적서에 전혀 반영되지 않음 — 의도된 동작인지
 6. X-ROIS `SERVER 1!D20` 글꼴만 돋움 9 (나머지 D열 전체는 Tahoma 9). 최장 설명도 아니고
    한글도 없어 데이터상 근거가 없다. **골든의 수기 편집으로 판단**하고 `tests/golden_ignore.txt`

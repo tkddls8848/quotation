@@ -201,13 +201,17 @@ def _write_detail_sheet(ws: Worksheet, group: Group, today: dt.date):
     for kind, items in group.sections():
         sec_start = row
         is_hw = kind == "Hardware"
+        # 블록별 합계행은 H/W 구간에 라인이 둘 이상일 때만 쓴다.
+        # 하나뿐이면 바로 합계(HardWare) 로 가고 수식도 범위형이다.
+        # S/W 는 개수와 무관하게 언제나 범위형 하나다.
+        per_block = is_hw and len(items) > 1
         block_rows: list[int] = []
 
         for item in items:
             block_start = row
             row = _write_item_block(ws, item, row, is_hw, lay)
-            if is_hw:
-                # H/W 만 블록별 합계행을 가진다. 서브라인이 없으면 스페이서 1행.
+            if per_block:
+                # 서브라인이 없으면 스페이서 1행을 둔다
                 last = max(row - 1, block_start + 1)
                 if last >= row:
                     lay.spacer_rows.extend(range(row, last + 1))
@@ -224,11 +228,10 @@ def _write_detail_sheet(ws: Worksheet, group: Group, today: dt.date):
         _put(ws, f"C{row}", LBL_HW_TOTAL if is_hw else LBL_SW_TOTAL,
              fmt=FMT_TEXT, font=FONT_LABEL)
         _merge_across(merges, "C", "F", row)
-        if is_hw:
+        if per_block:
             _put(ws, f"G{row}", f"=SUM({','.join(f'G{r}' for r in block_rows)})",
                  fmt=FMT_DETAIL_NUM, font=FONT_DATA)
         else:
-            # S/W 는 블록별 합계 없이 구간 전체를 한 번에 더한다
             _put(ws, f"G{row}", f"=SUM(G{sec_start}:G{row - 1})",
                  fmt=FMT_DETAIL_NUM, font=FONT_DATA)
         section_total_rows.append(row)

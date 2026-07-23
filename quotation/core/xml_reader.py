@@ -112,11 +112,16 @@ def _build_groups(items: list[LineItem],
                   reference_names: list[str]) -> tuple[Group, ...]:
     """ProprietaryGroupIdentifier 로 묶는다. 문서 등장 순서를 유지한다.
 
-    두 가지 보정이 있다.
-      - 본체 라인(CPUSIUvalue=1)이 없는 그룹은 앞 그룹에 붙인다. 증설 견적에서
-        DISCO/NEW 그룹이 UPGRADE 그룹과 한 장에 나오는 이유다.
-      - 증설 견적이면 장비 이름을 BASE/PROPOSED 구성에서 가져온다.
+    증설 견적일 때만 두 가지 보정이 붙는다.
+      - 본체 라인(CPUSIUvalue=1)이 없는 그룹을 앞 그룹에 합친다. 증설은 장비
+        한 대에 대한 변경이라 UPGRADE/DISCO/NEW 가 한 장에 나온다.
+      - 장비 이름을 BASE/PROPOSED 구성에서 가져온다.
+
+    신규 견적에서는 합치지 않는다. TS4300 골든의 'No CPUSIU for the following
+    products' 그룹은 본체 라인이 없어도 제 장을 갖는다.
     """
+    is_upgrade = bool(reference_names)
+
     ordered: list[str] = []
     buckets: dict[str, list[LineItem]] = {}
     for it in items:
@@ -126,11 +131,10 @@ def _build_groups(items: list[LineItem],
             ordered.append(key)
         buckets[key].append(it)
 
-    # 본체 라인이 없는 그룹은 앞 그룹으로 합친다
     merged: list[str] = []
     for gid in ordered:
         has_body = any(i.siu == 1 for i in buckets[gid])
-        if merged and not has_body:
+        if is_upgrade and merged and not has_body:
             buckets[merged[-1]].extend(buckets[gid])
         else:
             merged.append(gid)
