@@ -1,0 +1,43 @@
+003120251222ECMSSD  90501a253450AP7660023                                                                                                   KRko                     00                                                                                                                                                
+030Unclassified          
+05         00                                                               
+05         00    CEID: 10ailnjz
+05         10                                                               
+05         10   Created on Tu Dec 23 2025 14:30:19 GMT+0900 (UTC) by Sang In
+05         00   Park                                                        
+05         10                                                               
+05         1U   You have selected IBM Storage Expert Care for your Client.  
+05         1U   Note: Only in enclosed city list and <50 KM of CBD, 24/48/72
+05         0U   hours committed fix can be sold without additional delivery 
+05         0U   approval.                                                   
+05         10   Customer Requested Arrival Date: 2026/01/06                 
+061027001MDDIBM_INC_SHIPPING^1^YES^IBM_WITHDRAWN_PRODUCTS_MODE^1^FALSE^IBM_REDUCED_SEV_MSG_MS^2^sw_577x_expert_care_must_read_message^sw_577x_cognitive_proactive_must_read_message^IBM_FV_VISIBLE^1^FALSE^IBM_CRAD^1^19010102^SV_DEFAULT_CATEGORIES^0^SW_Global_06_swrs_cho_global_preference_control^1^sw_core_otc_charge_option^SW_Global_06_swrs_media_global_preference_control^1^swn_esd_media^SW_Global_06_swrs_language_global_preference_control^1^sw_core_language_prim_korean^SW_Global_06_swrs_maintenance_global_preference_control^1^sw_core_nim_maint_3yr^SW_Global_06_swrs_shipping_options_global_control^1^sw_core_shipping_option_3444^SW_Global_06_swrs_expedite_global_control^1^sw_core_shipping_option_no_expedite^SW_Global_06_swrs_suppress_global_control^1^sw_core_shipping_option_not_3480^SW_Global_06_swrs_preinstall_languages_control^1^sw_core_preinst_language_korean^SW_Global_06_swrs_cultural_languages_control^1^sw_core_cultural_std_language^SW_Global_06_swrs_support_global_preference_control^1^sw_9by5_support_service^
+07   4983-AH8 #1                                     4983AH8                         
+011INITIAL ORDER CONFIGURATION                                                       
+061095001MDDSWN_EXPLICITLY_DELETED_MTMS^1^sw_rs_5608_pc2^IBM_PLATFORM^1^All^SW_MODEL^2^^pSeries or RS^SW_TYPE^1^All^SWN_PROCESSED_SOFTWARE_OBJECTS_KEY_S^7^sw_5773_stg_fs5200_default_and_require_provider_group^sw_5773_ecp_fs7200_fs9200_default_and_require_provider_group^sw_5765_vcc_default_linux_server_editions_provider_group^sw_5765_cmt_default_on_selected_hw_editions_provider_group^sw_5639_xce_on_p10_default_editions_provider_group^sw_5765_vc2_default_editions_provider_group^sw_5639_rle_f01_f06_non_hpc_solution_default_editions_provider_group^SWN_CONTEXT_SOFTWARE_OBJECTS_KEY_S^1^ibm_all_platform_type:All::DEFAULT:{}:FALSE:DEFAULT:{}:DEFAULT:DEFAULT:::FALSE:0:_:DEFAULT:FALSE:FALSE:FALSE:0:DEFAULT:{}^SWN_CATEGORIES_MC^2^ibm_sw_core_category_otherstorage^ibm_sw_core_category_management^sw_rs_5773_ecp:new_maintenance^1^sw_core_nim_maint_3yr^swn_verify_auto_added_recommended_software_message_displayed_B^1^TRUE^sw_rs_5773_stg:new_maintenance^1^sw_core_nim_maint_3yr^sw_rs_5608_pc2:new_maintenance^1^three_year_registration^sw_rs_5608_pc2:existing_maintenance^1^swn_maint_not_applicable^
+084983 AH8    1ACGM       1ACGN       1ACGU       2ACSR      16ADN1       1AHBB       2AHP5       2AHSG      12AKNC       1ALH0       1ALK3       1
+954983AH8                   000000000            T           1                    20260106                                                    IBM FlashSystem 9500 SFF NVMe Control Enclosure 
+060546001MDDTIER_NEEDTOBETOTALED^1^YES^IBM_MTM_NAME^1^^SSD_RACK_CB^1^2^ibm_parent_id_S^1^SSD_Leaf_Category 0x000004360FC58280 [SBO_FLASH_SSD]^SSD_9846_DUMMY^0^SHIPPING_FEATURECODE^1^AKNC^SERVICE_INTEGRATOR_RELATED_HW^1^4983AH8-1-14^IBM_MTM_CONTEXTS_MC^4^ssd_4983_AH8^ibm_region_ap^ibm_country_korea^ibm_INITIAL^SSD_MTM_EXPLICIT_SELECTION_QTYS_MF^10^0^2^16^0^1^0^1^0^0^12^SSD_MTM_EXPLICIT_SELECTION_MC^10^ssd_4666_AHSF^ssd_4666_AHBB^ssd_9848_ACSR^ssd_9848_ACSQ^ssd_4666_AKNC^ssd_4666_AKCH^ssd_4666_ACGN^ssd_sw_5608PC2b^ssd_4666_AHTJ^ssd_4666_AHSG^
+060042001BED1^1^01F3FFFFFDD8^01F3FFFFFDD8^
+96ACGM                                            1024 GB Base Cache                          
+96ACGN                                            1024 GB Cache Upgrade                       
+96ACGU                      N                     480 GB M.2 Boot drive Pair                  
+96ACSR                                            5m OM3 Fiber Cable (LC)                     
+96ADN1                      N                     Order Type 1 Indicator - CTO                
+96AHBB                                            4 Port 32Gb Fibre Channel Adapter Cards with Transceivers (Pair) 
+96AHP5                                            Power Cords - PDU C19 to C20                
+96AHSG                                            19.2TB FlashCore Module 4                   
+96AKNC                                            Premium S&H Indicator                       
+96ALH0                      N                     Expert Care Indicator                       
+96ALK3                      N                     EC Advanced 3 Year                          
+084984 A03    1
+954984A03                   000000000            T           0                    20260106                                                    3 year IBM Storage Expert Care Advanced     
+060119001MDDTIER_MAINTENANCEPRODUCT^1^YES^BASE_SERVICES_INTEGRATOR_TAG^1^^SERVICE_INTEGRATOR_RELATED_HW^1^4983AH8-1-14^
+060041001BED1^^01F3FFFFFF30^01F3FFFFFF30^
+475773STG    12000       1
+955773STG                   000000000           NT           0                    20260106                                                    Support Line for Storage - 3 Year                           
+060104001MDDSWN_MTM_CONTEXTS_MC^4^ibm_region_ap^ibm_country_korea^sw_software_p_series_type^ibm_INITIAL^
+060042001BED1^3^01F3FFFFFCC8^01F3FFFFFCC8^
+962000                      N                     Support per Server (N/C)                                    
+98   42
+992575544623
