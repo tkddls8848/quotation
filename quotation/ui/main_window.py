@@ -31,7 +31,7 @@ XML_FILETYPES = [("XML 화일", "*.xml"), ("모든 화일", "*.*")]
 
 
 class MainWindow(ttk.Frame):
-    def __init__(self, master: tk.Tk):
+    def __init__(self, master: tk.Tk, prefill: str | None = None):
         super().__init__(master, padding=12)
         self.master = master
         self.cfg = config_mod.load()
@@ -50,6 +50,11 @@ class MainWindow(ttk.Frame):
         master.columnconfigure(0, weight=1)
         master.rowconfigure(0, weight=1)
         self.after(100, self._drain_events)
+
+        # EXE 에 XML 을 끌어다 놓은 경우
+        if prefill and Path(prefill).is_file():
+            self.xml_path.set(str(Path(prefill).resolve()))
+            self.status.set("<변환> 버튼을 누르면 견적서 변환작업을 시작합니다.")
 
     # --- 화면 구성 -----------------------------------------------------------
 
@@ -236,7 +241,7 @@ def _reveal(path: Path):
         log.warning("결과 폴더를 열지 못했습니다: %s", exc)
 
 
-def run() -> int:
+def run(prefill: str | None = None) -> int:
     root = tk.Tk()
     root.title(TITLE)
     root.minsize(620, 300)
@@ -244,6 +249,6 @@ def run() -> int:
         root.call("tk", "scaling", 1.3)
     except tk.TclError:
         pass
-    MainWindow(root)
+    MainWindow(root, prefill)
     root.mainloop()
     return 0

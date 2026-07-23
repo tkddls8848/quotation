@@ -1,0 +1,7 @@
+# 런타임
+lxml==6.1.1
+openpyxl==3.1.5
+
+# 개발/빌드
+pytest==8.3.4
+pyinstaller==6.11.1
