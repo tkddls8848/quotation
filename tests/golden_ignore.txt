@@ -47,6 +47,16 @@ EXPERT LABS PROJECT UNIT FO!F7
 EXPERT LABS PROJECT UNIT FO!G7
 EXPERT LABS PROJECT UNIT FO!H7
 
+# (5) 템플릿 글꼴 변경 (2026-07-23). 골든 2건은 변경 전 템플릿으로 만든 것이라
+# 이 두 셀만 낡았다. 사용자가 TOTAL 시트 머리말 글꼴을 바꿨다.
+#     B5 (견적 유효기간)      Tahoma -> 돋움
+#     H5 (단위: 천원, 부가세)  Tahoma -> HY헤드라인M
+# 두 셀 모두 writer 가 손대지 않고 템플릿에서 그대로 오는 자리다.
+# 새 템플릿으로 만든 골든을 받으면 이 두 줄을 지울 것.
+# 그때까지는 test_template_header_passes_through 가 대신 지켜 준다.
+TOTAL!B5
+TOTAL!H5
+
 # (이력) SERVER 1!E59:E65 를 '원인 불명 이상치'로 등록했다가 철회했다.
 # H/W 구간에서 기준행이 N/C 이면 서브 수량을 '={수량}' 으로 쓴다는 규칙이
 # 밝혀져 설명이 되었다.

@@ -36,6 +36,41 @@ def _build(name: str, today: dt.date, tmp_path: Path) -> Path:
     return ibm_writer.write(quote, TEMPLATE, tmp_path / f"{name}.xlsx", today=today)
 
 
+#: writer 가 직접 손대는 머리말 셀. 나머지 1~7행은 템플릿에서 그대로 와야 한다.
+#: 상세 시트의 H7 은 값을 지우고 H6:H7 로 병합하는 자리다 (SPEC_CELLMAP.md §4.1).
+WRITTEN_HEADER_CELLS = {"TOTAL": {"B2", "C3"}, "detail": {"C1", "C3", "H7"}}
+
+
+def test_template_header_passes_through(tmp_path):
+    """템플릿 1~7행의 글꼴·서식이 산출물에 그대로 전달되는지.
+
+    템플릿 글꼴을 고치면 결과에 바로 반영되어야 한다. writer 가 값을 쓰는
+    몇 셀만 예외다. 이 테스트가 있어야 템플릿 수정이 조용히 무시되지 않는다.
+    """
+    from openpyxl import load_workbook
+    from openpyxl.utils import get_column_letter
+
+    actual = _build("FS5045_260722", dt.date(2026, 7, 23), tmp_path)
+    tw = load_workbook(TEMPLATE)
+    aw = load_workbook(actual)
+
+    for sheet, source in (("TOTAL", "TOTAL"), ("4680-3P4 #1", "template")):
+        written = WRITTEN_HEADER_CELLS["TOTAL" if sheet == "TOTAL" else "detail"]
+        t, a = tw[source], aw[sheet]
+        for row in range(1, 8):
+            for col in range(2, 9):
+                addr = f"{get_column_letter(col)}{row}"
+                if addr in written:
+                    continue
+                tc, ac = t[addr], a[addr]
+                if tc.value is None:
+                    continue
+                assert (tc.font.name, tc.font.size) == (ac.font.name, ac.font.size), (
+                    f"[{sheet}] {addr} 글꼴이 템플릿과 다르다"
+                )
+                assert tc.value == ac.value, f"[{sheet}] {addr} 값이 템플릿과 다르다"
+
+
 def test_total_sheet_keeps_template_drawings(tmp_path):
     """TOTAL 시트 상단의 로고·머리글 도형이 남아 있어야 한다.
 
