@@ -130,6 +130,12 @@ def compare_sheet(name, gs, as_, rep: Report, ignore: set[str]):
             if bool(g.font.bold) != bool(a.font.bold):
                 rep.add(name, addr, "Bold", bool(g.font.bold), bool(a.font.bold))
 
+            if g.font.name != a.font.name:
+                rep.add(name, addr, "글꼴", g.font.name, a.font.name)
+
+            if float(g.font.size or 0) != float(a.font.size or 0):
+                rep.add(name, addr, "글꼴크기", g.font.size, a.font.size)
+
 
 def compare(golden_path, actual_path, ignore: set[str]) -> Report:
     rep = Report()

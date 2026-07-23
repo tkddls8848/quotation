@@ -1,4 +1,4 @@
-# .xls -> .xlsx 1회 변환 (Excel COM). 골든/템플릿 캐시 생성용.
+﻿# .xls -> .xlsx 1회 변환 (Excel COM). 골든/템플릿 캐시 생성용.
 # 런타임에는 사용하지 않는다. 개발 시점에만 실행.
 param(
     [string[]]$SrcDir = @("samples", "."),

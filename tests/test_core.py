@@ -195,12 +195,13 @@ def test_fs5045_has_no_maintenance(fs5045):
 
 # --- 하드웨어/소프트웨어 분류 ---------------------------------------------------
 
-def test_services_are_grouped_with_hardware(xrois):
-    """X-ROIS 6911-301 은 Services 지만 골든에서 H/W 섹션에 있다."""
+def test_services_are_grouped_with_software(xrois):
+    """X-ROIS 6911-301 은 Services 이고 골든 'EXPERT LABS' 시트 B8 = "S/W"."""
     expert = xrois.groups[0]
     assert expert.items[0].product_type == "Services"
-    assert expert.items[0].is_hardware
-    assert len(expert.software) == 0
+    assert not expert.items[0].is_hardware
+    assert len(expert.hardware) == 0
+    assert [kind for kind, _ in expert.sections()] == ["Software"]
 
 
 def test_xrois_server_hw_sw_split(xrois):

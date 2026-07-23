@@ -1,4 +1,4 @@
-# 골든 견적서(.xls) 셀 단위 덤프. Phase 0 분석용.
+﻿# 골든 견적서(.xls) 셀 단위 덤프. Phase 0 분석용.
 param([Parameter(Mandatory=$true)][string]$Path)
 
 $e = New-Object -ComObject Excel.Application

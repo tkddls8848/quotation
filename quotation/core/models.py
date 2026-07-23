@@ -54,8 +54,9 @@ class LineItem:
 
     @property
     def is_hardware(self) -> bool:
-        # Services 는 골든에서 H/W 섹션에 배치된다 (X-ROIS 6911-301).
-        return self.product_type != SOFTWARE
+        # Hardware 만 H/W 섹션이다. Services 는 S/W 로 간다
+        # (골든 X-ROIS 'EXPERT LABS' 시트 B8 = "S/W", 6911-301 은 Services).
+        return self.product_type == HARDWARE
 
     def own_amount(self) -> Decimal:
         return to_decimal(self.unit_price) * self.quantity
