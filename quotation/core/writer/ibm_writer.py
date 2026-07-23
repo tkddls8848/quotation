@@ -94,16 +94,16 @@ def _amount_cell(ws: Worksheet, coord: str, amount: Amount, fmt: str):
         _put(ws, coord, _num(amount), fmt=fmt, font=FONT_DATA)
 
 
-#: 견적서 번호. 연도 두 자리만 갱신하고 사용자가 덧붙인 부분은 건드리지 않는다.
-_QUOTE_NO_RE = re.compile(r"^(.*?Trialinfo-)(\d{2})(.*)$", re.DOTALL)
+#: 견적서 번호. `…Trialinfo-` 까지를 앞부분으로 잡고 연도 두 자리를 갱신한다.
+_QUOTE_NO_RE = re.compile(r"^(.*?Trialinfo-)\d{2}-?.*$", re.DOTALL)
 
 
 def _update_quote_number(ws: Worksheet, today: dt.date) -> None:
     """B2 의 견적서 번호에서 연도만 올린다.
 
-    이 셀은 사용자가 템플릿에서 직접 고치는 자리다 (`NO : Trialinfo-26-001` 처럼
-    번호를 덧붙인다). 통째로 덮어쓰면 그 편집이 지워지므로 연도만 바꾼다.
-    형식이 다르면 손대지 않는다.
+    결과는 언제나 `NO : Trialinfo-{YY}-` 형태다. 연도 뒤에는 아무것도 붙이지 않는다.
+    앞부분은 템플릿에 적힌 그대로 두므로 문구를 바꿔도 유지된다.
+    형식이 다르면 아예 손대지 않는다.
     """
     cell = ws["B2"]
     text = cell.value
@@ -112,7 +112,7 @@ def _update_quote_number(ws: Worksheet, today: dt.date) -> None:
     m = _QUOTE_NO_RE.match(text)
     if not m:
         return
-    cell.value = f"{m.group(1)}{today:%y}{m.group(3)}"
+    cell.value = f"{m.group(1)}{today:%y}-"
 
 
 def _merge(pending: list[str], col: str, top: int, bottom: int):

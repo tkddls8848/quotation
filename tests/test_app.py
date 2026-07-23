@@ -98,20 +98,34 @@ def test_maintenance_is_never_written(tmp_path):
                     f"[{sheet.title}] {col}{row} 에 유지정비료가 남아 있다: {value!r}")
 
 
-def test_quote_number_keeps_user_edits(tmp_path):
-    """B2 는 사용자가 템플릿에서 고치는 자리다. 연도만 갱신하고 나머지는 둔다."""
+def _quote_number(tmp_path, template_b2: str) -> str:
     from openpyxl import load_workbook as lw
 
     from quotation.core.writer import ibm_writer
 
     template = tmp_path / "t.xlsx"
     wb = lw(paths.template_path())
-    wb["TOTAL"]["B2"] = "NO : Trialinfo-24-007 (담당 박상인)"
+    wb["TOTAL"]["B2"] = template_b2
     wb.save(template)
 
     quote = xml_reader.parse(FS5045)
     out = ibm_writer.write(quote, template, tmp_path / "o.xlsx", today=TODAY)
-    assert lw(out)["TOTAL"]["B2"].value == "NO : Trialinfo-26-007 (담당 박상인)"
+    return lw(out)["TOTAL"]["B2"].value
+
+
+def test_quote_number_updates_year_only(tmp_path):
+    """결과는 언제나 'NO : Trialinfo-{YY}-' 다. 연도 뒤에 아무것도 붙지 않는다."""
+    assert _quote_number(tmp_path, "NO : Trialinfo-24-") == "NO : Trialinfo-26-"
+
+
+def test_quote_number_drops_trailing_text(tmp_path):
+    """연도 뒤에 뭔가 적혀 있어도 붙여 내보내지 않는다."""
+    assert _quote_number(tmp_path, "NO : Trialinfo-24-A017") == "NO : Trialinfo-26-"
+
+
+def test_quote_number_keeps_custom_prefix(tmp_path):
+    """앞부분 문구는 템플릿에 적힌 그대로 둔다."""
+    assert _quote_number(tmp_path, "견적 NO : Trialinfo-20-") == "견적 NO : Trialinfo-26-"
 
 
 def test_quote_number_untouched_when_format_differs(tmp_path):
