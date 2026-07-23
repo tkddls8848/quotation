@@ -13,7 +13,7 @@ sys.path.insert(0, str(ROOT))
 
 from quotation import config as config_mod  # noqa: E402
 from quotation import paths  # noqa: E402
-from quotation.core import convert  # noqa: E402
+from quotation.core import convert, xml_reader  # noqa: E402
 from quotation.core.pricing import DiscountError  # noqa: E402
 from quotation.core.xml_reader import QuotationXmlError  # noqa: E402
 
@@ -71,16 +71,87 @@ def test_bad_xml_reports_original_message(tmp_path):
 
 # --- 옵션 --------------------------------------------------------------------
 
-def test_maintenance_can_be_switched_off(tmp_path):
-    """Check_MA 해제 시 H열을 채우지 않는다 (골든 없음 — 동작 정의)."""
-    on = convert.convert(XROIS, out_dir=tmp_path / "on", today=TODAY).output
-    off = convert.convert(XROIS, out_dir=tmp_path / "off", today=TODAY,
-                          include_maintenance=False).output
+def test_maintenance_is_never_written(tmp_path):
+    """유지정비료는 견적서에서 완전히 제외한다 (2026-07-23 결정).
 
-    assert load_workbook(on)["SERVER 1"]["H51"].value == 309
-    assert load_workbook(off)["SERVER 1"]["H51"].value is None
-    assert load_workbook(on)["TOTAL"]["H10"].value == 309
-    assert load_workbook(off)["TOTAL"]["H10"].value is None
+    X-ROIS XML 에는 MaintenanceUnitListPrice 309 와 PriceTerm 'Y' 가 있다.
+    파서는 계속 읽지만 견적서 H·I열에는 아무것도 쓰지 않는다.
+    """
+    quote = xml_reader.parse(XROIS)
+    line3000 = next(i for i in quote.groups[1].items if i.line_number == "3000")
+    assert line3000.maintenance == 309, "파싱 자체는 그대로여야 한다"
+
+    out = convert.convert(XROIS, out_dir=tmp_path, today=TODAY).output
+    wb = load_workbook(out)
+
+    server = wb["SERVER 1"]
+    assert server["H51"].value is None
+    assert server["I51"].value is None
+    assert wb["TOTAL"]["H10"].value is None
+
+    # H열 어디에도 값이나 합계 수식이 없어야 한다
+    for sheet in wb.worksheets:
+        for row in range(1, 120):
+            for col in ("H", "I"):
+                value = sheet[f"{col}{row}"].value
+                assert value is None or row <= 7, (
+                    f"[{sheet.title}] {col}{row} 에 유지정비료가 남아 있다: {value!r}")
+
+
+def test_quote_number_keeps_user_edits(tmp_path):
+    """B2 는 사용자가 템플릿에서 고치는 자리다. 연도만 갱신하고 나머지는 둔다."""
+    from openpyxl import load_workbook as lw
+
+    from quotation.core.writer import ibm_writer
+
+    template = tmp_path / "t.xlsx"
+    wb = lw(paths.template_path())
+    wb["TOTAL"]["B2"] = "NO : Trialinfo-24-007 (담당 박상인)"
+    wb.save(template)
+
+    quote = xml_reader.parse(FS5045)
+    out = ibm_writer.write(quote, template, tmp_path / "o.xlsx", today=TODAY)
+    assert lw(out)["TOTAL"]["B2"].value == "NO : Trialinfo-26-007 (담당 박상인)"
+
+
+def test_quote_number_untouched_when_format_differs(tmp_path):
+    """형식이 다르면 손대지 않는다."""
+    from openpyxl import load_workbook as lw
+
+    from quotation.core.writer import ibm_writer
+
+    template = tmp_path / "t.xlsx"
+    wb = lw(paths.template_path())
+    wb["TOTAL"]["B2"] = "견적번호 2026-A-17"
+    wb.save(template)
+
+    quote = xml_reader.parse(FS5045)
+    out = ibm_writer.write(quote, template, tmp_path / "o.xlsx", today=TODAY)
+    assert lw(out)["TOTAL"]["B2"].value == "견적번호 2026-A-17"
+
+
+def test_template_lives_outside_the_exe(tmp_path, monkeypatch):
+    """템플릿은 EXE 옆의 고칠 수 있는 파일이어야 한다.
+
+    없으면 번들 사본으로 한 번 만들어 준다. 안에 묻어 두면 견적서 번호와
+    담당자 이름을 고칠 수 없다.
+    """
+    monkeypatch.delenv("QUOTATION_TEMPLATE", raising=False)
+    monkeypatch.setattr(paths, "app_dir", lambda: tmp_path)
+
+    target = tmp_path / paths.TEMPLATE_NAME
+    assert not target.exists()
+    assert paths.template_path() == target
+    assert target.exists(), "번들 사본으로 자동 생성되어야 한다"
+
+    # 이미 있으면 덮어쓰지 않는다 (사용자 편집 보존)
+    target.write_bytes(b"edited")
+    assert paths.template_path().read_bytes() == b"edited"
+
+
+def test_template_env_override(tmp_path, monkeypatch):
+    monkeypatch.setenv("QUOTATION_TEMPLATE", str(tmp_path / "custom.xlsx"))
+    assert paths.template_path() == tmp_path / "custom.xlsx"
 
 
 def test_no_discount_leaves_supply_row_blank(tmp_path):

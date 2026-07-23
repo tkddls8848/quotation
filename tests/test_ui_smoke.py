@@ -30,9 +30,10 @@ def root(tmp_path, monkeypatch):
 def test_window_builds(root):
     from quotation.ui.main_window import MainWindow
     win = MainWindow(root)
-    assert win.include_ma.get() is True
     assert win.convert_btn.cget("text") == "변환"
     assert "선택" in win.status.get()
+    # 견적번호·담당자를 고칠 수 있도록 템플릿 경로를 보여 준다
+    assert win.template_label.get().endswith(".xlsx")
 
 
 def test_convert_without_file_warns(root, monkeypatch):

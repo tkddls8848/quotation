@@ -19,6 +19,7 @@ from pathlib import Path
 from tkinter import filedialog, messagebox, ttk
 
 from .. import config as config_mod
+from .. import paths
 from ..core import convert
 from ..core.pricing import DiscountError
 from ..core.xml_reader import QuotationXmlError
@@ -41,9 +42,9 @@ class MainWindow(ttk.Frame):
         self.xml_path = tk.StringVar()
         self.out_dir = tk.StringVar(value=self.cfg.last_output_dir)
         self.discount = tk.StringVar(value=self.cfg.discount)
-        self.include_ma = tk.BooleanVar(value=self.cfg.include_maintenance)
         self.open_folder = tk.BooleanVar(value=self.cfg.open_folder_when_done)
         self.status = tk.StringVar(value="변환할 XML 화일을 선택하십시오.")
+        self.template_label = tk.StringVar(value=str(paths.template_path()))
 
         self._build()
         self.grid(sticky="nsew")
@@ -87,16 +88,25 @@ class MainWindow(ttk.Frame):
         row += 1
 
         options = ttk.Frame(self)
-        options.grid(row=row, column=0, columnspan=3, sticky="ew", pady=(4, 10))
+        options.grid(row=row, column=0, columnspan=3, sticky="ew", pady=(4, 6))
         ttk.Label(options, text="할인율").pack(side="left")
         ttk.Entry(options, textvariable=self.discount, width=7).pack(
             side="left", padx=(6, 2))
         ttk.Label(options, text="%  (0~99, 소수점 1자리)",
                   foreground="#777").pack(side="left", padx=(0, 16))
-        ttk.Checkbutton(options, text="유지정비료 포함",
-                        variable=self.include_ma).pack(side="left", padx=(0, 12))
         ttk.Checkbutton(options, text="완료 후 폴더 열기",
                         variable=self.open_folder).pack(side="left")
+        row += 1
+
+        # 견적서 번호(NO : Trialinfo-YY-)와 머리말의 '담당 : ...' 은 템플릿에서
+        # 직접 고친다. 그래서 템플릿을 바로 열 수 있게 해 둔다.
+        tmpl = ttk.Frame(self)
+        tmpl.grid(row=row, column=0, columnspan=3, sticky="ew", pady=(0, 10))
+        ttk.Label(tmpl, text="템플릿", foreground="#777").pack(side="left")
+        ttk.Label(tmpl, textvariable=self.template_label,
+                  foreground="#777").pack(side="left", padx=(6, 10))
+        ttk.Button(tmpl, text="템플릿 열기(견적번호·담당자 수정)",
+                   command=self._open_template).pack(side="left")
         row += 1
 
         self.progress = ttk.Progressbar(self, mode="determinate", maximum=100)
@@ -129,6 +139,20 @@ class MainWindow(ttk.Frame):
             self.xml_path.set(chosen)
             self.status.set("<변환> 버튼을 누르면 견적서 변환작업을 시작합니다.")
 
+    def _open_template(self):
+        """템플릿을 기본 프로그램(Excel)으로 연다.
+
+        견적서 번호와 머리말의 담당자 이름은 여기서 고친다.
+        """
+        template = paths.template_path()
+        if not template.exists():
+            messagebox.showerror(TITLE, f"템플릿을 찾을 수 없습니다.\n{template}")
+            return
+        try:
+            os.startfile(template)  # noqa: S606
+        except OSError as exc:
+            messagebox.showerror(TITLE, f"템플릿을 열지 못했습니다.\n{exc}")
+
     def _pick_out_dir(self):
         initial = self.out_dir.get() or self.cfg.last_output_dir
         chosen = filedialog.askdirectory(
@@ -159,15 +183,13 @@ class MainWindow(ttk.Frame):
 
         self._set_busy(True)
         threading.Thread(target=self._worker,
-                         args=(xml, out_dir, self.discount.get(),
-                               self.include_ma.get()),
+                         args=(xml, out_dir, self.discount.get()),
                          daemon=True).start()
 
-    def _worker(self, xml: Path, out_dir, discount: str, include_ma: bool):
+    def _worker(self, xml: Path, out_dir, discount: str):
         try:
             result = convert.convert(
                 xml, out_dir=out_dir, discount=discount,
-                include_maintenance=include_ma,
                 progress=lambda p, m: self._events.put(("progress", p, m)))
             self._events.put(("done", result))
         except (QuotationXmlError, DiscountError) as exc:
@@ -209,7 +231,6 @@ class MainWindow(ttk.Frame):
 
         self.cfg.remember(Path(self.xml_path.get()), result.output)
         self.cfg.discount = self.discount.get().strip()
-        self.cfg.include_maintenance = self.include_ma.get()
         self.cfg.open_folder_when_done = self.open_folder.get()
         config_mod.save(self.cfg)
 

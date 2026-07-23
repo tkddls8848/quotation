@@ -6,6 +6,7 @@ Windows 11 에서는 쓰기가 차단되어 VirtualStore 로 우회되고 설정
 from __future__ import annotations
 
 import os
+import shutil
 import sys
 from pathlib import Path
 
@@ -21,8 +22,36 @@ def resource_dir() -> Path:
     return Path(__file__).resolve().parent / "resources"
 
 
+def app_dir() -> Path:
+    """EXE 가 놓인 폴더. 개발 중에는 저장소 루트."""
+    if getattr(sys, "frozen", False):
+        return Path(sys.executable).resolve().parent
+    return Path(__file__).resolve().parents[1]
+
+
 def template_path() -> Path:
-    return resource_dir() / TEMPLATE_NAME
+    """사용자가 고칠 수 있는 템플릿 파일.
+
+    템플릿은 EXE 안에 묻어 두면 안 된다. 견적서 번호(`NO : Trialinfo-YY-`)와
+    머리말 도형의 `담당 : 시스템사업부 ...` 를 사용자가 직접 고쳐야 하기 때문이다.
+    EXE 옆에 두고, 없으면 번들 사본으로 한 번만 만들어 준다.
+
+    `QUOTATION_TEMPLATE` 환경 변수로 다른 경로를 지정할 수 있다.
+    """
+    override = os.environ.get("QUOTATION_TEMPLATE")
+    if override:
+        return Path(override)
+
+    external = app_dir() / TEMPLATE_NAME
+    if not external.exists():
+        bundled = resource_dir() / TEMPLATE_NAME
+        if bundled.exists():
+            try:
+                external.parent.mkdir(parents=True, exist_ok=True)
+                shutil.copyfile(bundled, external)
+            except OSError:
+                return bundled  # 쓰기 불가한 위치면 번들본을 그대로 쓴다
+    return external
 
 
 def app_data_dir() -> Path:

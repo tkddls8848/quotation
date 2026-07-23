@@ -144,8 +144,9 @@ def compare_sheet(name, gs, as_, rep: Report, ignore: set[str]):
     # 셀
     for row in range(1, MAX_ROW + 1):
         for col in range(1, MAX_COL + 1):
-            addr = f"{get_column_letter(col)}{row}"
-            if f"{name}!{addr}" in ignore:
+            letter = get_column_letter(col)
+            addr = f"{letter}{row}"
+            if _ignored(ignore, name, addr, letter):
                 rep.ignored += 1
                 continue
             g = gs.cell(row=row, column=col)
@@ -241,7 +242,12 @@ def compare(golden_path, actual_path, ignore: set[str]) -> Report:
 
 
 def load_ignore(path) -> set[str]:
-    """무시 목록. 한 줄에 'SHEET!ADDR' 형식. '#' 주석 허용."""
+    """무시 목록. '#' 주석 허용. 한 줄에 하나씩 아래 두 형식을 받는다.
+
+        SHEET!B12    셀 하나
+        *!H:H        모든 시트의 H열 전체
+        SHEET!H:H    그 시트의 H열 전체
+    """
     if not path:
         return set()
     out = set()
@@ -251,6 +257,12 @@ def load_ignore(path) -> set[str]:
             if line:
                 out.add(line)
     return out
+
+
+def _ignored(ignore: set[str], sheet: str, addr: str, column: str) -> bool:
+    return (f"{sheet}!{addr}" in ignore
+            or f"{sheet}!{column}:{column}" in ignore
+            or f"*!{column}:{column}" in ignore)
 
 
 def main() -> int:

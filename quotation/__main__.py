@@ -24,8 +24,8 @@ def _cli(argv: list[str]) -> int:
                         help="저장 폴더 (기본: XML 과 같은 폴더)")
     parser.add_argument("-d", "--discount", default="",
                         help="할인율 %% (0~99, 소수점 1자리)")
-    parser.add_argument("--no-maintenance", action="store_true",
-                        help="유지정비료(H열)를 채우지 않습니다")
+    parser.add_argument("-t", "--template", type=Path,
+                        help="견적서 템플릿 (기본: EXE 옆의 견적서_template.xlsx)")
     parser.add_argument("-v", "--version", action="version",
                         version=f"%(prog)s {__version__}")
     args = parser.parse_args(argv)
@@ -35,7 +35,7 @@ def _cli(argv: list[str]) -> int:
         try:
             result = convert.convert(
                 xml, out_dir=args.out_dir, discount=args.discount,
-                include_maintenance=not args.no_maintenance)
+                template=args.template)
             print(f"OK   {xml.name} -> {result.output}  "
                   f"(장비군 {result.group_count}개, {result.elapsed:.2f}초)")
         except (QuotationXmlError, DiscountError, OSError) as exc:

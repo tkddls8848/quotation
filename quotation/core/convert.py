@@ -52,7 +52,6 @@ def output_path_for(xml_path: Path, out_dir: Path | None = None) -> Path:
 def convert(xml_path: str | Path, *, out_dir: str | Path | None = None,
             template: str | Path | None = None,
             discount: str | Decimal | None = None,
-            include_maintenance: bool = True,
             today: dt.date | None = None,
             progress: ProgressFn = _noop) -> Result:
     """XML -> 견적서 .xlsx.
@@ -78,8 +77,7 @@ def convert(xml_path: str | Path, *, out_dir: str | Path | None = None,
     out = output_path_for(xml_path, out_dir)
 
     progress(45, "Excel화일을 생성하고 있습니다.")
-    ibm_writer.write(quote, template, out, today=today, discount=rate,
-                     include_maintenance=include_maintenance)
+    ibm_writer.write(quote, template, out, today=today, discount=rate)
 
     progress(100, "견적서작성을 완료하였습니다.")
     elapsed = (dt.datetime.now() - started).total_seconds()

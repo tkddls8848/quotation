@@ -21,7 +21,6 @@ class Config:
     last_input_dir: str = ""
     last_output_dir: str = ""
     discount: str = ""
-    include_maintenance: bool = True
     open_folder_when_done: bool = True
     migrated_from_ini: str = ""
     recent_files: list[str] = field(default_factory=list)
