@@ -21,6 +21,7 @@ from openpyxl.worksheet.worksheet import Worksheet
 
 from ..models import Group, LineItem, Quotation
 from ..money import NO_CHARGE, Amount, is_priced
+from . import drawings
 from .decorate import Layout, decorate
 
 SHEET_TOTAL = "TOTAL"
@@ -375,4 +376,7 @@ def write(quote: Quotation, template: str | Path, out_path: str | Path,
     out = Path(out_path)
     out.parent.mkdir(parents=True, exist_ok=True)
     wb.save(out)
+    # openpyxl 은 저장 시 그림·도형을 버린다. TOTAL 시트 상단의 로고와
+    # 머리글 도형을 템플릿에서 다시 옮겨 붙인다 (SPEC_CELLMAP.md §5.1).
+    drawings.carry_over(template, out, SHEET_TOTAL)
     return out

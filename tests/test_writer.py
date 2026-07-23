@@ -36,6 +36,28 @@ def _build(name: str, today: dt.date, tmp_path: Path) -> Path:
     return ibm_writer.write(quote, TEMPLATE, tmp_path / f"{name}.xlsx", today=today)
 
 
+def test_total_sheet_keeps_template_drawings(tmp_path):
+    """TOTAL 시트 상단의 로고·머리글 도형이 남아 있어야 한다.
+
+    openpyxl 은 저장 시 그림을 버린다. 이것이 빠지면 첫 장 상단이 비어 보인다.
+    상세 시트와 숨김 template 시트에는 골든과 마찬가지로 그림이 없어야 한다.
+    """
+    import re
+    import zipfile
+
+    actual = _build("FS5045_260722", dt.date(2026, 7, 23), tmp_path)
+    with zipfile.ZipFile(actual) as z:
+        names = z.namelist()
+        media = [n for n in names if n.startswith("xl/media/")]
+        drawn = sorted(n for n in names
+                       if n.startswith("xl/worksheets/sheet")
+                       and re.search(rb"<drawing\s", z.read(n)))
+
+    assert media, "템플릿의 로고 이미지가 옮겨지지 않았다"
+    assert drawn == ["xl/worksheets/sheet1.xml"], (
+        f"그림은 TOTAL(sheet1)에만 있어야 한다: {drawn}")
+
+
 @pytest.mark.parametrize("name,today", CASES)
 def test_matches_golden(name, today, tmp_path):
     golden = CACHE / f"{name}.xlsx"

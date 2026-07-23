@@ -192,8 +192,34 @@ def compare_sheet(name, gs, as_, rep: Report, ignore: set[str]):
                         _color(a.font.color))
 
 
+def _package_facts(path) -> tuple[set[str], set[str]]:
+    """(그림이 붙은 시트 파트, 미디어 파일). 셀만 봐서는 놓치는 것들이다."""
+    import re
+    import zipfile
+
+    with zipfile.ZipFile(path) as z:
+        names = z.namelist()
+        media = {n.rsplit("/", 1)[-1] for n in names if n.startswith("xl/media/")}
+        drawn = set()
+        for n in names:
+            if not n.startswith("xl/worksheets/sheet"):
+                continue
+            if re.search(rb"<drawing\s", z.read(n)):
+                drawn.add(n.rsplit("/", 1)[-1])
+    return drawn, media
+
+
 def compare(golden_path, actual_path, ignore: set[str]) -> Report:
     rep = Report()
+
+    g_drawn, g_media = _package_facts(golden_path)
+    a_drawn, a_media = _package_facts(actual_path)
+    if g_drawn != a_drawn:
+        rep.add("<workbook>", "-", "그림이 붙은 시트", sorted(g_drawn),
+                sorted(a_drawn))
+    if g_media != a_media:
+        rep.add("<workbook>", "-", "이미지 파일", sorted(g_media), sorted(a_media))
+
     gw = load_workbook(golden_path, data_only=False)
     aw = load_workbook(actual_path, data_only=False)
 
