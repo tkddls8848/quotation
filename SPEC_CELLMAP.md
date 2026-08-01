@@ -18,8 +18,6 @@ CFXML
    ├─ ProprietaryInformation* (Name, Value)
    │     CFXML=1.0 / Configurator Identifier=ECMSSD.90501a261971
    │     Price File Date=2026-07-22 / Checksum=2302753820
-   ├─ ProprietaryShippingInformation? (Name, FinancialAmount)
-   │     "Total Non-discountable Shipping and Handling Charge" KWON 1,826.9
    └─ ProductLineItem+
       ├─ ProductLineNumber            1000, 2000, …
       ├─ TransactionType              NEW
@@ -35,12 +33,12 @@ CFXML
       │    ├─ ProductTypeCode?               Hardware / Software / Services
       │    └─ ProductIdentifierTypeCode?
       ├─ UnitListPrice? (FinancialAmount(GlobalCurrencyCode, MonetaryAmount), PriceTerm)
-      ├─ ShippingUnitListPrice?
-      ├─ MaintenanceUnitListPrice?
       └─ ProductSubLineItem*
          (LineNumber, TransactionType, Quantity, ExchangeAddSubLineItemNumber?,
-          ProductIdentification, UnitListPrice?, MaintenanceUnitListPrice?)
+          ProductIdentification, UnitListPrice?)
 ```
+
+배송비와 유지정비료 태그는 현재 출력 범위가 아니므로 파싱하지 않는다.
 
 ### 1.0 TransactionType 과 증설 견적 ✅ (골든 `1080MES`)
 
@@ -153,10 +151,6 @@ F열 단가  비움          G열 금액  비움
 | `TS4300 Tape Library Base Module with Expert Care` | `TS4300 Tape Library Base Module` | 그대로 | 31 |
 | `No CPUSIU for the following products:IBM 18 TB …` | `No CPUSIU for the following pro` | 그대로 | 31 |
 
-> ⚠️ 초판에 **"27자 절단"으로 적었으나 틀렸다.** X-ROIS 하나만 보고 정한 값인데,
-> 그 27자는 31자로 자른 뒤 `IBM ` 4자를 뗀 결과였다. TS4300 골든의 31자 키가
-> 이를 드러냈다. `IBM ` 을 먼저 떼면 X-ROIS 키가 31자가 되어 골든과 어긋난다.
-
 ⚠️ 그룹 키는 `ProprietaryGroupIdentifier`이며, 종목 키는 **그룹의 첫 ProductLineItem** 의
 Description 에서 뽑는다 (증설 견적은 예외 — §1.0.1).
 
@@ -188,19 +182,7 @@ Description 에서 뽑는다 (증설 견적은 예외 — §1.0.1).
 | E | `Quantity` | 기록 | 기록 |
 | F | `=G{구간첫행}/E{구간첫행}` (단위가) | 수식, **구간 단위** 병합 | — |
 | G | **구간(H/W·S/W) 금액 소계 (상수)** | 값, **구간 단위** 병합 | — |
-| H | **그룹 MA 합계 (상수)** ✅ | 값, **그룹 전체** 병합 | — |
-
-> ⚠️ **F·G 는 구간 단위, H 는 그룹 단위로 병합 범위가 다르다.**
-> X-ROIS 그룹 2000: `G10:G12` + `G13:G22` (구간 2개) vs `H10:H22` (그룹 전체 1개)
-
-**H열 = 제안가(유지정비료)** ✅ 검증됨 — X-ROIS 샘플
-```
-그룹 2000 (행 10~22) → H10 = 309  (상수, H10:H22 병합)
-  = Σ(그룹 내 모든 ProductLineItem/SubLineItem 의 MaintenanceUnitListPrice/FinancialAmount/MonetaryAmount)
-  ─ 검산: 라인 3000(7226-1U3) 의 MA 309 만 존재 → 그룹 합 309  ✓
-MA 값이 하나도 없는 그룹 → H 셀 비움 (FS5045 전 그룹 해당)
-```
-> **수량을 곱하지 않는다.** MA는 원본 `MonetaryAmount` 를 그대로 기록한다. `PriceTerm` 은 `Y`(연간)이나 셀에는 반영되지 않는다.
+| H | 비고 | 그룹 전체 병합, 값은 기록하지 않음 | — |
 
 **G열 값 = 구간(H/W·S/W) 소계 (상수로 기록)** ✅ 검증됨
 
@@ -226,22 +208,19 @@ FS5045 그룹 1000 (행 8~10)
 **구간 소계 = Σ(구간 내 ProductLineItem 및 그 ProductSubLineItem 의 Quantity × MonetaryAmount)**, N/C는 0.
 **구간 소계가 0이면 F·G 셀을 비운다** (병합은 유지).
 
-**구간 분류**: `ProductTypeCode == "Software"` → S/W 구간, 그 외(`Hardware`, `Services`)는 H/W 구간 ✅
-(X-ROIS `6911-301` 은 `Services` 이나 골든에서 H/W 섹션에 배치됨)
+**구간 분류**: `ProductTypeCode == "Hardware"`만 H/W 구간, 그 외(`Software`, `Services`)는 S/W 구간 ✅
 
 **그룹 종료 행 (합계)**
 | 셀 | 내용 |
 |---|---|
 | C{n} | `합                   계` (Bold, C{n}:F{n} 병합) |
 | G{n} | `=SUM(G{첫행}:G{n-1})` Bold |
-| H{n} | `=SUM(H{첫행}:H{n-1})` Bold |
 
 **최종 행**
 | 셀 | 내용 |
 |---|---|
 | B{n} | `총        합       계` (Bold, B{n}:F{n} 병합) |
 | G{n} | `=SUM(G11,G15,G19)` — **각 그룹 합계 행을 콤마로 열거** ✅ |
-| H{n} | `=SUM(H11,H15,H19)` |
 | B{n+1} | `공        급       가` (Bold, 병합). **값 없음 — 수기 입력란** ✅ |
 
 **인쇄 영역**: `$A$1:$H${마지막행+2}` (FS5045: `$A$1:$H$23`, 공급가 행 21 + 하단 비고 병합 B22:H23) ✅
@@ -271,7 +250,6 @@ FS5045 그룹 1000 (행 8~10)
   │            F=서브 단가(상수)     G= =E{r}*F{r}
   └ 합계행:   C{n}="합                   계" (C{n}:F{n} 병합, Bold)
               G{n}= =SUM(G{블록첫행}:G{n-1})
-              H{n}= =SUM(H{블록첫행}:H{n-1})
   … (블록 반복)
   합계(HardWare) 행: C="합                   계(HardWare)"
               G= =SUM(G20,G23)   ← 각 블록 합계행 열거
@@ -285,23 +263,7 @@ FS5045 그룹 1000 (행 8~10)
 
 **N/C 처리** ✅: `F`, `G` 모두 문자열 `"N/C"` 를 그대로 기록 (수식 아님). 상위 SUM에서 자동으로 0 취급됨.
 
-### 4.3 H열(제안가/유지정비료) — 상세 시트 ✅
-
-| 위치 | 내용 |
-|---|---|
-| ProductLineItem 기준행 | `MaintenanceUnitListPrice` **상수** 기록 (수량 미곱). 없으면 비움 |
-| ProductSubLineItem 행 | 서브라인의 MA. 두 샘플 모두 전부 없음 ⚠️ 미검증 |
-| 블록 합계행 | `=SUM(H{블록첫행}:H{합계행-1})` — **G열과 동일 범위** |
-| 합계(HardWare) | `=SUM(H50,H57,H66)` — G열과 동일 열거 |
-| 총 합 계 | `=SUM(H67,H104)` |
-| 숫자 서식 | 상세 시트 H열 = `#,##0_ ` / TOTAL 시트 H열 = `#,##0_);[빨강](#,##0)` |
-
-검증 (X-ROIS `SERVER 1` 시트): `H51 = 309` (라인 3000 기준행) → `H57 = SUM(H51:H56) = 309`
-→ `H67 = SUM(H50,H57,H66) = 309` → `H105 = SUM(H67,H104) = 309` ✅
-
-> 블록이 1개뿐인 시트(`EXPERT LABS PROJECT UNIT FO`)에서는 `H11 = =H10` 형태의 **직접 참조**를 쓴다. ⚠️ 블록 1개일 때의 예외 규칙.
-
-### 4.4 섹션별 합계 구조 ✅ (Phase 3 확정)
+### 4.3 섹션별 합계 구조 ✅
 
 **H/W 구간과 S/W 구간의 합계 방식이 다르다.**
 
@@ -309,7 +271,6 @@ FS5045 그룹 1000 (행 8~10)
 |---|---|---|
 | 블록별 합계행 | **있음** — 라인아이템 블록마다 `합                   계` | **없음** |
 | 구간 합계 수식 | `=SUM(G20,G23)` — 블록 합계행 **열거** | `=SUM(G68:G103)` — 구간 전체 **범위** |
-| 구간 합계 H열 | 있음 | **없음** (빈 셀) |
 
 **총 합 계 행**: 구간이 2개면 `=SUM(G24,G27)` 열거, 1개면 `=G10` **직접 참조** ✅
 
@@ -317,7 +278,7 @@ FS5045 그룹 1000 (행 8~10)
 빈 행 1개를 둔다. FS5045 `4690-A03`(행 21, 서브 0건) → 행 22 공란 → `=SUM(G21:G22)`.
 세 시트에서 동일하게 확인.
 
-### 4.5 서브라인 수량(E열) — 세 가지 형태 ✅ (Phase 3 확정)
+### 4.4 서브라인 수량(E열) — 세 가지 형태 ✅
 
 ```
 H/W 구간 + 기준행에 가격 있음  ->  "=8*E8"    부모 수량 상대 참조
@@ -329,12 +290,7 @@ S/W 구간                       ->  1          상수
 > 기록했으나 **철회한다.** 위 규칙으로 완전히 설명된다. 해당 블록(라인 4000 `5313-HPO`)은
 > H/W 구간이면서 기준행이 N/C 인 유일한 사례였다.
 
-### 4.6 I열 — MA 기간 ✅
-
-`MaintenanceUnitListPrice/PriceTerm` 을 기준행의 I열에 기록한다 (X-ROIS `I51 = "Y"`).
-서식 General, 정렬 지정 없음. MA 금액이 없으면 비운다.
-
-### 4.7 글꼴 ✅ (`tools/inspect_fonts.py` 실측)
+### 4.5 글꼴 ✅ (`tools/inspect_fonts.py` 실측)
 
 | 대상 | 글꼴 |
 |---|---|
@@ -344,8 +300,8 @@ S/W 구간                       ->  1          상수
 | 날짜 `C3` | **HY헤드라인M 9** (템플릿은 Tahoma 10 — 반드시 덮어씀) |
 | 표제 `B2` | 템플릿 유지 (Arial 9) |
 
-볼드 여부: TOTAL 시트의 그룹 합계 G/H는 볼드, **상세 시트의 블록·구간 합계 G/H는 볼드 아님**.
-총 합 계 G/H는 양쪽 모두 볼드.
+볼드 여부: TOTAL 시트의 그룹 합계 G는 볼드, 상세 시트의 블록·구간 합계 G는 볼드 아님.
+총 합계 G는 양쪽 모두 볼드.
 
 ---
 
@@ -353,9 +309,8 @@ S/W 구간                       ->  1          상수
 
 | 대상 | 숫자 서식 |
 |---|---|
-| TOTAL 시트 F·G·H열 | `#,##0_);[빨강](#,##0)` |
+| TOTAL 시트 F·G열 | `#,##0_);[빨강](#,##0)` |
 | 상세 시트 F·G열 | `_-* #,##0_-;-* #,##0_-;_-* "-"_-;_-@_-` (회계 서식) |
-| 상세 시트 H열 합계 | `#,##0_ ` |
 | C열 (모델번호) 전체 | `@` (텍스트) — **선행 0 보존을 위해 필수** |
 
 | 항목 | 값 |
@@ -413,37 +368,9 @@ S/W 구간                       ->  1          상수
 
 ---
 
-## 7. 남은 확인 사항
+## 7. 출력 범위
 
-**범위 변경 (2026-07-23 결정)**
-- **유지정비료(H·I열)를 견적서에서 제외한다.** §3.2 / §4.3 / §4.6 에 적은 MA 규칙은
-  역공학 기록으로 남기되 구현하지 않는다. H열은 표 구조만 유지된 빈 칸이 된다.
-  골든 대조에서는 `*!H:H`, `*!I:I` 로 열 전체를 제외한다.
-- **견적서 번호 `TOTAL!B2` 는 연도 두 자리만 갱신한다.** 결과는 언제나
-  `NO : Trialinfo-{YY}-` 이고 연도 뒤에는 아무것도 붙이지 않는다.
-  `Trialinfo-` 앞부분은 템플릿에 적힌 그대로 두고, 형식이 다르면 손대지 않는다.
-- **템플릿은 EXE 옆의 외부 화일이다.** 견적서 번호(B2)와 머리말 도형의
-  `담당 : 시스템사업부 ○ ○ ○` 를 사용자가 고쳐야 하므로 EXE 안에 묻으면 안 된다.
-
-**해소됨 (Phase 3, 골든 diff 0건 달성)**
-- ~~F/G/H 병합 범위 판정 기준~~ → 확정: F·G는 H/W·S/W 구간 단위, H는 그룹 단위. 분류는 `ProductTypeCode == "Hardware"` 여부 (§3.2)
-- ~~서브라인 0건 시 스페이서 행~~ → 확정 (§4.4)
-- ~~합계 수식 범위형/열거형 규칙~~ → 확정 (§4.4). **H/W 라인이 하나뿐이면 블록별
-  합계행 없이 범위형 하나만 쓴다** (TS4300 `NO CPUSIU` 시트에서 확인)
-- ~~`SERVER 1!E59:E65` 의 `=1`~~ → **원본 버그 아님.** 규칙으로 설명됨 (§4.5)
-- ~~종목 키 27자 절단~~ → **정정: 31자다** (§2.1). 27은 `IBM ` 을 뗀 뒤의 길이였다
-- `Services` 는 **S/W 구간**이다 (X-ROIS `EXPERT LABS` 시트 `B8 = "S/W"`)
-
-**남은 미검증 (샘플 부재)**
-1. 서브라인 레벨 `MaintenanceUnitListPrice` — 어느 골든에도 없음. 어차피 유지정비료는
-   견적서에서 제외하기로 했다
-
-**사용자 확인 필요**
-2. `공급가` 행이 항상 공란(수기 입력)인지
-5. `ProprietaryShippingInformation`(배송비 KWON 1,826.9 / 4,820.49)이 견적서에 전혀 반영되지 않음 — 의도된 동작인지
-6. X-ROIS `SERVER 1!D20` 글꼴만 돋움 9 (나머지 D열 전체는 Tahoma 9). 최장 설명도 아니고
-   한글도 없어 데이터상 근거가 없다. **골든의 수기 편집으로 판단**하고 `tests/golden_ignore.txt`
-   에 등록했다. 원본 프로그램이 정말 이런 셀을 만드는지 확인 필요
-
-**범위 제외 (2026-07-23 결정)**
-- ~~삼성 SDS B2B 양식~~ → **구현하지 않음**
+- 유지정비료(H·I열), 배송비, 삼성 SDS 양식, 할인율은 출력하지 않는다.
+- 공급가 행은 수기 입력란으로 비워 둔다.
+- 견적서 번호는 `Trialinfo-` 형식일 때 실행 연도의 두 자리만 갱신한다.
+- 템플릿은 처음 실행할 때 EXE 옆에 복사되며, 이후 사용자 편집본을 덮어쓰지 않는다.

@@ -1,10 +1,10 @@
-# 견적서 작성기 (IBM Quotation Tool) — 2026 리팩토링
+# 견적서 작성기 (IBM Quotation Tool)
 
 IBM eConfig Export XML 을 견적서 Excel 로 변환한다.
 2005년 VB6 프로그램(`pConvertXMLtoExcel`)을 Windows 11 / Excel 365 환경에 맞춰 재구현했다.
 
-**입력과 출력은 기존과 동일하다.** 출력 확장자만 `.xls` → `.xlsx` 로 바뀌었고,
-시트 구성·셀 좌표·값·수식·서식·글꼴은 골든 견적서와 셀 단위로 일치한다.
+기존 양식을 유지하면서 상세 구성품, 수량, LP 가격을 `.xlsx` 견적서로 변환한다.
+날짜·크기·글꼴 등 일부 표현은 실행 환경과 템플릿에 따라 달라질 수 있다.
 
 ---
 
@@ -38,22 +38,6 @@ IBM eConfig Export XML 을 견적서 Excel 로 변환한다.
   그대로 나온다.
 - 다른 템플릿을 쓰려면 `--template` 옵션이나 `QUOTATION_TEMPLATE` 환경 변수를 쓴다.
 
-### CLI (일괄 변환)
-```
-QuotationTool-cli.exe a.xml b.xml
-QuotationTool-cli.exe *.xml
-```
-각 견적서는 해당 XML 옆에 만들어진다.
-
-| 옵션 | 설명 |
-|---|---|
-| `-t, --template` | 템플릿 경로 (기본: EXE 옆의 `견적서_template.xlsx`) |
-
-종료 코드: `0` 전부 성공 / `1` 하나 이상 실패
-
-> 자동화에는 반드시 `QuotationTool-cli.exe` 를 쓸 것. GUI 용 `QuotationTool.exe` 는
-> 콘솔이 없어 호출 측이 종료를 기다리지 않는다.
-
 ---
 
 ## 설치
@@ -85,7 +69,7 @@ python -m venv .venv
 # 빌드
 .\.venv\Scripts\python.exe -m PyInstaller QuotationTool.spec --noconfirm --clean
 
-# 빌드된 EXE 인수 시험 (Excel 필요)
+# 빌드된 GUI EXE 기동 시험
 .\tools\acceptance.ps1
 ```
 
@@ -95,7 +79,7 @@ quotation/
   core/            Excel·GUI 비의존 순수 로직
     money.py       금액 파싱 (콤마, N/C, Decimal)
     models.py      LineItem / SubLineItem / Group / Quotation
-    naming.py      종목 키(27자) 및 시트명
+    naming.py      종목 키(최대 31자) 및 시트명
     xml_reader.py  eConfig XML 파서 (XXE 차단, 인코딩 자동 판별)
     convert.py     변환 오케스트레이션
     writer/
@@ -112,7 +96,7 @@ tests/               단위 및 골든 회귀 테스트
 값·수식·숫자서식·정렬·글꼴·볼드·병합·열너비·인쇄영역·시트 순서와 숨김 상태를 모두 본다.
 예외는 `tests/golden_ignore.txt` 에 근거와 함께 기록한다.
 
-사양은 `SPEC_CELLMAP.md`, 경위와 계획은 `REFACTORING_PLAN.md` 에 있다.
+셀 매핑과 검증 기준은 `SPEC_CELLMAP.md`, 기존 사용자 안내는 `MIGRATION.md`에 있다.
 
 ---
 
@@ -128,8 +112,7 @@ tests/               단위 및 골든 회귀 테스트
 | 비트수 | 32bit | 64bit |
 | 설정 저장 | `Program Files` (유실됨) | `%LOCALAPPDATA%` |
 | 로그 | 없음 | 일자별 파일 |
-| 일괄 변환 | 불가 | CLI 지원 |
-| 삼성 SDS 양식 | 있음 | **제거** (2026-07-23 결정) |
-| 유지정비료(H·I열) | 채움 | **제거** (2026-07-23 결정). H열은 빈 칸으로 남는다 |
-| 할인율 | 입력란 있음 | **제거** (2026-07-23 결정). `공급가` 행은 수기 입력 |
-| 저장 위치 | 선택 가능 | **XML 과 같은 폴더로 고정** (2026-07-23 결정) |
+| 삼성 SDS 양식 | 있음 | 제거 |
+| 유지정비료(H·I열) | 채움 | 제거. H열은 빈 칸으로 남는다 |
+| 할인율 | 입력란 있음 | 제거. `공급가` 행은 수기 입력 |
+| 저장 위치 | 선택 가능 | XML과 같은 폴더로 고정 |

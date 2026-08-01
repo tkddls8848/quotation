@@ -72,6 +72,8 @@ def test_success_opens_the_quote_without_a_popup(root, monkeypatch, tmp_path):
     monkeypatch.setattr(main_window, "_open", opened.append)
 
     source = ROOT / "samples" / "FS5045_260722.xml"
+    if not source.exists():
+        pytest.skip(f"샘플 없음: {source.name}")
     xml = tmp_path / source.name
     xml.write_bytes(source.read_bytes())
 

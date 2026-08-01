@@ -1,28 +1,11 @@
-"""종목 키 / 시트명 생성 — SPEC_CELLMAP.md §2.1.
-
-순서가 중요하다. **31자로 자른 뒤에 "IBM " 을 뗀다.**
-
-    "4680-3P4 #1:IBM Storage FlashSystem 5045 SFF Control Enclosure"
-        -> ":" 앞 -> "4680-3P4 #1"                      시트명 "4680-3P4 #1"
-    "TS4300 Tape Library Base Module with Expert Care"
-        -> 31자   -> "TS4300 Tape Library Base Module"  시트명 대문자
-    "No CPUSIU for the following products:IBM 18 TB Ultrium 9 ..."
-        -> ":" 앞 -> 31자 -> "No CPUSIU for the following pro"
-    "IBM Expert Labs Project Unit for IBM Power Systems"
-        -> 31자   -> "IBM Expert Labs Project Unit fo"
-        -> IBM 제거 -> "Expert Labs Project Unit fo" (27자)
-
-마지막 예가 순서를 증명한다. "IBM " 을 먼저 떼고 31자로 자르면 31자가 되는데
-골든은 27자다.
-"""
+"""종목 키와 Excel 시트명 생성."""
 from __future__ import annotations
 
 import re
 
-#: 종목 키 최대 길이. Excel 시트명 제한과 같다.
+# Excel 시트명 제한에 맞춰 자른 뒤 IBM 접두사를 제거한다.
 ITEM_KEY_MAX = 31
 
-#: Excel 시트명 제한
 SHEET_NAME_MAX = 31
 _INVALID_SHEET_CHARS = re.compile(r"[\[\]:*?/\\]")
 
@@ -44,11 +27,7 @@ def sheet_name(key: str) -> str:
 
 
 def unique_sheet_name(key: str, taken: set[str]) -> str:
-    """시트명 충돌 회피. 원본에는 없던 방어 로직이다.
-
-    골든 샘플에서는 충돌이 없었으나, 같은 종목 키를 가진 그룹이 둘 이상이면
-    Excel 이 시트 생성 자체를 거부하므로 접미사를 붙인다.
-    """
+    """중복 시트명에 번호 접미사를 붙인다."""
     base = sheet_name(key)
     if base not in taken:
         return base

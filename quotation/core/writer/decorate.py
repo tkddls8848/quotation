@@ -74,8 +74,6 @@ class Layout:
     top_black: bool = False
     #: 서브라인이 없는 블록의 스페이서 행. C열에 배경을 칠하지 않는다.
     spacer_rows: list[int] = field(default_factory=list)
-    #: I열에 배경을 칠할 행 (MA 기간을 적은 행)
-    i_filled_rows: list[int] = field(default_factory=list)
 
 
 def _side(col: str, layout: Layout, row: int) -> tuple[Side | None, Side | None]:
@@ -144,11 +142,9 @@ def decorate(ws: Worksheet, layout: Layout) -> None:
                     horizontal=horizontal, vertical="center",
                     wrap_text=cell.alignment.wrap_text)
 
-    # 데이터 첫 행과 MA 기간을 적은 행은 I열까지 배경이 이어진다
-    for row in {layout.first_row, *layout.i_filled_rows}:
-        cell = ws[f"I{row}"]
-        cell.fill = FILL_BODY
-        cell.alignment = Alignment(vertical="center")
+    cell = ws[f"I{layout.first_row}"]
+    cell.fill = FILL_BODY
+    cell.alignment = Alignment(vertical="center")
 
     _apply_row_fills(ws, layout)
     _apply_blue(ws, layout)

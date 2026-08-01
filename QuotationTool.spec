@@ -37,8 +37,3 @@ COMMON = dict(
 # GUI 용. 콘솔 창을 띄우지 않는다.
 exe = EXE(pyz, a.scripts, a.binaries, a.datas, [],
           name="QuotationTool", console=False, **COMMON)
-
-# 일괄 변환용. 콘솔 EXE 라야 호출 측이 종료를 기다리고 종료 코드를 받는다.
-# windowed 빌드는 PowerShell/cmd 가 기다리지 않아 자동화에 쓸 수 없다.
-exe_cli = EXE(pyz, a.scripts, a.binaries, a.datas, [],
-              name="QuotationTool-cli", console=True, **COMMON)

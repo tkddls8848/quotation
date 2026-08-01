@@ -2,6 +2,7 @@
 __pycache__/
 *.pyc
 .pytest_cache/
+.acceptance-tmp/
 
 # 빌드 산출물
 build/

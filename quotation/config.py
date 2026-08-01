@@ -8,7 +8,7 @@ from __future__ import annotations
 import configparser
 import json
 import logging
-from dataclasses import asdict, dataclass, field
+from dataclasses import asdict, dataclass
 from pathlib import Path
 
 from . import paths
@@ -19,19 +19,10 @@ log = logging.getLogger(__name__)
 @dataclass
 class Config:
     last_input_dir: str = ""
-    #: 변환이 끝나면 만든 견적서를 바로 연다. 알림창은 띄우지 않는다.
     open_result_when_done: bool = True
-    migrated_from_ini: str = ""
-    recent_files: list[str] = field(default_factory=list)
-
-    MAX_RECENT = 8
 
     def remember(self, input_path: Path):
-        # 저장 위치는 XML 과 같은 폴더로 고정이라 따로 기억할 것이 없다.
         self.last_input_dir = str(input_path.parent)
-        recent = [str(input_path)]
-        recent += [p for p in self.recent_files if p != str(input_path)]
-        self.recent_files = recent[: self.MAX_RECENT]
 
 
 def load() -> Config:
@@ -83,6 +74,5 @@ def _migrate_legacy_ini(cfg: Config) -> None:
                     if Path(value).is_dir():
                         cfg.last_input_dir = value.strip()
 
-        cfg.migrated_from_ini = str(ini)
         log.info("구버전 설정을 이관했습니다: %s", ini)
         return

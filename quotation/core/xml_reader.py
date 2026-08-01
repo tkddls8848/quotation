@@ -1,17 +1,11 @@
-"""eConfig XML 파서 — SPEC_CELLMAP.md §1.
-
-원본 VB6 프로그램의 XPath 를 그대로 사용하되 다음을 현대화했다.
-  - 인코딩: EUC-KR 하드코딩 -> 선언 인코딩 자동 판별 (UTF-8/EUC-KR 모두 수용)
-  - DTD: 인라인 DTD 가 존재하므로 XXE 차단 설정으로 파싱
-  - 금액: 콤마 포함 문자열과 "N/C" 리터럴 처리 (money.py)
-"""
+"""eConfig XML 파서."""
 from __future__ import annotations
 
 from pathlib import Path
 
 from lxml import etree
 
-from .models import Group, LineItem, Quotation, Shipping, SubLineItem
+from .models import Group, LineItem, Quotation, SubLineItem
 from .money import parse_amount
 from .naming import item_key, unique_sheet_name
 
@@ -29,14 +23,7 @@ XP_DESC = "./ProductIdentification/PartnerProductIdentification/ProductDescripti
 XP_TYPE_CODE = "./ProductIdentification/PartnerProductIdentification/ProductTypeCode"
 XP_PART_NO = ("./ProductIdentification/PartnerProductIdentification"
               "/ProprietaryProductIdentifier")
-XP_CURRENCY = "./UnitListPrice/FinancialAmount/GlobalCurrencyCode"
 XP_AMOUNT = "./UnitListPrice/FinancialAmount/MonetaryAmount"
-XP_PRICE_TERM = "./UnitListPrice/PriceTerm"
-XP_MA_CURRENCY = "./MaintenanceUnitListPrice/FinancialAmount/GlobalCurrencyCode"
-XP_MA_AMOUNT = "./MaintenanceUnitListPrice/FinancialAmount/MonetaryAmount"
-XP_MA_TERM = "./MaintenanceUnitListPrice/PriceTerm"
-
-XP_SUB_LINE_NUMBER = "./LineNumber"
 
 
 class QuotationXmlError(Exception):
@@ -62,13 +49,11 @@ def _int(el, path: str, default: int = 1) -> int:
 
 def _parse_sub(el) -> SubLineItem:
     return SubLineItem(
-        line_number=_text(el, XP_SUB_LINE_NUMBER),
         txn_type=_text(el, XP_TXN_TYPE),
         quantity=_int(el, XP_QUANTITY),
         part_number=_text(el, XP_PART_NO),
         description=_text(el, XP_DESC),
         unit_price=parse_amount(_text(el, XP_AMOUNT) or None),
-        maintenance=parse_amount(_text(el, XP_MA_AMOUNT) or None),
     )
 
 
@@ -82,9 +67,6 @@ def _parse_line(el) -> LineItem:
         description=_text(el, XP_DESC),
         product_type=_text(el, XP_TYPE_CODE),
         unit_price=parse_amount(_text(el, XP_AMOUNT) or None),
-        price_term=_text(el, XP_PRICE_TERM),
-        maintenance=parse_amount(_text(el, XP_MA_AMOUNT) or None),
-        maintenance_term=_text(el, XP_MA_TERM),
         subs=tuple(_parse_sub(s) for s in el.findall(XP_SUB_LINE_ITEM)),
         siu=_int(el, XP_SIU, default=0),
     )
@@ -154,24 +136,6 @@ def _build_groups(items: list[LineItem],
     return tuple(groups)
 
 
-def _parse_shipping(cfdata) -> Shipping | None:
-    el = cfdata.find("./ProprietaryShippingInformation")
-    if el is None:
-        return None
-    return Shipping(
-        name=_text(el, "./Name"),
-        currency=_text(el, "./FinancialAmount/GlobalCurrencyCode"),
-        amount=parse_amount(_text(el, "./FinancialAmount/MonetaryAmount") or None),
-    )
-
-
-def _proprietary_info(cfdata) -> dict[str, str]:
-    out: dict[str, str] = {}
-    for el in cfdata.findall("./ProprietaryInformation"):
-        out[_text(el, "./Name")] = _text(el, "./Value")
-    return out
-
-
 def parse(source: str | Path) -> Quotation:
     """eConfig XML 파일 -> Quotation.
 
@@ -209,14 +173,4 @@ def parse(source: str | Path) -> Quotation:
     if not quoted:
         raise QuotationXmlError("견적서 작성을 위한 Item을 찾을 수 없습니다.")
 
-    info = _proprietary_info(cfdata)
-    return Quotation(
-        document_id=_text(root, "./thisDocumentIdentifier"
-                                "/ProprietaryDocumentIdentifier"),
-        generated_time=_text(root, "./thisDocumentGenerationDateTime/DateTimeStamp"),
-        price_file_date=info.get("Price File Date", ""),
-        configurator_id=info.get("Configurator Identifier", ""),
-        checksum=info.get("Checksum", ""),
-        shipping=_parse_shipping(cfdata),
-        groups=_build_groups(quoted, _reference_names(all_items)),
-    )
+    return Quotation(groups=_build_groups(quoted, _reference_names(all_items)))

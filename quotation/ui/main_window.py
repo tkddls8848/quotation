@@ -1,11 +1,4 @@
-"""메인 화면 — 원본 Form1 대체.
-
-원본과 달라진 점
-  - Excel 을 띄우지 않으므로 "Excel을 모두 종료하십시오" 상황이 없다
-  - 변환을 작업 스레드에서 돌려 UI 가 멈추지 않는다
-  - 실패해도 잔류 프로세스나 잠긴 파일이 남지 않는다
-  - 삼성 SDS 양식 선택(optSDS)은 제거되었다
-"""
+"""견적 변환기 메인 화면."""
 from __future__ import annotations
 
 import logging

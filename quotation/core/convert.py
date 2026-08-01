@@ -1,7 +1,4 @@
-"""변환 오케스트레이션 — XML 한 건을 견적서 파일로.
-
-UI 와 CLI 가 공유한다. GUI 에 의존하지 않는다.
-"""
+"""XML 한 건을 견적서 파일로 변환한다."""
 from __future__ import annotations
 
 import datetime as dt

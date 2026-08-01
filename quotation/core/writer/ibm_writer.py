@@ -1,12 +1,4 @@
-"""IBM 견적서 생성 — SPEC_CELLMAP.md §2~§5.
-
-원본 VB6 의 MakeServerSheet / MakeTotalSheet / DecorateTOTSheet / WriteExcel 을
-대체한다. Excel 프로세스를 전혀 사용하지 않는다 (openpyxl 파일 조작만).
-
-처리 순서가 중요하다.
-    1) 값 기록      2) 장식(decorate)      3) 병합
-병합을 먼저 하면 openpyxl 이 덮인 셀의 스타일을 버려 장식이 어긋난다.
-"""
+"""IBM 견적서 워크북 생성."""
 from __future__ import annotations
 
 import datetime as dt
@@ -44,8 +36,6 @@ LBL_SW = "S/W"
 FMT_TEXT = "@"
 FMT_TOTAL_NUM = "#,##0_);[Red]\\(#,##0\\)"
 FMT_DETAIL_NUM = '_-* #,##0_-;\\-* #,##0_-;_-* "-"_-;_-@_-'
-FMT_DETAIL_MA = "#,##0_ "
-
 FONT_DATA = Font(name="Tahoma", size=9)
 FONT_DATA_BOLD = Font(name="Tahoma", size=9, bold=True)
 FONT_LABEL = Font(name="돋움", size=9, bold=True)
@@ -161,8 +151,6 @@ def _write_total_sheet(ws: Worksheet, quote: Quotation, today: dt.date):
 
         group_end = row - 1
 
-        # 유지정비료는 견적서에서 제외한다 (2026-07-23 결정).
-        # H열 병합은 표 구조라 그대로 두고 값만 넣지 않는다.
         _merge(merges, "H", group_start, group_end)
 
         _put(ws, f"C{row}", LBL_SUBTOTAL, fmt=FMT_TEXT, font=FONT_LABEL)
@@ -253,11 +241,7 @@ def _write_detail_sheet(ws: Worksheet, group: Group, today: dt.date):
 
 def _write_item_block(ws: Worksheet, item: LineItem, row: int, is_hw: bool,
                       lay: Layout) -> int:
-    """ProductLineItem 1건 + 서브라인 기록.
-
-    유지정비료(H·I열)는 기록하지 않는다. XML 에 MaintenanceUnitListPrice 가
-    있어도 견적서에는 넣지 않기로 했다 (2026-07-23 결정).
-    """
+    """ProductLineItem 1건과 그 서브라인을 기록한다."""
     base = row
     _put(ws, f"C{row}", item.part_number, fmt=FMT_TEXT, font=FONT_DATA)
     _put(ws, f"D{row}", item.description, font=FONT_DATA)

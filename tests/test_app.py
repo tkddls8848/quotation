@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import datetime as dt
+import logging
 import sys
 from pathlib import Path
 
@@ -11,8 +12,7 @@ from openpyxl import load_workbook
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 
-from quotation import config as config_mod  # noqa: E402
-from quotation import paths  # noqa: E402
+from quotation import config as config_mod, logging_setup, paths  # noqa: E402
 from quotation.core import convert, xml_reader  # noqa: E402
 from quotation.core.xml_reader import QuotationXmlError  # noqa: E402
 
@@ -20,6 +20,11 @@ SAMPLES = ROOT / "samples"
 FS5045 = SAMPLES / "FS5045_260722.xml"
 XROIS = SAMPLES / "X-ROIS 통합서버#2.xml"
 TODAY = dt.date(2026, 7, 23)
+
+
+def _require_sample(source: Path) -> None:
+    if not source.exists():
+        pytest.skip(f"샘플 없음: {source.name}")
 
 
 # --- 리소스 ------------------------------------------------------------------
@@ -32,12 +37,14 @@ def test_template_ships_with_package():
 
 def _convert(tmp_path, source: Path = FS5045, **kwargs):
     """샘플을 tmp_path 로 복사해 변환한다. 산출물은 그 옆에 생긴다."""
+    _require_sample(source)
     xml = tmp_path / source.name
     xml.write_bytes(source.read_bytes())
     return convert.convert(xml, today=TODAY, **kwargs)
 
 
 def test_convert_writes_next_to_xml(tmp_path):
+    _require_sample(FS5045)
     xml = tmp_path / "sample.xml"
     xml.write_bytes(FS5045.read_bytes())
     result = convert.convert(xml, today=TODAY)
@@ -72,18 +79,48 @@ def test_bad_xml_reports_original_message(tmp_path):
         convert.convert(bad, today=TODAY)
 
 
+def test_conversion_preserves_component_quantity_and_lp(tmp_path):
+    xml = tmp_path / "sample.xml"
+    xml.write_text("""<?xml version="1.0" encoding="UTF-8"?>
+<CFXML><CFData><ProductLineItem>
+  <ProductLineNumber>1000</ProductLineNumber>
+  <CPUSIUvalue>1</CPUSIUvalue>
+  <TransactionType>NEW</TransactionType>
+  <ProprietaryGroupIdentifier>1000</ProprietaryGroupIdentifier>
+  <Quantity>2</Quantity>
+  <ProductIdentification><PartnerProductIdentification>
+    <ProductDescription>IBM Test System</ProductDescription>
+    <ProductTypeCode>Hardware</ProductTypeCode>
+    <ProprietaryProductIdentifier>TEST-001</ProprietaryProductIdentifier>
+  </PartnerProductIdentification></ProductIdentification>
+  <UnitListPrice><FinancialAmount><MonetaryAmount>1,234.50</MonetaryAmount></FinancialAmount></UnitListPrice>
+  <ProductSubLineItem>
+    <TransactionType>ADD</TransactionType><Quantity>3</Quantity>
+    <ProductIdentification><PartnerProductIdentification>
+      <ProductDescription>Test Component</ProductDescription>
+      <ProductTypeCode>Hardware</ProductTypeCode>
+      <ProprietaryProductIdentifier>PART-001</ProprietaryProductIdentifier>
+    </PartnerProductIdentification></ProductIdentification>
+    <UnitListPrice><FinancialAmount><MonetaryAmount>100</MonetaryAmount></FinancialAmount></UnitListPrice>
+  </ProductSubLineItem>
+</ProductLineItem></CFData></CFXML>""", encoding="utf-8")
+
+    result = convert.convert(xml, today=TODAY,
+                             template=paths.resource_dir() / paths.TEMPLATE_NAME)
+    ws = load_workbook(result.output, data_only=False)["TEST SYSTEM"]
+
+    assert [ws[f"{col}8"].value for col in "CDEFG"] == [
+        "TEST-001", "IBM Test System", 2, 1234.5, "=E8*F8",
+    ]
+    assert [ws[f"{col}9"].value for col in "CDEFG"] == [
+        "PART-001", "Test Component", "=3*E8", 100, "=E9*F9",
+    ]
+
+
 # --- 옵션 --------------------------------------------------------------------
 
 def test_maintenance_is_never_written(tmp_path):
-    """유지정비료는 견적서에서 완전히 제외한다 (2026-07-23 결정).
-
-    X-ROIS XML 에는 MaintenanceUnitListPrice 309 와 PriceTerm 'Y' 가 있다.
-    파서는 계속 읽지만 견적서 H·I열에는 아무것도 쓰지 않는다.
-    """
-    quote = xml_reader.parse(XROIS)
-    line3000 = next(i for i in quote.groups[1].items if i.line_number == "3000")
-    assert line3000.maintenance == 309, "파싱 자체는 그대로여야 한다"
-
+    """유지정비료를 견적서 H·I열에 쓰지 않는다."""
     out = _convert(tmp_path, XROIS).output
     wb = load_workbook(out)
 
@@ -106,6 +143,7 @@ def _quote_number(tmp_path, template_b2: str) -> str:
 
     from quotation.core.writer import ibm_writer
 
+    _require_sample(FS5045)
     template = tmp_path / "t.xlsx"
     wb = lw(paths.template_path())
     wb["TOTAL"]["B2"] = template_b2
@@ -137,6 +175,7 @@ def test_quote_number_untouched_when_format_differs(tmp_path):
 
     from quotation.core.writer import ibm_writer
 
+    _require_sample(FS5045)
     template = tmp_path / "t.xlsx"
     wb = lw(paths.template_path())
     wb["TOTAL"]["B2"] = "견적번호 2026-A-17"
@@ -171,6 +210,34 @@ def test_template_env_override(tmp_path, monkeypatch):
     assert paths.template_path() == tmp_path / "custom.xlsx"
 
 
+def test_logging_falls_back_when_log_directory_is_read_only(monkeypatch):
+    root = logging.getLogger()
+    original_handlers = root.handlers[:]
+    original_level = root.level
+    root.handlers.clear()
+    monkeypatch.setattr(paths, "log_dir", lambda: (_ for _ in ()).throw(
+        PermissionError("read-only")))
+    try:
+        logging_setup.setup()
+        assert len(root.handlers) == 1
+        assert isinstance(root.handlers[0], logging.NullHandler)
+    finally:
+        root.handlers[:] = original_handlers
+        root.setLevel(original_level)
+
+
+def test_main_opens_gui_with_first_file_argument(monkeypatch):
+    from quotation import __main__
+    from quotation.ui import main_window
+
+    seen = []
+    monkeypatch.setattr(logging_setup, "setup", lambda: None)
+    monkeypatch.setattr(main_window, "run", lambda prefill: seen.append(prefill) or 0)
+
+    assert __main__.main(["sample.xml", "ignored.xml"]) == 0
+    assert seen == ["sample.xml"]
+
+
 def test_supply_row_is_always_blank(tmp_path):
     """공급가 행은 언제나 공란이다. 골든 전부 그러하고 할인 기능은 없앴다."""
     wb = load_workbook(_convert(tmp_path).output)
@@ -192,7 +259,6 @@ def test_config_roundtrip(tmp_path, monkeypatch):
     again = config_mod.load()
     assert again.open_result_when_done is False
     assert again.last_input_dir == r"C:\in"
-    assert again.recent_files == [r"C:\in\a.xml"]
 
 
 def test_config_survives_corruption(tmp_path, monkeypatch):
@@ -212,44 +278,3 @@ def test_legacy_ini_is_migrated(tmp_path, monkeypatch):
 
     cfg = config_mod.load()
     assert cfg.last_input_dir == str(tmp_path)
-    assert cfg.migrated_from_ini == str(ini)
-
-
-def test_recent_files_are_capped(tmp_path, monkeypatch):
-    monkeypatch.setattr(paths, "app_data_dir", lambda: tmp_path)
-    monkeypatch.setattr(paths, "config_path", lambda: tmp_path / "config.json")
-    cfg = config_mod.Config()
-    for n in range(20):
-        cfg.remember(Path(rf"C:\in\{n}.xml"))
-    assert len(cfg.recent_files) == config_mod.Config.MAX_RECENT
-    assert cfg.recent_files[0] == r"C:\in\19.xml"
-
-
-# --- CLI ---------------------------------------------------------------------
-
-def test_cli_batch(tmp_path, capsys):
-    from quotation.__main__ import main
-    xmls = []
-    for source in (FS5045, XROIS):
-        xml = tmp_path / source.name
-        xml.write_bytes(source.read_bytes())
-        xmls.append(str(xml))
-
-    assert main(xmls) == 0
-    assert len(list(tmp_path.glob("*.xlsx"))) == 2
-
-
-def test_cli_has_no_output_or_discount_option(tmp_path, capsys):
-    """저장 위치와 할인율은 옵션이 아니다."""
-    from quotation.__main__ import main
-    for option in ("-o", "-d"):
-        with pytest.raises(SystemExit):
-            main([str(FS5045), option, "x"])
-
-
-def test_cli_reports_failure(tmp_path, capsys):
-    from quotation.__main__ import main
-    bad = tmp_path / "bad.xml"
-    bad.write_text("<CFXML/>", encoding="utf-8")
-    assert main([str(bad)]) == 1
-    assert "CFData을 찾을수 없습니다" in capsys.readouterr().err

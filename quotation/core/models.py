@@ -1,7 +1,4 @@
-"""도메인 모델 — XML 과 Excel 사이의 중간 표현.
-
-Excel·GUI 에 의존하지 않는 순수 데이터. 전부 frozen 이다.
-"""
+"""XML과 Excel 사이에서 사용하는 견적 데이터 모델."""
 from __future__ import annotations
 
 from dataclasses import dataclass, field
@@ -27,13 +24,11 @@ REMOVE_TXN = "REMOVE"
 class SubLineItem:
     """ProductSubLineItem — 상위 라인의 구성 부품."""
 
-    line_number: str
     txn_type: str
     quantity: int
     part_number: str
     description: str
     unit_price: Amount = None
-    maintenance: Amount = None
 
     @property
     def is_removal(self) -> bool:
@@ -60,9 +55,6 @@ class LineItem:
     description: str
     product_type: str = ""
     unit_price: Amount = None
-    price_term: str = ""
-    maintenance: Amount = None
-    maintenance_term: str = ""
     subs: tuple[SubLineItem, ...] = ()
     #: CPUSIUvalue. 1 이면 장비 본체 라인이다 (증설 견적의 장비군 판별에 쓴다).
     siu: int = 0
@@ -86,13 +78,6 @@ class LineItem:
         return self.own_amount() + sum(
             (s.amount(self.quantity) for s in self.subs), Decimal(0)
         )
-
-    def maintenance_amount(self) -> Decimal:
-        """유지정비료. 수량을 곱하지 않는다 (SPEC_CELLMAP.md §4.3)."""
-        return to_decimal(self.maintenance) + sum(
-            (to_decimal(s.maintenance) for s in self.subs), Decimal(0)
-        )
-
 
 @dataclass(frozen=True)
 class Group:
@@ -132,34 +117,11 @@ class Group:
     def amount(self) -> Decimal:
         return sum((i.amount() for i in self.items), Decimal(0))
 
-    def maintenance_amount(self) -> Decimal:
-        return sum((i.maintenance_amount() for i in self.items), Decimal(0))
-
-    def has_maintenance(self) -> bool:
-        return self.maintenance_amount() != 0
-
-
-@dataclass(frozen=True)
-class Shipping:
-    name: str
-    currency: str
-    amount: Amount
-
-
 @dataclass(frozen=True)
 class Quotation:
     """XML 한 건 = 견적서 한 부."""
 
-    document_id: str = ""
-    generated_time: str = ""
-    price_file_date: str = ""
-    configurator_id: str = ""
-    checksum: str = ""
-    shipping: Shipping | None = None
     groups: tuple[Group, ...] = field(default_factory=tuple)
 
     def total_amount(self) -> Decimal:
         return sum((g.amount() for g in self.groups), Decimal(0))
-
-    def total_maintenance(self) -> Decimal:
-        return sum((g.maintenance_amount() for g in self.groups), Decimal(0))

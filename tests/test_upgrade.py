@@ -23,11 +23,15 @@ TODAY = dt.date(2026, 7, 23)
 
 @pytest.fixture(scope="module")
 def quote():
+    if not SAMPLE.exists():
+        pytest.skip(f"샘플 없음: {SAMPLE.name}")
     return xml_reader.parse(SAMPLE)
 
 
 @pytest.fixture(scope="module")
 def book(tmp_path_factory):
+    if not SAMPLE.exists():
+        pytest.skip(f"샘플 없음: {SAMPLE.name}")
     # 산출물은 XML 옆에 생기므로 샘플을 임시 폴더로 복사해 변환한다
     work = tmp_path_factory.mktemp("up")
     xml = work / SAMPLE.name

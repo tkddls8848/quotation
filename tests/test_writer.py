@@ -39,7 +39,10 @@ pytestmark = pytest.mark.skipif(
 
 
 def _build(name: str, today: dt.date, tmp_path: Path) -> Path:
-    quote = xml_reader.parse(SAMPLES / f"{name}.xml")
+    source = SAMPLES / f"{name}.xml"
+    if not source.exists():
+        pytest.skip(f"샘플 없음: {source.name}")
+    quote = xml_reader.parse(source)
     return ibm_writer.write(quote, TEMPLATE, tmp_path / f"{name}.xlsx", today=today)
 
 
