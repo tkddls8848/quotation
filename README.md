@@ -1,118 +1,108 @@
 # 견적서 작성기 (IBM Quotation Tool)
 
-IBM eConfig Export XML 을 견적서 Excel 로 변환한다.
-2005년 VB6 프로그램(`pConvertXMLtoExcel`)을 Windows 11 / Excel 365 환경에 맞춰 재구현했다.
+IBM eConfig Export XML을 기존 견적서 양식의 Excel 파일(`.xlsx`)로 변환하는 Windows용 도구입니다. 2005년 VB6 프로그램 `pConvertXMLtoExcel`을 Windows 11 환경에서 다시 구현했습니다.
 
-기존 양식을 유지하면서 상세 구성품, 수량, LP 가격을 `.xlsx` 견적서로 변환한다.
-날짜·크기·글꼴 등 일부 표현은 실행 환경과 템플릿에 따라 달라질 수 있다.
+- Excel을 설치하지 않아도 변환할 수 있습니다.
+- 상세 구성품·수량·LP 가격을 TOTAL 및 장비군별 상세 시트에 반영합니다.
+- 증설 견적의 제거 부품은 음수 수량과 빨간 글씨로 표시합니다.
+- 기존 양식의 로고와 머리말 도형을 보존합니다.
 
----
+## 사용 방법
 
-## 사용법
+1. `QuotationTool.exe`를 실행합니다.
+2. eConfig Export XML 파일을 선택합니다. XML을 EXE 위로 끌어 놓아도 파일 경로가 자동으로 채워집니다.
+3. 필요하면 `완료 후 견적서 열기`를 선택하거나 해제합니다.
+4. `변환`을 누릅니다.
 
-### GUI
-`QuotationTool.exe` 를 실행한다. XML 을 EXE 위로 끌어다 놓으면 그 화일이 채워진 채로 열린다.
+결과 파일은 **항상 XML 파일과 같은 폴더**에 저장됩니다. 파일명은 XML과 같고 확장자만 `.xlsx`로 바뀝니다. 같은 이름의 결과 파일이 있으면 덮어쓰기 전에 확인합니다.
 
-| 항목 | 설명 |
+변환이 끝난 뒤 결과를 자동으로 열도록 선택한 경우, Windows에 연결된 기본 프로그램으로 파일을 엽니다. 따라서 변환 자체에는 Excel이 필요 없지만, 결과를 열어 보려면 `.xlsx`를 열 수 있는 프로그램이 필요합니다.
+
+## 템플릿 사용자 지정
+
+첫 실행 시 EXE와 같은 폴더에 `견적서_template.xlsx`가 만들어집니다. 이 파일은 사용자가 직접 편집하는 템플릿입니다. 화면의 `템플릿 열기(견적번호·담당자 수정)` 버튼으로 바로 열 수 있습니다.
+
+| 변경 항목 | 위치 |
 |---|---|
-| XML 화일 | 변환할 eConfig Export XML |
-| 완료 후 견적서 열기 | 변환이 끝나면 만든 견적서를 바로 연다 (알림창은 뜨지 않는다) |
-| 템플릿 열기 | 견적서 번호와 담당자 이름을 고칠 때 쓴다 (아래 참조) |
+| 견적서 번호 앞부분 | `TOTAL` 시트의 `B2` 셀 |
+| 담당자 이름·회사 정보 | `TOTAL` 시트 상단의 머리말 도형 |
 
-**견적서는 언제나 XML 과 같은 폴더에 저장된다.** 이름도 같고 확장자만 `.xlsx` 다.
+견적서 번호가 `Trialinfo-YY-` 형식이면 변환 시 연도 두 자리만 현재 연도로 갱신합니다. 예를 들어 `NO : Trialinfo-26-`이 됩니다. 형식이 다르면 값은 그대로 둡니다. 담당자와 회사 정보는 템플릿의 도형 내용을 그대로 사용합니다.
 
-### 템플릿 — 견적서 번호와 담당자 수정
+기본 템플릿 대신 다른 파일을 사용하려면 환경 변수 `QUOTATION_TEMPLATE`에 템플릿 `.xlsx`의 전체 경로를 지정합니다.
 
-`견적서_template.xlsx` 는 **EXE 옆에 놓이는 별도 화일**이다. 처음 실행할 때 자동으로
-만들어지며, 아래 두 가지를 여기서 고친다.
+```powershell
+$env:QUOTATION_TEMPLATE = 'D:\templates\my-quotation-template.xlsx'
+.\QuotationTool.exe
+```
 
-| 고칠 것 | 위치 |
-|---|---|
-| 견적서 번호 `NO : Trialinfo-YY-` | TOTAL 시트 **B2 셀** |
-| `담당 : 시스템사업부 ○ ○ ○` | TOTAL 시트 상단 **머리말 도형** (그림 위 글상자) |
-
-- 견적서 번호는 **연도 두 자리만 자동으로 갱신**된다. 결과는 언제나
-  `NO : Trialinfo-26-` 형태이고 **연도 뒤에는 아무것도 붙지 않는다.**
-  앞부분 문구는 템플릿에 적힌 그대로 유지되며, 형식이 다르면 아예 손대지 않는다.
-- 담당자 이름과 회사 정보는 도형 안에 있어 프로그램이 건드리지 않는다. 템플릿에 적은
-  그대로 나온다.
-- 다른 템플릿을 쓰려면 `--template` 옵션이나 `QUOTATION_TEMPLATE` 환경 변수를 쓴다.
-
----
-
-## 설치
-
-무설치. EXE 를 원하는 폴더에 두면 된다. **Excel 이 설치되어 있지 않아도 동작한다.**
+## 저장 위치와 설정
 
 | 위치 | 내용 |
 |---|---|
-| EXE 옆 `견적서_template.xlsx` | **템플릿. 처음 실행 시 자동 생성, 사용자가 고치는 화일** |
-| `%LOCALAPPDATA%\QuotationTool\config.json` | 설정 (최근 경로, 옵션) |
-| `%LOCALAPPDATA%\QuotationTool\logs\` | 로그, 일자별 30일 보관 |
+| EXE 옆 `견적서_template.xlsx` | 자동 생성되는 사용자 편집용 템플릿 |
+| `%LOCALAPPDATA%\QuotationTool\config.json` | 최근 XML 폴더와 결과 자동 열기 설정 |
+| `%LOCALAPPDATA%\QuotationTool\logs\` | 일 단위 로그 파일, 최근 30일 보관 |
 
-구버전 `견적서생성기.ini` 가 남아 있으면 최초 실행 시 자동으로 값을 옮긴다.
-
----
+이전 버전의 `견적서생성기.ini`가 남아 있으면 최초 실행 시 유효한 최근 경로를 자동으로 가져옵니다.
 
 ## 개발
+
+요구 사항: Python 3.x, Windows. 템플릿의 원본 `.xls`를 다시 변환할 때만 Microsoft Excel이 필요합니다.
 
 ```powershell
 python -m venv .venv
 .\.venv\Scripts\python.exe -m pip install -r requirements.txt
 
-# 골든 .xls 를 .xlsx 로 변환 (개발 시점 1회, Excel 필요)
+# 테스트 (Excel 불필요)
+.\.venv\Scripts\python.exe -m pytest tests -q --basetemp .cache\pytest
+
+# 원본 .xls 템플릿을 다시 .xlsx로 변환할 때만 실행 (Excel 필요)
 .\tools\xls2xlsx.ps1
 
-# 테스트 (Excel 불필요)
-.\.venv\Scripts\python.exe -m pytest tests -q
-
-# 빌드
+# 단일 GUI EXE 빌드
 .\.venv\Scripts\python.exe -m PyInstaller QuotationTool.spec --noconfirm --clean
 
-# 빌드된 GUI EXE 기동 시험
+# 빌드 산출물 기동 및 템플릿 생성 확인
 .\tools\acceptance.ps1
 ```
 
-### 구조
-```
+## 프로젝트 구조
+
+```text
 quotation/
-  core/            Excel·GUI 비의존 순수 로직
-    money.py       금액 파싱 (콤마, N/C, Decimal)
-    models.py      LineItem / SubLineItem / Group / Quotation
-    naming.py      종목 키(최대 31자) 및 시트명
-    xml_reader.py  eConfig XML 파서 (XXE 차단, 인코딩 자동 판별)
-    convert.py     변환 오케스트레이션
-    writer/
-      ibm_writer.py  견적서 생성 (openpyxl 전용)
-  ui/main_window.py  GUI
-  config.py, paths.py, logging_setup.py
-  resources/         견적서 템플릿
-tools/               개발·검증 도구
-tests/               단위 및 골든 회귀 테스트
+  core/                 Excel·GUI 비의존 변환 로직
+    xml_reader.py       eConfig XML 파서 (XXE 차단, 인코딩 처리)
+    models.py           견적 데이터 모델
+    money.py            금액 파싱 (콤마, N/C, Decimal)
+    naming.py           종목 키 및 시트명 생성
+    convert.py          변환 오케스트레이션
+    writer/             openpyxl 기반 견적서 작성 및 도형 보존
+  ui/main_window.py     Tkinter GUI
+  resources/            번들 템플릿
+  config.py             사용자 설정 및 구 INI 이관
+  paths.py              실행·템플릿·데이터 경로 처리
+  logging_setup.py      일 단위 로그 설정
+tools/                  변환·검증 보조 도구
+tests/                  단위·골든 회귀·UI 스모크 테스트
 ```
 
-### 검증 방식
-`tests/test_writer.py` 가 생성물을 골든 견적서와 셀 단위로 대조한다.
-값·수식·숫자서식·정렬·글꼴·볼드·병합·열너비·인쇄영역·시트 순서와 숨김 상태를 모두 본다.
-예외는 `tests/golden_ignore.txt` 에 근거와 함께 기록한다.
+`tests/test_writer.py`는 생성 파일을 골든 견적서와 셀 단위로 비교합니다. 값, 수식, 숫자 서식, 정렬, 글꼴, 병합, 열 너비, 인쇄 영역, 시트 순서 및 숨김 상태를 검증하며, 허용 예외는 근거와 함께 `tests/golden_ignore.txt`에 기록합니다.
 
-셀 매핑과 검증 기준은 `SPEC_CELLMAP.md`, 기존 사용자 안내는 `MIGRATION.md`에 있다.
+셀 매핑과 상세 검증 기준은 [SPEC_CELLMAP.md](SPEC_CELLMAP.md), 기존 프로그램에서 달라진 동작의 상세는 [MIGRATION.md](MIGRATION.md)를 참고하십시오.
 
----
-
-## 원본 대비 달라진 점
+## 원본 대비 주요 변경 사항
 
 | 항목 | 2005년 원본 | 현재 |
 |---|---|---|
-| 변환 시간 | 수십 초~수 분 | **0.2초** |
-| Excel 설치 | **필수** (Excel 2003) | 불필요 |
-| 변환 중 Excel 사용 | 전부 종료해야 함 | **무관** |
 | 출력 형식 | `.xls` | `.xlsx` |
-| 설치 | 관리자 권한 + OCX 등록 | 무설치 단일 EXE |
-| 비트수 | 32bit | 64bit |
-| 설정 저장 | `Program Files` (유실됨) | `%LOCALAPPDATA%` |
-| 로그 | 없음 | 일자별 파일 |
-| 삼성 SDS 양식 | 있음 | 제거 |
-| 유지정비료(H·I열) | 채움 | 제거. H열은 빈 칸으로 남는다 |
-| 할인율 | 입력란 있음 | 제거. `공급가` 행은 수기 입력 |
+| Excel 설치 | 필수 | 변환에는 불필요 |
+| 변환 중 Excel 사용 | 모두 종료 필요 | 무관 |
+| 설치 | 관리자 권한 및 OCX 등록 | 단일 EXE 실행 |
+| 비트수 | 32비트 | 64비트 빌드 |
+| 설정 저장 | `Program Files` | `%LOCALAPPDATA%` |
+| 로그 | 없음 | 일 단위 파일, 30일 보관 |
+| 삼성 SDS 양식 | 지원 | 지원하지 않음 |
+| 유지정비료(H·I열) | 입력 | 제거, H열은 빈 칸 |
+| 할인율 | 입력란 제공 | 제거, `공급가` 행은 수기 입력 |
 | 저장 위치 | 선택 가능 | XML과 같은 폴더로 고정 |
