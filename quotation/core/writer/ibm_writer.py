@@ -2,7 +2,6 @@
 from __future__ import annotations
 
 import datetime as dt
-import re
 from copy import copy
 from decimal import Decimal
 from pathlib import Path
@@ -84,25 +83,10 @@ def _amount_cell(ws: Worksheet, coord: str, amount: Amount, fmt: str):
         _put(ws, coord, _num(amount), fmt=fmt, font=FONT_DATA)
 
 
-#: 견적서 번호. `…Trialinfo-` 까지를 앞부분으로 잡고 연도 두 자리를 갱신한다.
-_QUOTE_NO_RE = re.compile(r"^(.*?Trialinfo-)\d{2}-?.*$", re.DOTALL)
-
-
 def _update_quote_number(ws: Worksheet, today: dt.date) -> None:
-    """B2 의 견적서 번호에서 연도만 올린다.
-
-    결과는 언제나 `NO : Trialinfo-{YY}-` 형태다. 연도 뒤에는 아무것도 붙이지 않는다.
-    앞부분은 템플릿에 적힌 그대로 두므로 문구를 바꿔도 유지된다.
-    형식이 다르면 아예 손대지 않는다.
-    """
-    cell = ws["B2"]
-    text = cell.value
-    if not isinstance(text, str):
-        return
-    m = _QUOTE_NO_RE.match(text)
-    if not m:
-        return
-    cell.value = f"{m.group(1)}{today:%y}-"
+    """B2의 `Trialinfo-YY-` 번호에서 연도만 갱신한다."""
+    prefix = ws["B2"].value.split("Trialinfo-", 1)[0]
+    ws["B2"] = f"{prefix}Trialinfo-{today:%y}-"
 
 
 def _merge(pending: list[str], col: str, top: int, bottom: int):
@@ -360,7 +344,6 @@ def write(quote: Quotation, template: str | Path, out_path: str | Path,
           *, today: dt.date | None = None) -> Path:
     wb = build(quote, template, today=today)
     out = Path(out_path)
-    out.parent.mkdir(parents=True, exist_ok=True)
     wb.save(out)
     # openpyxl 은 저장 시 그림·도형을 버린다. TOTAL 시트 상단의 로고와
     # 머리글 도형을 템플릿에서 다시 옮겨 붙인다 (SPEC_CELLMAP.md §5.1).

@@ -7,7 +7,7 @@ from lxml import etree
 
 from .models import Group, LineItem, Quotation, SubLineItem
 from .money import parse_amount
-from .naming import item_key, unique_sheet_name
+from .naming import item_key, sheet_name
 
 # --- 원본 프로그램의 XPath (변경 금지) ---------------------------------------
 XP_CFDATA = "./CFData"
@@ -38,13 +38,7 @@ def _text(el, path: str) -> str:
 
 
 def _int(el, path: str, default: int = 1) -> int:
-    raw = _text(el, path).replace(",", "")
-    if not raw:
-        return default
-    try:
-        return int(float(raw))
-    except ValueError:
-        return default
+    return int(_text(el, path) or default)
 
 
 def _parse_sub(el) -> SubLineItem:
@@ -122,16 +116,13 @@ def _build_groups(items: list[LineItem],
             merged.append(gid)
 
     groups: list[Group] = []
-    taken: set[str] = set()
     for index, gid in enumerate(merged):
         members = buckets[gid]
         if index < len(reference_names):
             key = reference_names[index]
         else:
             key = item_key(members[0].description)
-        name = unique_sheet_name(key, taken)
-        taken.add(name)
-        groups.append(Group(group_id=gid, item_key=key, sheet_name=name,
+        groups.append(Group(group_id=gid, item_key=key, sheet_name=sheet_name(key),
                             items=tuple(members)))
     return tuple(groups)
 
@@ -146,8 +137,6 @@ def parse(source: str | Path) -> Quotation:
         load_dtd=False,        # 인라인 DTD 를 읽되 외부 참조는 하지 않는다
         resolve_entities=False,  # XXE 차단
         no_network=True,
-        huge_tree=False,
-        recover=False,
     )
     try:
         tree = etree.parse(str(source), parser)
@@ -155,7 +144,7 @@ def parse(source: str | Path) -> Quotation:
         raise QuotationXmlError(f"XML을 로드하는중 장애 발생. 장애코드: {exc}") from exc
 
     root = tree.getroot()
-    if root is None or etree.QName(root).localname != "CFXML":
+    if etree.QName(root).localname != "CFXML":
         raise QuotationXmlError("CFXML을 찾을수 없습니다.")
 
     cfdata = root.find(XP_CFDATA)

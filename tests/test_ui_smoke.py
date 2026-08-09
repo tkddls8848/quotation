@@ -38,7 +38,6 @@ def root(tmp_path, monkeypatch):
     from quotation import paths
     monkeypatch.setattr(paths, "app_data_dir", lambda: tmp_path)
     monkeypatch.setattr(paths, "config_path", lambda: tmp_path / "config.json")
-    monkeypatch.setattr(paths, "legacy_ini_candidates", lambda: [])
     try:
         r = tk.Tk()
     except tk.TclError as exc:

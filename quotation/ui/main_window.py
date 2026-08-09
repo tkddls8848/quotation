@@ -1,7 +1,6 @@
 """견적 변환기 메인 화면."""
 from __future__ import annotations
 
-import logging
 import os
 import queue
 import threading
@@ -13,8 +12,6 @@ from .. import config as config_mod
 from .. import paths
 from ..core import convert
 from ..core.xml_reader import QuotationXmlError
-
-log = logging.getLogger(__name__)
 
 TITLE = "견적서 작성기"
 SUBTITLE = "IBM eServer and TotalStorage — eConfig Export"
@@ -106,10 +103,9 @@ class MainWindow(ttk.Frame):
     # --- 입력 ----------------------------------------------------------------
 
     def _pick_xml(self):
-        initial = self.cfg.last_input_dir or str(Path.home())
         chosen = filedialog.askopenfilename(
             title="XML화일 선택", filetypes=XML_FILETYPES,
-            initialdir=initial if Path(initial).is_dir() else None)
+            initialdir=self.cfg.last_input_dir or str(Path.home()))
         if chosen:
             self.xml_path.set(chosen)
             self.status.set("<변환> 버튼을 누르면 견적서 변환작업을 시작합니다.")
@@ -119,14 +115,7 @@ class MainWindow(ttk.Frame):
 
         견적서 번호와 머리말의 담당자 이름은 여기서 고친다.
         """
-        template = paths.template_path()
-        if not template.exists():
-            messagebox.showerror(TITLE, f"템플릿을 찾을 수 없습니다.\n{template}")
-            return
-        try:
-            os.startfile(template)  # noqa: S606
-        except OSError as exc:
-            messagebox.showerror(TITLE, f"템플릿을 열지 못했습니다.\n{exc}")
+        _open(paths.template_path())
 
     # --- 변환 ----------------------------------------------------------------
 
@@ -165,9 +154,6 @@ class MainWindow(ttk.Frame):
             ))
         except OSError as exc:
             self._events.put(("error", f"화일을 저장하지 못했습니다.\n{exc}"))
-        except Exception as exc:  # noqa: BLE001 - 마지막 방어선
-            log.exception("변환 중 예상치 못한 오류")
-            self._events.put(("error", f"변환 중 오류가 발생했습니다.\n{exc}"))
 
     def _drain_events(self):
         try:
@@ -217,17 +203,14 @@ def _open(path: Path):
     try:
         os.startfile(path)  # noqa: S606
     except OSError as exc:
-        log.warning("견적서를 열지 못했습니다: %s", exc)
+        messagebox.showerror(TITLE, f"화일을 열지 못했습니다.\n{exc}")
 
 
 def run(prefill: str | None = None) -> int:
     root = tk.Tk()
     root.title(TITLE)
     root.minsize(620, 300)
-    try:
-        root.call("tk", "scaling", 1.3)
-    except tk.TclError:
-        pass
+    root.call("tk", "scaling", 1.3)
     MainWindow(root, prefill)
     root.mainloop()
     return 0

@@ -29,22 +29,12 @@ IBM eConfig Export XML을 기존 견적서 양식의 Excel 파일(`.xlsx`)로 �
 
 견적서 번호가 `Trialinfo-YY-` 형식이면 변환 시 연도 두 자리만 현재 연도로 갱신합니다. 예를 들어 `NO : Trialinfo-26-`이 됩니다. 형식이 다르면 값은 그대로 둡니다. 담당자와 회사 정보는 템플릿의 도형 내용을 그대로 사용합니다.
 
-기본 템플릿 대신 다른 파일을 사용하려면 환경 변수 `QUOTATION_TEMPLATE`에 템플릿 `.xlsx`의 전체 경로를 지정합니다.
-
-```powershell
-$env:QUOTATION_TEMPLATE = 'D:\templates\my-quotation-template.xlsx'
-.\QuotationTool.exe
-```
-
 ## 저장 위치와 설정
 
 | 위치 | 내용 |
 |---|---|
 | EXE 옆 `견적서_template.xlsx` | 자동 생성되는 사용자 편집용 템플릿 |
 | `%LOCALAPPDATA%\QuotationTool\config.json` | 최근 XML 폴더와 결과 자동 열기 설정 |
-| `%LOCALAPPDATA%\QuotationTool\logs\` | 일 단위 로그 파일, 최근 30일 보관 |
-
-이전 버전의 `견적서생성기.ini`가 남아 있으면 최초 실행 시 유효한 최근 경로를 자동으로 가져옵니다.
 
 ## 개발
 
@@ -80,9 +70,8 @@ quotation/
     writer/             openpyxl 기반 견적서 작성 및 도형 보존
   ui/main_window.py     Tkinter GUI
   resources/            번들 템플릿
-  config.py             사용자 설정 및 구 INI 이관
+  config.py             사용자 설정
   paths.py              실행·템플릿·데이터 경로 처리
-  logging_setup.py      일 단위 로그 설정
 tools/                  변환·검증 보조 도구
 tests/                  단위·골든 회귀·UI 스모크 테스트
 ```
@@ -101,7 +90,6 @@ tests/                  단위·골든 회귀·UI 스모크 테스트
 | 설치 | 관리자 권한 및 OCX 등록 | 단일 EXE 실행 |
 | 비트수 | 32비트 | 64비트 빌드 |
 | 설정 저장 | `Program Files` | `%LOCALAPPDATA%` |
-| 로그 | 없음 | 일 단위 파일, 30일 보관 |
 | 삼성 SDS 양식 | 지원 | 지원하지 않음 |
 | 유지정비료(H·I열) | 입력 | 제거, H열은 빈 칸 |
 | 할인율 | 입력란 제공 | 제거, `공급가` 행은 수기 입력 |

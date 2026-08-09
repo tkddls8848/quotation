@@ -1,7 +1,7 @@
 """XML과 Excel 사이에서 사용하는 견적 데이터 모델."""
 from __future__ import annotations
 
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from decimal import Decimal
 
 from .money import Amount, to_decimal
@@ -70,12 +70,9 @@ class LineItem:
         # (골든 X-ROIS 'EXPERT LABS' 시트 B8 = "S/W", 6911-301 은 Services).
         return self.product_type == HARDWARE
 
-    def own_amount(self) -> Decimal:
-        return to_decimal(self.unit_price) * self.quantity
-
     def amount(self) -> Decimal:
         """자기 금액 + 모든 서브라인 금액."""
-        return self.own_amount() + sum(
+        return to_decimal(self.unit_price) * self.quantity + sum(
             (s.amount(self.quantity) for s in self.subs), Decimal(0)
         )
 
@@ -88,31 +85,17 @@ class Group:
     sheet_name: str
     items: tuple[LineItem, ...]
 
-    @property
-    def hardware(self) -> tuple[LineItem, ...]:
-        return tuple(i for i in self.items if i.is_hardware)
-
-    @property
-    def software(self) -> tuple[LineItem, ...]:
-        return tuple(i for i in self.items if not i.is_hardware)
-
     def sections(self) -> tuple[tuple[str, tuple[LineItem, ...]], ...]:
         """TOTAL 시트의 금액 병합 단위. H/W 구간과 S/W 구간이 각각 별도 소계를 가진다.
 
         SPEC_CELLMAP.md §3.2 — 골든 X-ROIS TOTAL 은 그룹 2000 을
         G10:G12(H/W, 5,378,973.5) 와 G13:G22(S/W, 600,468.5) 로 나눠 병합한다.
         """
-        return tuple(
-            (kind, items)
-            for kind, items in ((HARDWARE, self.hardware), (SOFTWARE, self.software))
-            if items
-        )
-
-    def hardware_amount(self) -> Decimal:
-        return sum((i.amount() for i in self.hardware), Decimal(0))
-
-    def software_amount(self) -> Decimal:
-        return sum((i.amount() for i in self.software), Decimal(0))
+        hardware = tuple(i for i in self.items if i.is_hardware)
+        software = tuple(i for i in self.items if not i.is_hardware)
+        return tuple((kind, items) for kind, items in (
+            (HARDWARE, hardware), (SOFTWARE, software)
+        ) if items)
 
     def amount(self) -> Decimal:
         return sum((i.amount() for i in self.items), Decimal(0))
@@ -121,7 +104,4 @@ class Group:
 class Quotation:
     """XML 한 건 = 견적서 한 부."""
 
-    groups: tuple[Group, ...] = field(default_factory=tuple)
-
-    def total_amount(self) -> Decimal:
-        return sum((g.amount() for g in self.groups), Decimal(0))
+    groups: tuple[Group, ...]

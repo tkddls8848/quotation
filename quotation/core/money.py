@@ -11,44 +11,19 @@ float 을 쓰지 않는다. 원본 소수점 자릿수를 그대로 보존해야
 """
 from __future__ import annotations
 
-from decimal import Decimal, InvalidOperation
-from typing import Final, Union
+from decimal import Decimal
+from typing import Final
 
 
 class NoCharge:
     """무상(N/C) 표식. 셀에는 "N/C" 문자열로 기록되고 합계에서는 0으로 취급된다."""
 
     __slots__ = ()
-    _instance = None
-
-    def __new__(cls):
-        if cls._instance is None:
-            cls._instance = super().__new__(cls)
-        return cls._instance
-
-    def __repr__(self) -> str:
-        return "NO_CHARGE"
-
-    def __str__(self) -> str:
-        return "N/C"
-
-    def __eq__(self, other) -> bool:
-        return isinstance(other, NoCharge)
-
-    def __hash__(self) -> int:
-        return hash("N/C")
-
-    def __bool__(self) -> bool:
-        # 0 원이 아니라 "가격 없음" 이므로 falsy 로 두지 않는다.
-        return True
 
 
 NO_CHARGE: Final = NoCharge()
 
-Amount = Union[Decimal, NoCharge, None]
-
-# eConfig 가 무상을 표기하는 변형들
-_NC_TOKENS: Final = frozenset({"N/C", "NC", "N\\C", "NO CHARGE"})
+Amount = Decimal | NoCharge | None
 
 
 def parse_amount(raw: str | None) -> Amount:
@@ -58,12 +33,9 @@ def parse_amount(raw: str | None) -> Amount:
     text = raw.strip()
     if not text:
         return None
-    if text.upper() in _NC_TOKENS:
+    if text == "N/C":
         return NO_CHARGE
-    try:
-        return Decimal(text.replace(",", ""))
-    except InvalidOperation as exc:
-        raise ValueError(f"금액을 해석할 수 없습니다: {raw!r}") from exc
+    return Decimal(text.replace(",", ""))
 
 
 def to_decimal(amount: Amount) -> Decimal:

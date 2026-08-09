@@ -57,37 +57,13 @@ Excel 이 없는 PC 에서도 동작한다.
 `제어판 → 프로그램 추가/제거` 에서 `견적서 자동화 프로그램` 을 제거한다.
 새 버전과 함께 두어도 서로 간섭하지 않으므로, 한동안 병행 운영하다가 제거해도 된다.
 
-### 설정 이관
-구버전이 남긴 `견적서생성기.ini` 를 찾으면 최초 실행 시 자동으로 값을 옮긴다.
-아래 위치를 확인한다.
-
-```
-%ProgramFiles%\Quotation\견적서생성기.ini
-%ProgramFiles(x86)%\Quotation\견적서생성기.ini
-%LOCALAPPDATA%\VirtualStore\Program Files\Quotation\견적서생성기.ini
-```
-
-> 세 번째 경로는 Windows 가 `Program Files` 쓰기를 막으면서 몰래 옮겨 둔 것이다.
-> 구버전에서 설정이 저장되지 않는 것처럼 보였다면 이 때문이다.
-
-새 설정은 `%LOCALAPPDATA%\QuotationTool\config.json` 에 저장된다.
-
 ## 4. 문제가 생기면
-
-로그를 먼저 본다.
-
-```
-%LOCALAPPDATA%\QuotationTool\logs\quotation.log
-```
-
-일자별로 30일치가 남는다. 원본에는 로그가 없어 원인 파악이 불가능했다.
 
 | 증상 | 확인할 것 |
 |---|---|
 | `화일을 저장하지 못했습니다` | 같은 이름의 견적서가 Excel 에 열려 있는지 |
 | `CFXML을 찾을수 없습니다` | eConfig Export 로 받은 XML 이 맞는지 |
 | `견적서 작성을 위한 Item을 찾을 수 없습니다` | XML 에 품목이 들어 있는지 |
-| 금액이 다르다 | 로그의 `파싱 완료: 그룹 N, 라인 N` 과 XML 을 대조 |
 
 ## 5. 없어진 기능
 

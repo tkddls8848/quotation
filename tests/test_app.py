@@ -1,8 +1,7 @@
-"""Phase 4 — 변환 오케스트레이션, 설정 이관, 옵션 동작."""
+"""변환 오케스트레이션, 설정, GUI 인수 동작."""
 from __future__ import annotations
 
 import datetime as dt
-import logging
 import sys
 from pathlib import Path
 
@@ -12,7 +11,7 @@ from openpyxl import load_workbook
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 
-from quotation import config as config_mod, logging_setup, paths  # noqa: E402
+from quotation import config as config_mod, paths  # noqa: E402
 from quotation.core import convert, xml_reader  # noqa: E402
 from quotation.core.xml_reader import QuotationXmlError  # noqa: E402
 
@@ -51,7 +50,6 @@ def test_convert_writes_next_to_xml(tmp_path):
     assert result.output == tmp_path / "sample.xlsx"
     assert result.output.is_file()
     assert result.group_count == 3
-    assert result.sheet_count == 5
 
 
 def test_output_location_is_fixed(tmp_path):
@@ -159,31 +157,9 @@ def test_quote_number_updates_year_only(tmp_path):
     assert _quote_number(tmp_path, "NO : Trialinfo-24-") == "NO : Trialinfo-26-"
 
 
-def test_quote_number_drops_trailing_text(tmp_path):
-    """연도 뒤에 뭔가 적혀 있어도 붙여 내보내지 않는다."""
-    assert _quote_number(tmp_path, "NO : Trialinfo-24-A017") == "NO : Trialinfo-26-"
-
-
 def test_quote_number_keeps_custom_prefix(tmp_path):
     """앞부분 문구는 템플릿에 적힌 그대로 둔다."""
     assert _quote_number(tmp_path, "견적 NO : Trialinfo-20-") == "견적 NO : Trialinfo-26-"
-
-
-def test_quote_number_untouched_when_format_differs(tmp_path):
-    """형식이 다르면 손대지 않는다."""
-    from openpyxl import load_workbook as lw
-
-    from quotation.core.writer import ibm_writer
-
-    _require_sample(FS5045)
-    template = tmp_path / "t.xlsx"
-    wb = lw(paths.template_path())
-    wb["TOTAL"]["B2"] = "견적번호 2026-A-17"
-    wb.save(template)
-
-    quote = xml_reader.parse(FS5045)
-    out = ibm_writer.write(quote, template, tmp_path / "o.xlsx", today=TODAY)
-    assert lw(out)["TOTAL"]["B2"].value == "견적번호 2026-A-17"
 
 
 def test_template_lives_outside_the_exe(tmp_path, monkeypatch):
@@ -192,7 +168,6 @@ def test_template_lives_outside_the_exe(tmp_path, monkeypatch):
     없으면 번들 사본으로 한 번 만들어 준다. 안에 묻어 두면 견적서 번호와
     담당자 이름을 고칠 수 없다.
     """
-    monkeypatch.delenv("QUOTATION_TEMPLATE", raising=False)
     monkeypatch.setattr(paths, "app_dir", lambda: tmp_path)
 
     target = tmp_path / paths.TEMPLATE_NAME
@@ -204,34 +179,11 @@ def test_template_lives_outside_the_exe(tmp_path, monkeypatch):
     target.write_bytes(b"edited")
     assert paths.template_path().read_bytes() == b"edited"
 
-
-def test_template_env_override(tmp_path, monkeypatch):
-    monkeypatch.setenv("QUOTATION_TEMPLATE", str(tmp_path / "custom.xlsx"))
-    assert paths.template_path() == tmp_path / "custom.xlsx"
-
-
-def test_logging_falls_back_when_log_directory_is_read_only(monkeypatch):
-    root = logging.getLogger()
-    original_handlers = root.handlers[:]
-    original_level = root.level
-    root.handlers.clear()
-    monkeypatch.setattr(paths, "log_dir", lambda: (_ for _ in ()).throw(
-        PermissionError("read-only")))
-    try:
-        logging_setup.setup()
-        assert len(root.handlers) == 1
-        assert isinstance(root.handlers[0], logging.NullHandler)
-    finally:
-        root.handlers[:] = original_handlers
-        root.setLevel(original_level)
-
-
 def test_main_opens_gui_with_first_file_argument(monkeypatch):
     from quotation import __main__
     from quotation.ui import main_window
 
     seen = []
-    monkeypatch.setattr(logging_setup, "setup", lambda: None)
     monkeypatch.setattr(main_window, "run", lambda prefill: seen.append(prefill) or 0)
 
     assert __main__.main(["sample.xml", "ignored.xml"]) == 0
@@ -259,22 +211,3 @@ def test_config_roundtrip(tmp_path, monkeypatch):
     again = config_mod.load()
     assert again.open_result_when_done is False
     assert again.last_input_dir == r"C:\in"
-
-
-def test_config_survives_corruption(tmp_path, monkeypatch):
-    path = tmp_path / "config.json"
-    monkeypatch.setattr(paths, "app_data_dir", lambda: tmp_path)
-    monkeypatch.setattr(paths, "config_path", lambda: path)
-    path.write_text("{ 깨진 JSON", encoding="utf-8")
-    assert config_mod.load().last_input_dir == ""
-
-
-def test_legacy_ini_is_migrated(tmp_path, monkeypatch):
-    ini = tmp_path / "견적서생성기.ini"
-    ini.write_bytes(f"[Setup]\nLastPath={tmp_path}\n".encode("cp949"))
-    monkeypatch.setattr(paths, "app_data_dir", lambda: tmp_path)
-    monkeypatch.setattr(paths, "config_path", lambda: tmp_path / "config.json")
-    monkeypatch.setattr(paths, "legacy_ini_candidates", lambda: [ini])
-
-    cfg = config_mod.load()
-    assert cfg.last_input_dir == str(tmp_path)
