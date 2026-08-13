@@ -1,14 +1,12 @@
 """Phase 2 코어 검증. 기대값은 전부 골든 견적서 실측값이다."""
 from __future__ import annotations
 
-import sys
 from decimal import Decimal
 from pathlib import Path
 
 import pytest
 
 ROOT = Path(__file__).resolve().parents[1]
-sys.path.insert(0, str(ROOT))
 
 from quotation.core import xml_reader  # noqa: E402
 from quotation.core.money import NO_CHARGE, parse_amount, to_decimal  # noqa: E402

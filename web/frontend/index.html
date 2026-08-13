@@ -1,0 +1,74 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="robots" content="noindex, nofollow" />
+    <title>견적서 작성기</title>
+    <link rel="icon" href="data:," />
+  </head>
+  <body>
+    <main class="page">
+      <header class="page__head">
+        <h1>견적서 작성기</h1>
+        <p class="lede">
+          IBM eServer and TotalStorage — eConfig Export XML 을 견적서 Excel 화일로
+          바꿉니다. 지원 형식은 <code>.xml</code> 한 개이며, 결과는
+          <code>.xlsx</code> 로 바로 내려받습니다.
+        </p>
+      </header>
+
+      <form id="form" novalidate>
+        <div
+          id="dropzone"
+          class="dropzone"
+          role="button"
+          tabindex="0"
+          aria-describedby="dropzone-help"
+        >
+          <span class="dropzone__title">XML 화일을 끌어다 놓거나 눌러서 고르십시오</span>
+          <span id="dropzone-help" class="dropzone__help">
+            확장자 <code>.xml</code>, 최대 <span id="max-size">10</span> MiB
+          </span>
+          <input
+            id="file"
+            class="visually-hidden"
+            type="file"
+            name="file"
+            accept=".xml,text/xml,application/xml"
+          />
+        </div>
+
+        <p id="selected" class="selected" hidden></p>
+
+        <div class="actions">
+          <button id="submit" type="submit" disabled>변환 및 다운로드</button>
+          <button id="cancel" type="button" hidden>취소</button>
+        </div>
+      </form>
+
+      <p id="status" class="status" role="status" aria-live="polite"></p>
+
+      <div id="error" class="error" role="alert" hidden>
+        <p id="error-message"></p>
+        <p class="error__id">
+          요청 ID: <code id="error-id"></code>
+          <span class="error__hint">문의할 때 이 번호를 알려 주십시오.</span>
+        </p>
+      </div>
+
+      <footer class="page__foot">
+        <p>
+          올린 XML 과 만들어진 견적서는 서버에 저장하지 않습니다. 요청을 처리하는
+          동안만 메모리에 두었다가 응답과 함께 버립니다.
+        </p>
+        <p class="versions">
+          배포 <code id="deployment-version">-</code> · 템플릿
+          <code id="template-version">-</code>
+        </p>
+      </footer>
+    </main>
+
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>

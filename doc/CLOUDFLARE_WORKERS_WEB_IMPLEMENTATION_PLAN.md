@@ -285,9 +285,17 @@ Cloudflare 계정의 최대 업로드 한도보다 작은 애플리케이션 자
 ## 10. 저장소 목표 구조
 
 ```text
-quotation/
-  core/                         기존 순수 도메인/변환 로직
-    ...
+quotation/                      공용 순수 도메인/변환 로직 (데스크톱·웹 공용)
+  core/
+    convert.py                  convert() 경로 어댑터 + convert_bytes() 순수 함수
+    xml_reader.py               parse() / parse_bytes()
+    resources.py                기준 템플릿 위치
+    writer/                     build() / build_bytes(), carry_over_bytes()
+  resources/                    기준 템플릿(.xls 편집 원본, .xlsx 배포본)
+desktop/                        데스크톱 전용. 웹 번들에 절대 들어가지 않는다
+  quotation_desktop/            Tkinter 화면, config.py, paths.py
+  launcher.py, QuotationTool.spec
+  tools/, tests/
 web/
   pyproject.toml                Python Worker 의존성
   wrangler.jsonc                assets, R2, 변수, observability 설정
@@ -295,21 +303,29 @@ web/
     worker.py                   HTTP 엔트리포인트
     api.py                      요청 검증/응답 매핑
     conversion_adapter.py       bytes 기반 코어 호출
+    limits.py, errors.py, clock.py
+    quotation/                  배포 직전 복사되는 공용 코어 (추적하지 않음)
   frontend/
     package.json
     src/
     vite.config.ts
+  scripts/
+    sync_core.py                공용 코어를 src/ 로 복사
+    verify_template.py          템플릿 검증
   tests/
     test_api.py
     test_worker_smoke.py
 tests/
   fixtures/public/              익명화된 추적 가능 fixture
   ...                           기존 코어/골든 테스트
+tools/                          공용 개발 도구 (골든 비교, 템플릿 변환)
 doc/
   CLOUDFLARE_WORKERS_WEB_IMPLEMENTATION_PLAN.md
 ```
 
-데스크톱 앱을 당장 제거하지 않는다. 동일한 순수 코어를 데스크톱 어댑터와 Worker 어댑터가 함께 사용하게 하여 전환 기간에 결과를 대조한다.
+데스크톱 앱을 당장 제거하지 않는다. 동일한 순수 코어를 데스크톱 어댑터와 Worker 어댑터가 함께 사용하게 하여 전환 기간에 결과를 대조한다. 다만 **데스크톱 전용 코드와 웹 전용 코드는 같은 폴더에 섞지 않는다.** Tkinter 화면·사용자 설정·실행 경로·PyInstaller 정의는 `desktop/` 아래로 모으고, 공용 패키지 `quotation/` 에는 실행 환경을 모르는 코어만 남긴다. 이 경계는 `web/tests/test_worker_smoke.py` 가 정적으로 검사한다.
+
+Worker 는 `main` 이 있는 폴더 아래 모듈만 번들에 담으므로, 배포 직전 `web/scripts/sync_core.py` 가 공용 코어를 `web/src/quotation/` 으로 복사한다. 복사본은 저장소에서 추적하지 않는다. 심볼릭 링크를 쓰지 않는 이유는 개발이 Windows 에서도 이루어지기 때문이다.
 
 ## 11. 단계별 구현 계획
 
@@ -542,3 +558,19 @@ doc/
 - [Workers GitHub Actions deployment](https://developers.cloudflare.com/workers/ci-cd/external-cicd/github-actions/)
 
 위 한도와 제품 상태는 2026-08-14 기준으로 작성했으며 구현 착수 시 다시 확인한다.
+
+## 18. 구현 현황
+
+| 단계 | 상태 | 비고 |
+|---|---|---|
+| Phase 0 기준선·fixture | 코드 부분 완료 | `tests/fixtures/public/` 에 신규·증설·N/C·REMOVE·EUC-KR·인라인 DTD fixture 작성. **Pyodide 런타임 기술검증은 실제 Cloudflare 계정에서 남아 있다.** |
+| Phase 1 코어 bytes I/O | 완료 | `parse_bytes`, `build_bytes`, `carry_over_bytes`, `convert_bytes`. 경로 API 는 데스크톱 어댑터로 유지. path/bytes 동등성 테스트 통과 |
+| Phase 2 Worker API | 완료 | `/convert`, `/status`, `/config`, 상한·오류코드·보안 헤더·Asia/Seoul 날짜·구조화 로그. `wrangler dev` 실측은 남아 있다 |
+| Phase 3 웹 UI | 완료 | 드래그앤드롭, 단계 상태, 취소, 중복 제출 방지, 접근성, 한글 파일명 다운로드. 브라우저 E2E 는 남아 있다 |
+| Phase 4 보안·운영 | 설정만 | Access 정책·Rate Limiting·부하 테스트·런북은 계정 작업 |
+| Phase 5 CI/CD | 부분 완료 | `.github/workflows/ci.yml` 의 테스트·빌드·스테이징 배포. Cloudflare 토큰 등록 필요 |
+| Phase 6 병행 운영 | 미착수 | 파일럿과 결과 대조는 배포 후 |
+
+계정 작업 없이 진행할 수 없는 항목(§16 의 업무 결정, R2 버킷 생성, Access 정책,
+커스텀 도메인, Workers Paid 승인)은 코드에 설정 자리만 두었다. `wrangler.jsonc`
+의 버킷 이름과 `ACTIVE_TEMPLATE_KEY` 는 실제 값으로 바꿔야 한다.

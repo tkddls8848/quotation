@@ -1,16 +1,20 @@
 # PyInstaller 빌드 정의 — 무설치 단일 EXE (64bit)
-#   .venv\Scripts\pyinstaller.exe QuotationTool.spec --noconfirm
+#   .venv\Scripts\pyinstaller.exe desktop\QuotationTool.spec --noconfirm
 from pathlib import Path
 
-ROOT = Path(SPECPATH)
+HERE = Path(SPECPATH)          # desktop/
+REPO = HERE.parent             # 저장소 루트 (공용 코어 quotation/ 이 있다)
+TEMPLATE = REPO / "quotation" / "resources" / "견적서_template.xlsx"
 
 a = Analysis(
-    [str(ROOT / "launcher.py")],
-    pathex=[str(ROOT)],
+    [str(HERE / "launcher.py")],
+    # 데스크톱 패키지(quotation_desktop)와 공용 코어(quotation) 를 모두 찾게 한다.
+    pathex=[str(HERE), str(REPO)],
     binaries=[],
     # 템플릿을 번들에 넣는다. paths.resource_dir() 가 sys._MEIPASS/resources 를 본다.
-    datas=[(str(ROOT / "quotation" / "resources"), "resources")],
-    hiddenimports=["quotation.ui.main_window"],
+    # 원본 .xls 는 편집용이라 번들에 넣지 않는다.
+    datas=[(str(TEMPLATE), "resources")],
+    hiddenimports=["quotation_desktop.ui.main_window"],
     hookspath=[],
     runtime_hooks=[],
     # 쓰지 않는 무거운 의존성을 뺀다 (openpyxl 이 선택적으로 끌어올 수 있다)

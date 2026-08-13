@@ -127,23 +127,57 @@ def _build_groups(items: list[LineItem],
     return tuple(groups)
 
 
+def _parser() -> etree.XMLParser:
+    """외부 참조를 하지 않는 파서.
+
+    인라인 DTD 가 있는 2005년 형식 문서도 읽어야 하므로 문서를 거부하지는 않되,
+    엔티티 확장과 네트워크 접근은 막는다.
+    """
+    return etree.XMLParser(
+        load_dtd=False,          # 인라인 DTD 를 읽되 외부 참조는 하지 않는다
+        resolve_entities=False,  # XXE 차단
+        no_network=True,
+        dtd_validation=False,
+        huge_tree=False,         # 깊이·크기 폭주 문서 거부
+        recover=False,
+    )
+
+
 def parse(source: str | Path) -> Quotation:
-    """eConfig XML 파일 -> Quotation.
+    """eConfig XML 파일 -> Quotation. (데스크톱 경로 입력)
 
     Raises:
         QuotationXmlError: 로드 실패 또는 필수 노드 누락.
     """
-    parser = etree.XMLParser(
-        load_dtd=False,        # 인라인 DTD 를 읽되 외부 참조는 하지 않는다
-        resolve_entities=False,  # XXE 차단
-        no_network=True,
-    )
     try:
-        tree = etree.parse(str(source), parser)
+        tree = etree.parse(str(source), _parser())
     except etree.XMLSyntaxError as exc:
         raise QuotationXmlError(f"XML을 로드하는중 장애 발생. 장애코드: {exc}") from exc
+    return _build(tree.getroot())
 
-    root = tree.getroot()
+
+def parse_bytes(data: bytes) -> Quotation:
+    """eConfig XML 바이트 -> Quotation. (웹 업로드 입력)
+
+    파일시스템을 건드리지 않는다. 인코딩은 XML 선언을 따르므로 UTF-8 과
+    EUC-KR 문서를 모두 그대로 받는다. 문자열이 아니라 **바이트** 를 넘겨야
+    선언된 인코딩이 존중된다.
+
+    Raises:
+        QuotationXmlError: 로드 실패 또는 필수 노드 누락.
+    """
+    raw = bytes(data)
+    if not raw.strip():
+        raise QuotationXmlError("XML을 로드하는중 장애 발생. 장애코드: 빈 화일입니다.")
+    try:
+        root = etree.fromstring(raw, _parser())
+    except etree.XMLSyntaxError as exc:
+        raise QuotationXmlError(f"XML을 로드하는중 장애 발생. 장애코드: {exc}") from exc
+    return _build(root)
+
+
+def _build(root) -> Quotation:
+    """파싱된 문서 뿌리 -> Quotation. 경로 입력과 바이트 입력의 공통 경로다."""
     if etree.QName(root).localname != "CFXML":
         raise QuotationXmlError("CFXML을 찾을수 없습니다.")
 

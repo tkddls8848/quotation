@@ -1,0 +1,119 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  공개 fixture — 증설 견적 (익명화).
+  BASE/PROPOSED 참조 구성, UPGRADE 라인의 REMOVE 부품, 본체 라인이 없는
+  DISCO 그룹의 앞 그룹 병합을 담는다. 실데이터가 아니다.
+-->
+<CFXML>
+  <CFData>
+    <ProductLineItem>
+      <ProductLineNumber>1000</ProductLineNumber>
+      <CPUSIUvalue>1</CPUSIUvalue>
+      <TransactionType>BASE</TransactionType>
+      <ProprietaryGroupIdentifier>1000</ProprietaryGroupIdentifier>
+      <Quantity>1</Quantity>
+      <ProductIdentification>
+        <PartnerProductIdentification>
+          <ProductDescription>Server 1:Server 1:Sample Power System</ProductDescription>
+          <ProductTypeCode>Hardware</ProductTypeCode>
+          <ProprietaryProductIdentifier>9999-AAA</ProprietaryProductIdentifier>
+        </PartnerProductIdentification>
+      </ProductIdentification>
+      <UnitListPrice>
+        <FinancialAmount>
+          <MonetaryAmount>100</MonetaryAmount>
+        </FinancialAmount>
+      </UnitListPrice>
+    </ProductLineItem>
+    <ProductLineItem>
+      <ProductLineNumber>2000</ProductLineNumber>
+      <CPUSIUvalue>1</CPUSIUvalue>
+      <TransactionType>PROPOSED</TransactionType>
+      <ProprietaryGroupIdentifier>2000</ProprietaryGroupIdentifier>
+      <Quantity>1</Quantity>
+      <ProductIdentification>
+        <PartnerProductIdentification>
+          <ProductDescription>Server 1:Server 1:Sample Power System</ProductDescription>
+          <ProductTypeCode>Hardware</ProductTypeCode>
+          <ProprietaryProductIdentifier>9999-AAB</ProprietaryProductIdentifier>
+        </PartnerProductIdentification>
+      </ProductIdentification>
+      <UnitListPrice>
+        <FinancialAmount>
+          <MonetaryAmount>200</MonetaryAmount>
+        </FinancialAmount>
+      </UnitListPrice>
+    </ProductLineItem>
+    <ProductLineItem>
+      <ProductLineNumber>3000</ProductLineNumber>
+      <CPUSIUvalue>1</CPUSIUvalue>
+      <TransactionType>UPGRADE</TransactionType>
+      <ProprietaryGroupIdentifier>3000</ProprietaryGroupIdentifier>
+      <Quantity>1</Quantity>
+      <ProductIdentification>
+        <PartnerProductIdentification>
+          <ProductDescription>9999 Model AAB</ProductDescription>
+          <ProductTypeCode>Hardware</ProductTypeCode>
+          <ProprietaryProductIdentifier>9999-AAA_9999-AAB</ProprietaryProductIdentifier>
+        </PartnerProductIdentification>
+      </ProductIdentification>
+      <UnitListPrice>
+        <FinancialAmount>
+          <MonetaryAmount>5,000</MonetaryAmount>
+        </FinancialAmount>
+      </UnitListPrice>
+      <ProductSubLineItem>
+        <TransactionType>ADD</TransactionType>
+        <Quantity>2</Quantity>
+        <ProductIdentification>
+          <PartnerProductIdentification>
+            <ProductDescription>Sample Network Adapter</ProductDescription>
+            <ProductTypeCode>Hardware</ProductTypeCode>
+            <ProprietaryProductIdentifier>EA01</ProprietaryProductIdentifier>
+          </PartnerProductIdentification>
+        </ProductIdentification>
+        <UnitListPrice>
+          <FinancialAmount>
+            <MonetaryAmount>250</MonetaryAmount>
+          </FinancialAmount>
+        </UnitListPrice>
+      </ProductSubLineItem>
+      <ProductSubLineItem>
+        <TransactionType>REMOVE</TransactionType>
+        <Quantity>1</Quantity>
+        <ProductIdentification>
+          <PartnerProductIdentification>
+            <ProductDescription>Sample Legacy Adapter</ProductDescription>
+            <ProductTypeCode>Hardware</ProductTypeCode>
+            <ProprietaryProductIdentifier>EB01</ProprietaryProductIdentifier>
+          </PartnerProductIdentification>
+        </ProductIdentification>
+      </ProductSubLineItem>
+    </ProductLineItem>
+    <ProductLineItem>
+      <ProductLineNumber>4000</ProductLineNumber>
+      <CPUSIUvalue>0</CPUSIUvalue>
+      <TransactionType>DISCO</TransactionType>
+      <ProprietaryGroupIdentifier>4000</ProprietaryGroupIdentifier>
+      <Quantity>1</Quantity>
+      <ProductIdentification>
+        <PartnerProductIdentification>
+          <ProductDescription>Sample Feature Removal</ProductDescription>
+          <ProductTypeCode>Hardware</ProductTypeCode>
+          <ProprietaryProductIdentifier>9999-AAA</ProprietaryProductIdentifier>
+        </PartnerProductIdentification>
+      </ProductIdentification>
+      <ProductSubLineItem>
+        <TransactionType>REMOVE</TransactionType>
+        <Quantity>2</Quantity>
+        <ProductIdentification>
+          <PartnerProductIdentification>
+            <ProductDescription>Sample Legacy Memory</ProductDescription>
+            <ProductTypeCode>Hardware</ProductTypeCode>
+            <ProprietaryProductIdentifier>EC01</ProprietaryProductIdentifier>
+          </PartnerProductIdentification>
+        </ProductIdentification>
+      </ProductSubLineItem>
+    </ProductLineItem>
+  </CFData>
+</CFXML>

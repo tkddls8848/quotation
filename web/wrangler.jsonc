@@ -1,0 +1,58 @@
+{
+  // Cloudflare Workers 배포 정의 (계획서 §4).
+  //   배포 전에 반드시 실행: python scripts/sync_core.py  (공용 코어를 src/ 로 복사)
+  //                          npm --prefix frontend run build
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "quotation-web",
+  "main": "src/worker.py",
+  "compatibility_date": "2026-08-01",
+  "compatibility_flags": ["python_workers"],
+
+  // SPA 정적 자산. /api/* 는 Worker 가 먼저 받는다.
+  "assets": {
+    "directory": "frontend/dist",
+    "binding": "ASSETS",
+    "not_found_handling": "single-page-application",
+    "run_worker_first": ["/api/*"]
+  },
+
+  // 비공개 템플릿 버킷. 공개 액세스를 끄고 binding 으로만 읽는다 (§8.1).
+  "r2_buckets": [
+    {
+      "binding": "TEMPLATES",
+      "bucket_name": "quotation-templates"
+    }
+  ],
+
+  "vars": {
+    // 새 템플릿을 올린 뒤 이 값만 바꿔 배포한다. 문제가 생기면 이전 키로 되돌린다.
+    "ACTIVE_TEMPLATE_KEY": "templates/2026-08-13-baseline/quotation-template.xlsx",
+    "DEPLOYMENT_VERSION": "0.1.0"
+  },
+
+  "observability": {
+    "enabled": true,
+    "head_sampling_rate": 1
+  },
+
+  // XLSX 생성은 10ms 로 끝나지 않는다. 운영 전제는 Workers Paid 다 (§4.2).
+  "limits": {
+    "cpu_ms": 30000
+  },
+
+  "env": {
+    "staging": {
+      "name": "quotation-web-staging",
+      "vars": {
+        "ACTIVE_TEMPLATE_KEY": "templates/2026-08-13-baseline/quotation-template.xlsx",
+        "DEPLOYMENT_VERSION": "0.1.0-staging"
+      },
+      "r2_buckets": [
+        {
+          "binding": "TEMPLATES",
+          "bucket_name": "quotation-templates-staging"
+        }
+      ]
+    }
+  }
+}

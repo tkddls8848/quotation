@@ -15,6 +15,7 @@ import posixpath
 import re
 import shutil
 import zipfile
+from io import BytesIO
 from pathlib import Path
 
 CONTENT_TYPES = "[Content_Types].xml"
@@ -148,26 +149,26 @@ def _patch_content_types(xml: str, drawing_parts: list[str],
     return xml.replace("</Types>", "".join(additions) + "</Types>")
 
 
-def carry_over(template: str | Path, output: str | Path,
-               sheet_name: str = "TOTAL") -> bool:
-    """템플릿의 그림·도형을 산출물의 지정 시트로 옮긴다.
+def carry_over_bytes(template: bytes, output: bytes,
+                     sheet_name: str = "TOTAL") -> bytes | None:
+    """템플릿의 그림·도형을 산출물 바이트의 지정 시트로 옮긴다.
+
+    파일시스템을 쓰지 않는다. Worker 와 데스크톱이 함께 쓰는 실제 구현이다.
 
     Returns:
-        옮길 것이 있어 실제로 손봤으면 True.
+        옮길 것이 있어 손본 새 xlsx 바이트. 옮길 것이 없으면 None.
     """
-    template, output = Path(template), Path(output)
-
-    with zipfile.ZipFile(template) as z:
+    with zipfile.ZipFile(BytesIO(template)) as z:
         src_sheet = _sheet_part(z, sheet_name)
         parts = _collect(z, src_sheet) if src_sheet else {}
     if not parts:
-        return False
+        return None
 
-    with zipfile.ZipFile(output) as z:
+    with zipfile.ZipFile(BytesIO(output)) as z:
         entries = {n: z.read(n) for n in z.namelist()}
         dst_sheet = _sheet_part(z, sheet_name)
     if not dst_sheet:
-        return False
+        return None
 
     rels_part = _rels_part(dst_sheet)
     existing = entries.get(rels_part, b"").decode("utf-8") or None
@@ -175,22 +176,41 @@ def carry_over(template: str | Path, output: str | Path,
 
     drawings = [p for p in parts if re.fullmatch(r"xl/drawings/drawing\d+\.xml", p)]
     if not drawings:
-        return False
+        return None
     target = posixpath.relpath(drawings[0], posixpath.dirname(dst_sheet))
 
     entries.update(parts)
     entries[rels_part] = _patch_rels(existing, rid, target).encode("utf-8")
     entries[dst_sheet] = _patch_sheet(
         entries[dst_sheet].decode("utf-8"), rid).encode("utf-8")
-    extensions = {Path(p).suffix.lstrip(".").lower()
+    extensions = {posixpath.splitext(p)[1].lstrip(".").lower()
                   for p in parts if p.startswith("xl/media/")}
     entries[CONTENT_TYPES] = _patch_content_types(
         entries[CONTENT_TYPES].decode("utf-8"), drawings,
         extensions).encode("utf-8")
 
-    tmp = output.with_suffix(output.suffix + ".tmp")
-    with zipfile.ZipFile(tmp, "w", zipfile.ZIP_DEFLATED) as z:
+    buffer = BytesIO()
+    with zipfile.ZipFile(buffer, "w", zipfile.ZIP_DEFLATED) as z:
         for name, body in entries.items():
             z.writestr(name, body)
+    return buffer.getvalue()
+
+
+def carry_over(template: str | Path, output: str | Path,
+               sheet_name: str = "TOTAL") -> bool:
+    """`carry_over_bytes` 의 파일 경로 어댑터 (데스크톱).
+
+    Returns:
+        옮길 것이 있어 실제로 손봤으면 True.
+    """
+    template, output = Path(template), Path(output)
+    patched = carry_over_bytes(template.read_bytes(), output.read_bytes(),
+                               sheet_name)
+    if patched is None:
+        return False
+
+    # 쓰다가 실패해도 원본이 반쯤 덮이지 않도록 임시 파일에 쓰고 바꾼다.
+    tmp = output.with_suffix(output.suffix + ".tmp")
+    tmp.write_bytes(patched)
     shutil.move(str(tmp), str(output))
     return True

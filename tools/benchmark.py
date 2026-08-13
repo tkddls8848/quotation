@@ -12,7 +12,7 @@ sys.path.insert(0, str(ROOT))
 from quotation.core import xml_reader  # noqa: E402
 from quotation.core.writer import ibm_writer  # noqa: E402
 
-TEMPLATE = ROOT / ".cache" / "견적서_template.xlsx"
+TEMPLATE = ROOT / "quotation" / "resources" / "견적서_template.xlsx"
 OUT = ROOT / "out"
 ROUNDS = 5
 

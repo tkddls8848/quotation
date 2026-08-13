@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  공개 fixture — 신규 견적 (익명화).
+  장비군 2개, H/W + S/W 구간, 서브라인, N/C 부품 1건을 담는다.
+  실데이터가 아니며 품번·금액은 모두 가공값이다.
+-->
+<CFXML>
+  <CFData>
+    <ProductLineItem>
+      <ProductLineNumber>1000</ProductLineNumber>
+      <CPUSIUvalue>1</CPUSIUvalue>
+      <TransactionType>NEW</TransactionType>
+      <ProprietaryGroupIdentifier>1000</ProprietaryGroupIdentifier>
+      <Quantity>2</Quantity>
+      <ProductIdentification>
+        <PartnerProductIdentification>
+          <ProductDescription>SAMPLE-100 #1:Sample Storage Control Enclosure</ProductDescription>
+          <ProductTypeCode>Hardware</ProductTypeCode>
+          <ProprietaryProductIdentifier>1000-A1B</ProprietaryProductIdentifier>
+        </PartnerProductIdentification>
+      </ProductIdentification>
+      <UnitListPrice>
+        <FinancialAmount>
+          <GlobalCurrencyCode>KWON</GlobalCurrencyCode>
+          <MonetaryAmount>1,000.50</MonetaryAmount>
+        </FinancialAmount>
+        <PriceTerm>0</PriceTerm>
+      </UnitListPrice>
+      <ProductSubLineItem>
+        <TransactionType>ADD</TransactionType>
+        <Quantity>3</Quantity>
+        <ProductIdentification>
+          <PartnerProductIdentification>
+            <ProductDescription>Sample Cache Module</ProductDescription>
+            <ProductTypeCode>Hardware</ProductTypeCode>
+            <ProprietaryProductIdentifier>AC01</ProprietaryProductIdentifier>
+          </PartnerProductIdentification>
+        </ProductIdentification>
+        <UnitListPrice>
+          <FinancialAmount>
+            <MonetaryAmount>100</MonetaryAmount>
+          </FinancialAmount>
+        </UnitListPrice>
+      </ProductSubLineItem>
+      <ProductSubLineItem>
+        <TransactionType>ADD</TransactionType>
+        <Quantity>1</Quantity>
+        <ProductIdentification>
+          <PartnerProductIdentification>
+            <ProductDescription>Sample Power Cable</ProductDescription>
+            <ProductTypeCode>Hardware</ProductTypeCode>
+            <ProprietaryProductIdentifier>AC02</ProprietaryProductIdentifier>
+          </PartnerProductIdentification>
+        </ProductIdentification>
+        <UnitListPrice>
+          <FinancialAmount>
+            <MonetaryAmount>N/C</MonetaryAmount>
+          </FinancialAmount>
+        </UnitListPrice>
+      </ProductSubLineItem>
+    </ProductLineItem>
+    <ProductLineItem>
+      <ProductLineNumber>1010</ProductLineNumber>
+      <CPUSIUvalue>0</CPUSIUvalue>
+      <TransactionType>NEW</TransactionType>
+      <ProprietaryGroupIdentifier>1000</ProprietaryGroupIdentifier>
+      <Quantity>1</Quantity>
+      <ProductIdentification>
+        <PartnerProductIdentification>
+          <ProductDescription>Sample Storage Management Software</ProductDescription>
+          <ProductTypeCode>Software</ProductTypeCode>
+          <ProprietaryProductIdentifier>5639-SW1</ProprietaryProductIdentifier>
+        </PartnerProductIdentification>
+      </ProductIdentification>
+      <UnitListPrice>
+        <FinancialAmount>
+          <MonetaryAmount>250</MonetaryAmount>
+        </FinancialAmount>
+      </UnitListPrice>
+    </ProductLineItem>
+    <ProductLineItem>
+      <ProductLineNumber>2000</ProductLineNumber>
+      <CPUSIUvalue>1</CPUSIUvalue>
+      <TransactionType>NEW</TransactionType>
+      <ProprietaryGroupIdentifier>2000</ProprietaryGroupIdentifier>
+      <Quantity>1</Quantity>
+      <ProductIdentification>
+        <PartnerProductIdentification>
+          <ProductDescription>SAMPLE-200 #2:Sample Lab Services Unit</ProductDescription>
+          <ProductTypeCode>Services</ProductTypeCode>
+          <ProprietaryProductIdentifier>6911-301</ProprietaryProductIdentifier>
+        </PartnerProductIdentification>
+      </ProductIdentification>
+      <UnitListPrice>
+        <FinancialAmount>
+          <MonetaryAmount>11,800</MonetaryAmount>
+        </FinancialAmount>
+      </UnitListPrice>
+    </ProductLineItem>
+  </CFData>
+</CFXML>

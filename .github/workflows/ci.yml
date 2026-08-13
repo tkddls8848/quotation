@@ -1,0 +1,89 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  core:
+    name: 공용 코어 · 데스크톱 · Worker 테스트
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+      - name: 의존성 설치
+        run: python -m pip install -r requirements.txt
+      - name: 테스트
+        run: python -m pytest tests web/tests desktop/tests -q
+      - name: Worker 번들에 코어 복사
+        run: python web/scripts/sync_core.py
+      - name: 복사본이 그대로 import 되는지 확인
+        run: |
+          python - <<'PY'
+          import sys
+          sys.path.insert(0, "web/src")
+          from quotation.core import convert  # noqa: F401
+          print("vendored core ok")
+          PY
+
+  frontend:
+    name: 웹 UI lint · 테스트 · 빌드
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: web/frontend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+          cache-dependency-path: web/frontend/package-lock.json
+      - run: npm ci
+      - run: npm run typecheck
+      - run: npm test
+      - run: npm run build
+
+  deploy-staging:
+    name: 스테이징 배포
+    needs: [core, frontend]
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    runs-on: ubuntu-latest
+    environment: staging
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+          cache-dependency-path: web/frontend/package-lock.json
+      - name: 정적 자산 빌드
+        run: npm ci && npm run build
+        working-directory: web/frontend
+      - name: Worker 번들에 코어 복사
+        run: python web/scripts/sync_core.py
+      - name: 배포
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          workingDirectory: web
+          command: deploy --env staging
+      - name: 스모크 테스트
+        env:
+          BASE_URL: ${{ vars.STAGING_BASE_URL }}
+        run: |
+          if [ -z "$BASE_URL" ]; then
+            echo "STAGING_BASE_URL 변수가 없어 스모크 테스트를 건너뜁니다." && exit 0
+          fi
+          curl -sSf "$BASE_URL/api/v1/status" | tee /dev/stderr | grep -q template_version

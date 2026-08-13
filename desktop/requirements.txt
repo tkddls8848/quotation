@@ -1,0 +1,4 @@
+# 데스크톱(EXE) 빌드용. 공용 코어 의존성을 함께 설치한다.
+-r ../requirements.txt
+
+pyinstaller==6.11.1

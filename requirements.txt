@@ -1,7 +1,10 @@
+# 공용 코어(quotation/) 런타임과 테스트.
+# 데스크톱 빌드 도구는 desktop/requirements.txt, 웹 배포 의존성은
+# web/pyproject.toml 과 web/frontend/package.json 에 있다.
+
 # 런타임
 lxml==6.1.1
 openpyxl==3.1.5
 
-# 개발/빌드
+# 테스트
 pytest==8.3.4
-pyinstaller==6.11.1

@@ -1,7 +1,8 @@
 param()
 
 $ErrorActionPreference = "Continue"
-$root = Split-Path -Parent $PSScriptRoot
+# desktop\tools -> desktop -> 저장소 루트. PyInstaller 는 루트의 dist\ 에 낸다.
+$root = Split-Path -Parent (Split-Path -Parent $PSScriptRoot)
 $gui = Join-Path $root "dist\QuotationTool.exe"
 $cli = Join-Path $root "dist\QuotationTool-cli.exe"
 $templateName = (-join @([char]0xACAC, [char]0xC801, [char]0xC11C)) +

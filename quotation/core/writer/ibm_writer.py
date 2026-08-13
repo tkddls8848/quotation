@@ -4,7 +4,9 @@ from __future__ import annotations
 import datetime as dt
 from copy import copy
 from decimal import Decimal
+from io import BytesIO
 from pathlib import Path
+from typing import IO
 
 from openpyxl import load_workbook
 from openpyxl.styles import Alignment, Font
@@ -313,8 +315,9 @@ def _finish(ws: Worksheet, merges: list[str], lay: Layout) -> None:
         ws.merge_cells(ref)
 
 
-def build(quote: Quotation, template: str | Path,
+def build(quote: Quotation, template: str | Path | IO[bytes],
           *, today: dt.date | None = None) -> Workbook:
+    """템플릿(경로 또는 열린 바이트 스트림) 위에 견적서를 그려 워크북을 만든다."""
     today = today or dt.date.today()
     wb = load_workbook(template)
 
@@ -340,12 +343,26 @@ def build(quote: Quotation, template: str | Path,
     return wb
 
 
+def build_bytes(quote: Quotation, template_bytes: bytes,
+                *, today: dt.date | None = None) -> bytes:
+    """템플릿 바이트 -> 완성된 견적서 .xlsx 바이트. 파일시스템을 쓰지 않는다.
+
+    Worker 가 쓰는 진입점이다. 도형 이식까지 마친 최종 바이트를 돌려준다.
+    """
+    wb = build(quote, BytesIO(template_bytes), today=today)
+    buffer = BytesIO()
+    wb.save(buffer)
+    saved = buffer.getvalue()
+    # openpyxl 은 저장 시 그림·도형을 버린다. TOTAL 시트 상단의 로고와
+    # 머리글 도형을 템플릿에서 다시 옮겨 붙인다 (SPEC_CELLMAP.md §5.1).
+    return drawings.carry_over_bytes(template_bytes, saved, SHEET_TOTAL) or saved
+
+
 def write(quote: Quotation, template: str | Path, out_path: str | Path,
           *, today: dt.date | None = None) -> Path:
+    """`build_bytes` 의 파일 경로 어댑터 (데스크톱)."""
     wb = build(quote, template, today=today)
     out = Path(out_path)
     wb.save(out)
-    # openpyxl 은 저장 시 그림·도형을 버린다. TOTAL 시트 상단의 로고와
-    # 머리글 도형을 템플릿에서 다시 옮겨 붙인다 (SPEC_CELLMAP.md §5.1).
     drawings.carry_over(template, out, SHEET_TOTAL)
     return out

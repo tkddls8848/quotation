@@ -5,14 +5,12 @@
 from __future__ import annotations
 
 import datetime as dt
-import sys
 from pathlib import Path
 
 import pytest
 from openpyxl import load_workbook
 
 ROOT = Path(__file__).resolve().parents[1]
-sys.path.insert(0, str(ROOT))
 
 from quotation.core import convert, xml_reader  # noqa: E402
 from quotation.core.writer.decorate import RED  # noqa: E402

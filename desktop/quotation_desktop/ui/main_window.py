@@ -8,10 +8,11 @@ import tkinter as tk
 from pathlib import Path
 from tkinter import filedialog, messagebox, ttk
 
+from quotation.core import convert
+from quotation.core.xml_reader import QuotationXmlError
+
 from .. import config as config_mod
 from .. import paths
-from ..core import convert
-from ..core.xml_reader import QuotationXmlError
 
 TITLE = "견적서 작성기"
 SUBTITLE = "IBM eServer and TotalStorage — eConfig Export"
@@ -141,8 +142,10 @@ class MainWindow(ttk.Frame):
 
     def _worker(self, xml: Path):
         try:
+            # 템플릿은 EXE 옆의 사용자 편집본을 쓴다. 코어는 경로 정책을 모른다.
             result = convert.convert(
-                xml, progress=lambda p, m: self._events.put(("progress", p, m)))
+                xml, template=paths.template_path(),
+                progress=lambda p, m: self._events.put(("progress", p, m)))
             self._events.put(("done", result))
         except QuotationXmlError as exc:
             self._events.put(("error", str(exc)))

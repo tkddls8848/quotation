@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="EUC-KR"?>
+<!-- 공개 fixture: EUC-KR 인코딩, 인라인 DTD 포함 (익명화) -->
+<!DOCTYPE CFXML [
+  <!ELEMENT CFXML ANY>
+]>
+<CFXML>
+  <CFData>
+    <ProductLineItem>
+      <ProductLineNumber>1000</ProductLineNumber>
+      <CPUSIUvalue>1</CPUSIUvalue>
+      <TransactionType>NEW</TransactionType>
+      <ProprietaryGroupIdentifier>1000</ProprietaryGroupIdentifier>
+      <Quantity>1</Quantity>
+      <ProductIdentification>
+        <PartnerProductIdentification>
+          <ProductDescription>서버 1:표본 한글 설명 장비</ProductDescription>
+          <ProductTypeCode>Hardware</ProductTypeCode>
+          <ProprietaryProductIdentifier>1234-567</ProprietaryProductIdentifier>
+        </PartnerProductIdentification>
+      </ProductIdentification>
+      <UnitListPrice>
+        <FinancialAmount>
+          <GlobalCurrencyCode>KWON</GlobalCurrencyCode>
+          <MonetaryAmount>1,000.5</MonetaryAmount>
+        </FinancialAmount>
+        <PriceTerm>0</PriceTerm>
+      </UnitListPrice>
+    </ProductLineItem>
+  </CFData>
+</CFXML>

@@ -1,0 +1,11 @@
+# Workers Static Assets 가 정적 응답에 붙일 헤더 (계획서 §9).
+# API 응답의 같은 정책은 web/src/api.py 의 SECURITY_HEADERS 가 붙인다.
+/*
+  X-Content-Type-Options: nosniff
+  Referrer-Policy: no-referrer
+  X-Frame-Options: DENY
+  Cross-Origin-Opener-Policy: same-origin
+  Content-Security-Policy: default-src 'none'; script-src 'self'; style-src 'self'; img-src 'self' data:; connect-src 'self'; form-action 'self'; base-uri 'none'; frame-ancestors 'none'
+
+/index.html
+  Cache-Control: no-store

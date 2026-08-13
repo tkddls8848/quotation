@@ -6,8 +6,8 @@ from pathlib import Path
 
 import pytest
 
-ROOT = Path(__file__).resolve().parents[1]
-sys.path.insert(0, str(ROOT))
+ROOT = Path(__file__).resolve().parents[2]
+FIXTURES = ROOT / "tests" / "fixtures" / "public"
 
 
 def _point_at_tcl() -> None:
@@ -35,7 +35,7 @@ tk = pytest.importorskip("tkinter")
 
 @pytest.fixture
 def root(tmp_path, monkeypatch):
-    from quotation import paths
+    from quotation_desktop import paths
     monkeypatch.setattr(paths, "app_data_dir", lambda: tmp_path)
     monkeypatch.setattr(paths, "config_path", lambda: tmp_path / "config.json")
     try:
@@ -48,7 +48,7 @@ def root(tmp_path, monkeypatch):
 
 
 def test_window_builds(root):
-    from quotation.ui.main_window import MainWindow
+    from quotation_desktop.ui.main_window import MainWindow
     win = MainWindow(root)
     assert win.convert_btn.cget("text") == "변환"
     assert "선택" in win.status.get()
@@ -62,7 +62,7 @@ def test_success_opens_the_quote_without_a_popup(root, monkeypatch, tmp_path):
     import datetime as dt
 
     from quotation.core import convert
-    from quotation.ui import main_window
+    from quotation_desktop.ui import main_window
 
     popups: list[str] = []
     opened: list = []
@@ -70,9 +70,7 @@ def test_success_opens_the_quote_without_a_popup(root, monkeypatch, tmp_path):
                         lambda t, m: popups.append(m))
     monkeypatch.setattr(main_window, "_open", opened.append)
 
-    source = ROOT / "samples" / "FS5045_260722.xml"
-    if not source.exists():
-        pytest.skip(f"샘플 없음: {source.name}")
+    source = FIXTURES / "new_quote.xml"
     xml = tmp_path / source.name
     xml.write_bytes(source.read_bytes())
 
@@ -85,8 +83,28 @@ def test_success_opens_the_quote_without_a_popup(root, monkeypatch, tmp_path):
     assert opened == [result.output], "만든 견적서를 열지 않았다"
 
 
+def test_convert_uses_the_user_editable_template(root, monkeypatch, tmp_path):
+    """변환은 EXE 옆 편집본을 쓴다. 코어의 기준 템플릿을 쓰면 안 된다.
+
+    견적서 번호와 담당자 도형을 고칠 수 있는 유일한 통로다.
+    """
+    from quotation_desktop import paths
+    from quotation_desktop.ui import main_window
+
+    monkeypatch.setattr(paths, "app_dir", lambda: tmp_path)
+
+    seen: dict = {}
+    monkeypatch.setattr(main_window.convert, "convert",
+                        lambda xml, **kw: seen.update(xml=xml, **kw))
+
+    win = main_window.MainWindow(root)
+    win._worker(FIXTURES / "new_quote.xml")
+
+    assert seen["template"] == tmp_path / paths.TEMPLATE_NAME
+
+
 def test_convert_without_file_warns(root, monkeypatch):
-    from quotation.ui import main_window
+    from quotation_desktop.ui import main_window
     shown: list[tuple[str, str]] = []
     monkeypatch.setattr(main_window.messagebox, "showinfo",
                         lambda t, m: shown.append((t, m)))
@@ -96,7 +114,7 @@ def test_convert_without_file_warns(root, monkeypatch):
 
 
 def test_missing_file_reports_error(root, monkeypatch, tmp_path):
-    from quotation.ui import main_window
+    from quotation_desktop.ui import main_window
     errors: list[str] = []
     monkeypatch.setattr(main_window.messagebox, "showerror",
                         lambda t, m: errors.append(m))

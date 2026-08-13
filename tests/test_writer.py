@@ -2,15 +2,12 @@
 from __future__ import annotations
 
 import datetime as dt
-import sys
 from pathlib import Path
 
 import pytest
 from openpyxl import load_workbook
 
 ROOT = Path(__file__).resolve().parents[1]
-sys.path.insert(0, str(ROOT))
-sys.path.insert(0, str(ROOT / "tools"))
 
 from quotation.core import xml_reader  # noqa: E402
 from quotation.core.writer import ibm_writer  # noqa: E402

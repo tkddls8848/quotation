@@ -15,12 +15,21 @@ dist/
 out/
 
 # 고객/테스트 견적 원본 및 골든 파일 (저장소에 포함하지 않음)
+# 공개 가능한 익명 fixture 만 tests/fixtures/public 에 추적한다.
 samples/
 
-# 실행 시 자동 생성되는 외부 템플릿 (원본은 견적서_template.xls,
-# 배포본은 quotation/resources 에 있다)
-/견적서_template.xlsx
+# 데스크톱 실행 시 자동 생성되는 외부 템플릿
+# (원본은 quotation/resources/견적서_template.xls,
+#  배포본은 quotation/resources/견적서_template.xlsx 에 있다)
+desktop/견적서_template.xlsx
 
 # QuotationTool.spec 은 직접 작성한 빌드 정의이므로 추적한다.
 # PyInstaller 가 자동 생성하는 spec 만 제외한다.
 launcher.spec
+
+# --- 웹 ---------------------------------------------------------------------
+node_modules/
+web/frontend/dist/
+.wrangler/
+# 배포 전에 web/scripts/sync_core.py 가 공용 코어를 복사해 넣는 자리
+web/src/quotation/
