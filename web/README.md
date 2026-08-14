@@ -140,22 +140,35 @@ CI 의 `bundle` 잡이 매 푸시마다 이 검사를 돌립니다.
 
 | 항목 | 값 |
 |---|---|
-| Root directory | `web` |
-| Build command | `bash scripts/cf_build.sh` |
-| Deploy command | `python3 -m pywrangler deploy` (Worker 이름이 `quotation-web`) 또는 `python3 -m pywrangler deploy --env staging` (`quotation-web-staging`) |
+| Root directory | 아무 값이나 무방 (비워 두어도 된다) |
+| Build command | `bash "$(git rev-parse --show-toplevel)"/web/scripts/cf_build.sh` |
+| Deploy command | `bash "$(git rev-parse --show-toplevel)"/web/scripts/cf_deploy.sh` |
 
-`pywrangler` 대신 `python3 -m pywrangler` 로 부르는 이유는 pip 이 설치한 실행
-파일이 빌드 환경의 PATH 에 없을 수 있어서다. 모듈로 부르면 그 문제가 없다.
+스테이징 Worker(`quotation-web-staging`)라면 Deploy command 뒤에 `--env staging`
+을 붙인다. 인자는 그대로 wrangler 까지 전달된다.
 
-- **Root directory 를 `web` 으로 두지 않으면** wrangler 가 설정을 못 찾아
-  `Missing entry-point to Worker script or to assets directory` 로 죽는다.
-  `wrangler.jsonc` 는 저장소 루트가 아니라 `web/` 에 있다.
-- Deploy command 의 이름/`--env` 는 `wrangler.jsonc` 의 Worker 이름과 맞아야 한다
+두 스크립트는 **자기 위치를 보고 `web/` 으로 이동한다.** 그래서 대시보드의
+Root directory 값이 무엇이든 똑같이 동작한다. 이 장치가 없으면 Root directory
+가 저장소 루트일 때 wrangler 가 설정을 못 찾아 이렇게 죽는다.
+
+```
+✘ [ERROR] Missing entry-point to Worker script or to assets directory
+```
+
+`wrangler.jsonc` 는 저장소 루트가 아니라 `web/` 에 있기 때문이다.
+
+빌드 로그 첫 줄에 `=== 작업 폴더: /opt/buildhome/repo/web` 가 찍히면 스크립트가
+제대로 실행된 것이다. 그 줄이 없으면 대시보드의 Build/Deploy command 가 저장되지
+않았거나 다른 Worker 의 설정을 고친 것이다.
+- Deploy command 의 `--env` 는 `wrangler.jsonc` 의 Worker 이름과 맞아야 한다
   (top-level `quotation-web`, `env.staging` 은 `quotation-web-staging`).
-- **`wrangler deploy` 를 쓰지 말고 `pywrangler deploy`** 를 쓴다. 의존성
-  vendoring 이 빠진다.
-- 빌드 단계의 실제 순서는 `web/scripts/cf_build.sh` 가 갖고 있다. 대시보드에
-  긴 명령을 넣지 않는 이유는 설정과 코드가 어긋나지 않게 하기 위함이다.
+- **`wrangler deploy` 를 쓰지 말고 `cf_deploy.sh`(=`pywrangler deploy`)** 를 쓴다.
+  wrangler 만 쓰면 의존성 vendoring 이 빠진다.
+- 빌드·배포 순서는 `web/scripts/cf_build.sh`, `web/scripts/cf_deploy.sh` 가 갖고
+  있다. 대시보드에 긴 명령을 넣지 않는 이유는 설정과 코드가 어긋나지 않게 하기
+  위함이다.
+- **설정을 바꾼 뒤에는 새 빌드를 돌려야 한다.** `Retry build` 는 이전 빌드를
+  그때의 설정으로 재실행하므로 바뀐 값이 반영되지 않는다.
 - `Failed: The build token ... has been deleted or rolled` 는 API 토큰이 아니라
   **Workers Builds 전용 빌드 토큰** 문제다. Settings → Build → Build token 에서
   갱신하고 재시도한다.
