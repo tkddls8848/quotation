@@ -70,9 +70,21 @@ jobs:
         run: python web/scripts/sync_core.py
       - name: Pyodide 의존성 해석 (계획서 Phase 0 게이트)
         # lxml·openpyxl 을 Pyodide 대상으로 받아 web/python_modules 에 넣는다.
-        # 여기서 실패하면 Python Worker 로는 배포할 수 없다는 뜻이므로,
-        # 계획서 §4.2 대로 변환 실행부를 Container 로 옮겨야 한다.
+        # 여기서 실패하면 Python Worker 로는 배포할 수 없다는 뜻이므로, 계획서
+        # §11 Phase 0 의 결정 게이트대로 대체 파서 또는 Container 로 간다.
         run: pywrangler sync
+        working-directory: web
+      - name: 해석된 판본과 번들 크기
+        # 여기 찍히는 판본을 web/pylock.toml 로 고정한다. 배포 번들 한도
+        # (Paid 10 MB)에 드는지도 여기서 본다.
+        if: always()
+        run: |
+          echo "::group::pylock.toml"
+          [ -f pylock.toml ] && grep -E '^name|^version|^\[\[packages' pylock.toml | paste - - - | head -40 || echo "(없음)"
+          echo "::endgroup::"
+          echo "::group::python_modules 크기"
+          [ -d python_modules ] && du -sh python_modules && du -sh python_modules/* | sort -rh | head -15 || echo "(없음)"
+          echo "::endgroup::"
         working-directory: web
       - name: 설정·번들 검사 (자격 증명 없이)
         run: npx wrangler deploy --dry-run --outdir .wrangler/dry-run
