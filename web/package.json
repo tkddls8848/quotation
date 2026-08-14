@@ -3,9 +3,10 @@
   "private": true,
   "version": "0.1.0",
   "scripts": {
-    "dev": "wrangler dev",
-    "check": "wrangler deploy --dry-run --outdir .wrangler/dry-run",
-    "deploy": "wrangler deploy"
+    "dev": "wrangler dev --env=\"\"",
+    "check": "wrangler deploy --dry-run --env=\"\" --outdir .wrangler/dry-run",
+    "check:server": "wrangler deploy --dry-run --env server --outdir .wrangler/dry-run-server",
+    "deploy": "wrangler deploy --env=\"\""
   },
   "devDependencies": {
     "wrangler": "^4.123.0"

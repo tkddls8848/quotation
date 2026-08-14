@@ -666,3 +666,84 @@ Free 계정에서는 그 항목이 있는 것만으로 배포가 거부된다(`c
 무료로 진행할 수 있다.
  남은 미검증 항목은 **실제 isolate 의 메모리·CPU 사용량과 도형 보존**
 이며, 이는 계정과 R2 템플릿이 준비된 뒤 `wrangler dev` 로 확인한다.
+
+### 18.5 §4 변경 — 무료 계정 운영을 위해 변환을 브라우저로 옮긴다
+
+§4.2 는 "운영 기준은 Workers Paid" 로 잡았고 §18.3 의 실측이 그 판단을
+확정했다. 그런데 운영 계정이 **무료 계정** 이라면 그 길이 닫혀 있다. Free 의
+요청당 CPU 10 ms 로는 가장 작은 견적서(73 ms)도 만들 수 없고, 이것은 코드를
+빨리 만들어서 넘길 수 있는 차이가 아니다(7~42배).
+
+Paid 로 올리지 않고 무료 계정에서 **원활히** 돌리는 길은 하나뿐이다. 변환을
+서버에서 빼는 것이다. 그렇다고 변환기를 다시 쓰면 결과가 달라질 위험이 생기고,
+그것은 견적서에서 용납되지 않는다. 그래서 **같은 파이썬을 브라우저에서 돌린다.**
+
+    이전   브라우저 --XML--> Worker(Pyodide) --XLSX--> 브라우저
+    이후   브라우저(Pyodide) 안에서 시작하고 끝난다. Cloudflare 는 자산만 준다
+
+바뀌지 않는 것:
+
+- 변환 코어(`quotation.core`), 검증·가드(`conversion_adapter`, `limits`),
+  응답 계약(`api`), 견적 날짜(`clock`), 템플릿(`template`) — **파일이 같다.**
+  사본을 두지 않고 `build_browser_engine.py` 가 `web/src` 를 그대로 담는다.
+- 부르는 함수도 같다. `worker.py` 와 `browser/entry.py` 가 둘 다
+  `api.convert_response` 를 부른다.
+- API 계약(§6)과 화면(§7)의 겉모습.
+
+바뀌는 것:
+
+| | 이전 | 이후 |
+|---|---|---|
+| 변환 위치 | Worker (Pyodide) | 브라우저 (Pyodide) |
+| 기본 배포 | Python Worker + 자산 | **자산만** (`main` 없음) |
+| 요청당 CPU 한도 | 걸린다 | 해당 없음 |
+| 하루 요청 한도 | 변환마다 소모 | 소모 없음 (정적 자산은 무료·무제한) |
+| 배포 도구 | pywrangler + uv + vendoring | wrangler 만 |
+| 업로드 XML | 서버 메모리를 거친다 | 브라우저 밖으로 나가지 않는다 |
+| 첫 방문 비용 | 없음 | 엔진 14.4 MiB (한 번, 이후 재검증만) |
+| 변환 1건 | — | 약 0.3 초 (기동 후) |
+
+§4.2 의 Container 전환은 하지 않는다. 그것은 Paid 를 전제로 하며 무료 계정
+문제를 풀지 못한다. 서버 변환 자체는 버리지 않고 `wrangler.jsonc` 의
+`env.server`(Workers Paid 전용)로 남겨 둔다. 화면은 브라우저 엔진을 못 띄웠을
+때만 그쪽으로 넘어간다.
+
+#### 결과가 같다는 것을 무엇으로 증명하는가
+
+"같은 코드를 쓴다" 는 설계일 뿐이므로 테스트로 못박는다.
+
+| 테스트 | 지키는 것 |
+|---|---|
+| `test_browser_engine.py` | 엔진에 담기는 코드와 양식이 저장소 원본과 바이트가 같다. lxml·openpyxl 판본이 `web/pyproject.toml` 과 같다. 받아 오는 파일은 모두 sha256 으로 고정되어 있다 |
+| `test_browser_parity.py` | Node 로 엔진을 돌려 만든 견적서가 CPython 산출물과 같다. `.xlsx`(zip) 안의 모든 부품을 바이트로, 그리고 골든 회귀와 같은 비교기(`tools/compare.py`)로 셀 단위로. 오류 사례의 상태 코드·오류 코드도 함께 |
+| `test_browser_e2e.py` | 운영과 같은 CSP 를 건 서버에서 실제 Chromium 으로 내려받은 파일이 CPython 산출물과 같다 |
+
+정규화하는 것은 둘뿐이며 둘 다 견적서 내용이 아니다 — 파일 생성 **시각**
+(`docProps/core.xml` 의 `dcterms:modified`)과 `<mergeCell>` 의 나열 **순서**
+(집합은 같아야 하고, 다르면 테스트가 잡는다). 근거는 `web/tests/xlsx_parity.py`.
+
+#### 이 과정에서 드러난 결함 — Pyodide 의 libxml2 는 EUC-KR 을 모른다
+
+실제로 돌려 보니 EUC-KR 견적서가 통째로 변환되지 않았다.
+
+    XMLSyntaxError: Unsupported encoding EUC-KR, line 1, column 38
+
+Pyodide 의 lxml 이 iconv 없이 빌드되어 있다. **§4 의 Python Worker 로 갔어도
+같은 결과였다.** Phase 0 의 게이트(§11)가 `pywrangler sync` 성공까지만 보고
+실제 변환을 돌리지 않아 놓쳤다. 2005년 형식 견적 XML 은 EUC-KR 이 흔하므로
+그대로 두면 그 견적서들은 웹에서 만들 수 없었다.
+
+`quotation/core/xml_reader.py` 에 좁은 대비책을 두었다. 파싱이 **아예 실패한
+경우에 한해**, 선언된 인코딩을 파이썬 표준 코덱(Pyodide 에도 EUC-KR·CP949·
+Shift_JIS 등이 모두 있다)으로 디코딩해 UTF-8 로 다시 적고 한 번만 더 읽는다.
+문자는 하나도 바뀌지 않으므로 파서가 보는 문서는 iconv 가 있는 데스크톱이 보는
+것과 같다. 이미 읽히는 문서에는 이 경로가 닿지 않고, 다시 읽어도 실패하면
+처음 오류 문구를 그대로 알린다(원본 프로그램과 같은 문구를 지킨다).
+
+#### 남은 것
+
+- 첫 방문 14.4 MiB 는 Cloudflare 가 압축해 보내지만 여전히 크다. 줄일 여지는
+  lxml(1.7 MiB)을 걷어내는 것뿐인데, 파서를 바꾸면 동작이 갈릴 수 있으므로
+  하지 않는다.
+- WebAssembly 를 못 쓰는 브라우저에서는 `env.server` 배포가 있어야 변환된다.
+  무료 계정만 쓸 때는 그런 브라우저를 지원하지 않는다는 뜻이 된다.

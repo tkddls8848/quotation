@@ -1,6 +1,8 @@
 """eConfig XML 파서."""
 from __future__ import annotations
 
+import codecs
+import re
 from pathlib import Path
 
 from lxml import etree
@@ -143,6 +145,50 @@ def _parser() -> etree.XMLParser:
     )
 
 
+#: XML 선언의 encoding 값. 선언은 규격상 문서 맨 앞에만 올 수 있다.
+_DECLARED_ENCODING = re.compile(
+    r'\A(<\?xml[^>]*?encoding\s*=\s*["\'])([A-Za-z0-9_.:+-]+)(["\'])')
+
+
+def _utf8_equivalent(raw: bytes) -> bytes | None:
+    """libxml2 가 모르는 인코딩의 문서를 뜻이 같은 UTF-8 문서로 옮긴다.
+
+    libxml2 는 빌드에 iconv 가 없으면 EUC-KR 같은 인코딩을 거부한다. Pyodide
+    (Cloudflare Python Worker, 브라우저 엔진)의 libxml2 가 그렇다.
+
+        XMLSyntaxError: Unsupported encoding EUC-KR, line 1, column 38
+
+    파이썬 표준 코덱은 그 인코딩들을 모두 안다. 그래서 **파싱이 아예 안 되는
+    경우에 한해** 파이썬으로 디코딩해 UTF-8 로 다시 적는다. 문자는 하나도
+    바뀌지 않으므로 파서가 보는 문서는 데스크톱(iconv 있는 libxml2)이 보는
+    것과 같다. 이미 읽히는 문서에는 이 경로가 닿지 않는다.
+
+    Returns:
+        옮긴 바이트. 선언이 없거나 파이썬도 모르는 인코딩이면 None.
+    """
+    head = raw[:512].decode("ascii", "replace")
+    match = _DECLARED_ENCODING.match(head)
+    if not match:
+        return None
+
+    name = match.group(2)
+    if name.lower().replace("-", "_") in ("utf_8", "utf8", "us_ascii", "ascii"):
+        return None  # libxml2 가 이미 아는 인코딩이라면 다른 이유로 실패한 것이다
+    try:
+        codec = codecs.lookup(name)
+    except LookupError:
+        return None
+
+    try:
+        text = codec.decode(raw)[0]
+    except (UnicodeDecodeError, ValueError):
+        return None
+
+    # 선언만 UTF-8 로 고친다. 본문은 손대지 않는다.
+    return _DECLARED_ENCODING.sub(
+        lambda m: f'{m.group(1)}UTF-8{m.group(3)}', text, count=1).encode("utf-8")
+
+
 def parse(source: str | Path) -> Quotation:
     """eConfig XML 파일 -> Quotation. (데스크톱 경로 입력)
 
@@ -152,8 +198,28 @@ def parse(source: str | Path) -> Quotation:
     try:
         tree = etree.parse(str(source), _parser())
     except etree.XMLSyntaxError as exc:
-        raise QuotationXmlError(f"XML을 로드하는중 장애 발생. 장애코드: {exc}") from exc
+        try:
+            raw = Path(source).read_bytes()
+        except OSError:
+            raw = b""  # 다시 읽을 수 없으면 처음 오류 그대로 알린다
+        return _build(_retry_as_utf8(raw, exc))
     return _build(tree.getroot())
+
+
+def _retry_as_utf8(raw: bytes, original: "etree.XMLSyntaxError"):
+    """인코딩 때문에 막힌 것이면 UTF-8 로 옮겨 한 번만 다시 읽는다.
+
+    다시 읽어도 안 되면 **처음 오류 그대로** 알린다. 사용자가 보는 문구는
+    원본 프로그램과 같아야 하고, 대체 경로가 있다는 사실이 드러나면 안 된다.
+    """
+    retry = _utf8_equivalent(raw)
+    if retry is not None:
+        try:
+            return etree.fromstring(retry, _parser())
+        except etree.XMLSyntaxError:
+            pass
+    raise QuotationXmlError(
+        f"XML을 로드하는중 장애 발생. 장애코드: {original}") from original
 
 
 def parse_bytes(data: bytes) -> Quotation:
@@ -172,7 +238,7 @@ def parse_bytes(data: bytes) -> Quotation:
     try:
         root = etree.fromstring(raw, _parser())
     except etree.XMLSyntaxError as exc:
-        raise QuotationXmlError(f"XML을 로드하는중 장애 발생. 장애코드: {exc}") from exc
+        root = _retry_as_utf8(raw, exc)
     return _build(root)
 
 
