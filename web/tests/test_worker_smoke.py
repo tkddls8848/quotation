@@ -37,8 +37,15 @@ def _module_names(tree: ast.AST) -> set[str]:
 
 
 def _sources(web_src: Path) -> list[Path]:
+    """Worker 모듈과 브라우저 진입점. 둘 다 같은 경계를 지켜야 한다.
+
+    브라우저 엔진은 `web/src` 의 모듈을 그대로 담아 간다. 그러므로 여기 경계가
+    깨지면 서버뿐 아니라 무료 계정 운영 경로도 함께 깨진다.
+    """
     files = sorted(p for p in web_src.glob("*.py"))
     assert files, "web/src 에 Worker 모듈이 있어야 한다"
+    browser = web_src.parent / "browser"
+    files += sorted(browser.glob("*.py"))
     return files
 
 

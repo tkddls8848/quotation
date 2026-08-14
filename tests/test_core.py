@@ -264,3 +264,60 @@ def test_xxe_is_blocked(tmp_path):
     except xml_reader.QuotationXmlError:
         return  # 파싱 거부도 정상
     assert "TOPSECRET" not in str(q.groups[0].items[0].line_number)
+
+
+# --- libxml2 가 모르는 인코딩 대비책 (계획서 §18.5) -----------------------------
+#
+# Pyodide 의 libxml2 는 iconv 없이 빌드되어 EUC-KR 을 거부한다. 여기 CPython 의
+# libxml2 는 받아들이므로 대비책이 발동하지 않는다. 그래서 대비책 자체를 직접
+# 부르고, 그것이 만든 UTF-8 문서가 원본과 같은 것을 읽어 내는지 확인한다.
+
+def test_declared_encoding_is_rewritten_to_utf8_without_changing_text(tmp_path):
+    body = (
+        '<?xml version="1.0" encoding="EUC-KR"?>'
+        "<CFXML><CFData><ProductLineItem>"
+        "<ProductLineNumber>1000</ProductLineNumber>"
+        "<TransactionType>NEW</TransactionType>"
+        "<ProprietaryGroupIdentifier>1000</ProprietaryGroupIdentifier>"
+        "<Quantity>1</Quantity>"
+        "<ProductIdentification><PartnerProductIdentification>"
+        "<ProprietaryProductIdentifier>1234-567</ProprietaryProductIdentifier>"
+        "<ProductDescription>서버 1:한글 설명</ProductDescription>"
+        "<ProductTypeCode>Hardware</ProductTypeCode>"
+        "</PartnerProductIdentification></ProductIdentification>"
+        "<UnitListPrice><FinancialAmount>"
+        "<MonetaryAmount>1,000.5</MonetaryAmount>"
+        "</FinancialAmount></UnitListPrice>"
+        "</ProductLineItem></CFData></CFXML>"
+    )
+    raw = body.encode("euc-kr")
+
+    moved = xml_reader._utf8_equivalent(raw)
+    assert moved is not None
+    assert moved.startswith(b'<?xml version="1.0" encoding="UTF-8"?>')
+    # 문자는 하나도 바뀌지 않는다
+    assert moved.decode("utf-8") == body.replace("EUC-KR", "UTF-8")
+
+    # 옮긴 문서와 원본이 같은 견적을 낸다
+    assert xml_reader.parse_bytes(moved) == xml_reader.parse_bytes(raw)
+
+
+@pytest.mark.parametrize("declaration", [
+    '<?xml version="1.0" encoding="UTF-8"?>',   # libxml2 가 이미 아는 인코딩
+    '<?xml version="1.0" encoding="NOSUCH-9"?>',  # 파이썬도 모르는 인코딩
+    '<?xml version="1.0"?>',                    # 선언에 인코딩이 없다
+    '',                                         # 선언 자체가 없다
+])
+def test_no_fallback_when_it_would_not_help(declaration):
+    """대비책은 도울 수 있을 때만 나선다. 그 밖에는 손대지 않는다."""
+    assert xml_reader._utf8_equivalent(f"{declaration}<CFXML/>".encode()) is None
+
+
+def test_broken_document_keeps_the_original_message(tmp_path):
+    """대비책이 있다고 해서 오류 문구가 달라지면 안 된다."""
+    p = tmp_path / "broken.xml"
+    p.write_bytes('<?xml version="1.0" encoding="EUC-KR"?><CFXML><CFData>'.encode("euc-kr"))
+    with pytest.raises(xml_reader.QuotationXmlError, match="XML을 로드하는중 장애 발생"):
+        xml_reader.parse(p)
+    with pytest.raises(xml_reader.QuotationXmlError, match="XML을 로드하는중 장애 발생"):
+        xml_reader.parse_bytes(p.read_bytes())

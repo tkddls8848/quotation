@@ -1,11 +1,22 @@
 # Workers Static Assets 가 정적 응답에 붙일 헤더 (계획서 §9).
 # API 응답의 같은 정책은 web/src/api.py 의 SECURITY_HEADERS 가 붙인다.
+#
+# 'wasm-unsafe-eval' 이 있어야 브라우저가 WebAssembly 를 컴파일한다. 변환은
+# 브라우저 안의 Pyodide 가 하므로 이것이 없으면 화면이 통째로 동작하지 않는다.
+# 그 밖에는 열지 않는다. 특히 connect-src 는 'self' 로 두어 엔진 자산을 외부
+# CDN 이 아니라 우리 출처에서만 받게 한다.
 /*
   X-Content-Type-Options: nosniff
   Referrer-Policy: no-referrer
   X-Frame-Options: DENY
   Cross-Origin-Opener-Policy: same-origin
-  Content-Security-Policy: default-src 'none'; script-src 'self'; style-src 'self'; img-src 'self' data:; connect-src 'self'; form-action 'self'; base-uri 'none'; frame-ancestors 'none'
+  Content-Security-Policy: default-src 'none'; script-src 'self' 'wasm-unsafe-eval'; worker-src 'self'; style-src 'self'; img-src 'self' data:; connect-src 'self'; form-action 'self'; base-uri 'none'; frame-ancestors 'none'
 
 /index.html
   Cache-Control: no-store
+
+# 변환 엔진은 크지만(약 14 MiB) 배포마다 바뀌지는 않는다. 매번 다시 받지 않도록
+# 재검증만 하게 둔다 — 바뀌지 않았으면 304 로 끝난다. 정적 자산 요청은 Workers
+# 요금제와 무관하게 무료다.
+/py/*
+  Cache-Control: no-cache

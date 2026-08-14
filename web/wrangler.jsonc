@@ -1,28 +1,37 @@
 {
-  // Cloudflare Workers 배포 정의 (계획서 §4).
-  //   배포 전에 반드시 실행: python scripts/sync_core.py  (공용 코어를 src/ 로 복사)
-  //                          npm --prefix frontend run build
+  // Cloudflare Workers 배포 정의 (계획서 §4, §18.5).
+  //
+  //   배포 전에 반드시 실행:
+  //     python scripts/sync_core.py             공용 코어·템플릿 생성
+  //     python scripts/build_browser_engine.py  브라우저 변환 엔진 생성
+  //     npm --prefix frontend run build         정적 자산
+  //
+  // ── 기본 배포는 정적 자산뿐이다 (무료 계정 기준) ──────────────────────────
+  //
+  // 변환은 브라우저 안에서 돈다. Workers Free 는 요청당 CPU 10 ms 인데 견적서
+  // 한 건은 가장 작은 입력도 73 ms 가 든다(계획서 §18.3). 서버에서 만드는 것은
+  // 무료 계정에서 성립하지 않는다.
+  //
+  // 그래서 여기에는 `main` 이 없다. Worker 스크립트가 없으므로
+  //   - 요청당 CPU 한도에 걸릴 일이 없다
+  //   - 하루 10만 요청 한도를 쓰지 않는다 (정적 자산 요청은 무료·무제한)
+  //   - Worker 스크립트 크기 한도(무료 3 MiB)와 무관하다
+  //   - 배포에 pywrangler·uv·Pyodide vendoring 이 필요 없다
+  //
+  // 브라우저가 돌리는 파이썬은 Worker 가 돌리던 것과 같은 파일이다. 결과가
+  // 같다는 것은 `web/tests/test_browser_parity.py` 가 매번 대조한다.
   "$schema": "node_modules/wrangler/config-schema.json",
+
   // 대시보드(Workers Builds)에 연결된 Worker 이름과 같아야 한다. 다르면
   // "Failed to match Worker name ... the CI system expected" 경고가 나고
   // Cloudflare 가 이름을 고치는 PR 을 연다.
   "name": "quotation",
-  "main": "src/worker.py",
   "compatibility_date": "2026-08-01",
-  "compatibility_flags": ["python_workers"],
 
-  // SPA 정적 자산. /api/* 는 Worker 가 먼저 받는다.
+  // SPA 정적 자산. 변환 엔진(frontend/public/py)도 여기 담겨 나간다.
   "assets": {
     "directory": "frontend/dist",
-    "binding": "ASSETS",
-    "not_found_handling": "single-page-application",
-    "run_worker_first": ["/api/*"]
-  },
-
-  // 템플릿은 번들에 담겨 온다 (web/src/template.py). 외부 저장소를 쓰지 않으므로
-  // 요청 경로에 네트워크 실패 지점이 없고 코드와 템플릿 판본이 항상 일치한다.
-  "vars": {
-    "DEPLOYMENT_VERSION": "0.1.0"
+    "not_found_handling": "single-page-application"
   },
 
   "observability": {
@@ -30,21 +39,38 @@
     "head_sampling_rate": 1
   },
 
-  // CPU 한도는 Workers Paid 에서만 설정할 수 있다. Free 플랜에서 이 항목이
-  // 있으면 배포 자체가 거부된다.
-  //
-  //   ✘ CPU limits are not supported for the Free plan [code: 100328]
-  //
-  // 그래서 기본값에서는 빼 둔다. XLSX 생성은 Free 의 CPU 한도로는 부족하므로
-  // (계획서 §4.2) 운영 전에 Paid 로 올리고 아래를 되살린다.
-  //
-  //   "limits": { "cpu_ms": 30000 },
-
   "env": {
+    // 무료 계정의 스테이징. 프로덕션과 같은 구성이다.
     "staging": {
-      "name": "quotation-staging",
+      "name": "quotation-staging"
+    },
+
+    // ── Workers Paid 전용 ────────────────────────────────────────────────
+    //
+    // 서버 변환 API(`POST /api/v1/convert`)를 함께 올린다. 화면은 그대로
+    // 브라우저에서 변환하고, 엔진을 못 띄운 브라우저만 이쪽으로 넘어온다.
+    //
+    //   python3 -m pywrangler deploy --env server
+    //
+    // pywrangler 를 써야 한다. 평범한 wrangler 는 pyproject.toml 을 읽지 않아
+    // lxml·openpyxl 이 번들에서 빠지고 첫 요청에서 죽는다 (web/README.md).
+    //
+    // `limits.cpu_ms` 는 Paid 에서만 설정할 수 있다. 무료 계정에서 이 항목이
+    // 있으면 배포 자체가 거부된다 — `CPU limits are not supported for the
+    // Free plan [code: 100328]`. 그래서 기본 배포에는 아예 없다.
+    "server": {
+      "name": "quotation-server",
+      "main": "src/worker.py",
+      "compatibility_flags": ["python_workers"],
+      "assets": {
+        "directory": "frontend/dist",
+        "binding": "ASSETS",
+        "not_found_handling": "single-page-application",
+        "run_worker_first": ["/api/*"]
+      },
+      "limits": { "cpu_ms": 30000 },
       "vars": {
-        "DEPLOYMENT_VERSION": "0.1.0-staging"
+        "DEPLOYMENT_VERSION": "0.2.0-server"
       }
     }
   }

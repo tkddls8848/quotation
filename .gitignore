@@ -34,6 +34,10 @@ web/frontend/dist/
 # 배포 전에 web/scripts/sync_core.py 가 만들어 넣는 것들
 web/src/quotation/
 web/src/template_data.py
+# 배포 전에 web/scripts/build_browser_engine.py 가 만드는 브라우저 변환 엔진
+# (Pyodide 런타임 + 휠 + 코어 zip, 약 14 MiB. 판본과 해시로 재현한다)
+web/frontend/public/py/
+web/.engine-cache/
 # pywrangler 가 Pyodide 의존성을 받아 두는 자리 (pylock.toml 로 재현한다)
 web/python_modules/
 web/.venv-workers/
