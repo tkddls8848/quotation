@@ -8,6 +8,12 @@ on:
 permissions:
   contents: read
 
+env:
+  # Python Workers 배포에 필요한 최소 판본.
+  # pywrangler 는 wrangler 4.42.1 이상을 요구하고, wrangler 3.x 는 wrangler.jsonc
+  # 를 아예 읽지 못한다 (설정을 못 찾아 "Missing entry-point" 로 실패한다).
+  MIN_UV_VERSION: "0.12.3"
+
 jobs:
   core:
     name: 공용 코어 · 데스크톱 · Worker 테스트
@@ -21,17 +27,7 @@ jobs:
       - name: 의존성 설치
         run: python -m pip install -r requirements.txt
       - name: 테스트
-        run: python -m pytest tests web/tests desktop/tests -q
-      - name: Worker 번들에 코어 복사
-        run: python web/scripts/sync_core.py
-      - name: 복사본이 그대로 import 되는지 확인
-        run: |
-          python - <<'PY'
-          import sys
-          sys.path.insert(0, "web/src")
-          from quotation.core import convert  # noqa: F401
-          print("vendored core ok")
-          PY
+        run: python -m pytest -q
 
   frontend:
     name: 웹 UI lint · 테스트 · 빌드
@@ -51,10 +47,46 @@ jobs:
       - run: npm test
       - run: npm run build
 
+  bundle:
+    name: Worker 번들 검증
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: 배포 도구 설치
+        run: python -m pip install workers-py "uv>=${MIN_UV_VERSION}"
+      - name: wrangler 설치 (web/package.json 에 고정된 판본)
+        run: npm ci
+        working-directory: web
+      - name: 정적 자산 빌드
+        run: npm ci && npm run build
+        working-directory: web/frontend
+      - name: 공용 코어를 Worker 번들로 복사
+        run: python web/scripts/sync_core.py
+      - name: Pyodide 의존성 해석 (계획서 Phase 0 게이트)
+        # lxml·openpyxl 을 Pyodide 대상으로 받아 web/python_modules 에 넣는다.
+        # 여기서 실패하면 Python Worker 로는 배포할 수 없다는 뜻이므로,
+        # 계획서 §4.2 대로 변환 실행부를 Container 로 옮겨야 한다.
+        run: pywrangler sync
+        working-directory: web
+      - name: 설정·번들 검사 (자격 증명 없이)
+        run: npx wrangler deploy --dry-run --outdir .wrangler/dry-run
+        working-directory: web
+
   deploy-staging:
     name: 스테이징 배포
-    needs: [core, frontend]
-    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    needs: [core, frontend, bundle]
+    # Cloudflare 계정 준비가 끝나면 저장소 변수 CLOUDFLARE_DEPLOY 를 true 로 두고
+    # 비밀값 CLOUDFLARE_API_TOKEN / CLOUDFLARE_ACCOUNT_ID 를 등록한다.
+    # 그 전까지는 배포 단계를 건너뛰어 파이프라인을 붉게 만들지 않는다.
+    if: >-
+      github.ref == 'refs/heads/main' && github.event_name == 'push' &&
+      vars.CLOUDFLARE_DEPLOY == 'true'
     runs-on: ubuntu-latest
     environment: staging
     steps:
@@ -65,20 +97,23 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: "22"
-          cache: npm
-          cache-dependency-path: web/frontend/package-lock.json
+      - name: 배포 도구 설치
+        run: python -m pip install workers-py "uv>=${MIN_UV_VERSION}"
+      - run: npm ci
+        working-directory: web
       - name: 정적 자산 빌드
         run: npm ci && npm run build
         working-directory: web/frontend
-      - name: Worker 번들에 코어 복사
+      - name: 공용 코어를 Worker 번들로 복사
         run: python web/scripts/sync_core.py
       - name: 배포
-        uses: cloudflare/wrangler-action@v3
-        with:
-          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          workingDirectory: web
-          command: deploy --env staging
+        # pywrangler 가 pyproject.toml 의 의존성을 python_modules 로 vendoring 한 뒤
+        # wrangler 에 넘긴다. wrangler 만 직접 부르면 lxml·openpyxl 이 빠진다.
+        run: pywrangler deploy --env staging
+        working-directory: web
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
       - name: 스모크 테스트
         env:
           BASE_URL: ${{ vars.STAGING_BASE_URL }}

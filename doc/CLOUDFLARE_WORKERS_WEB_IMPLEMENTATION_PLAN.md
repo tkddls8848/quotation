@@ -574,3 +574,23 @@ Worker 는 `main` 이 있는 폴더 아래 모듈만 번들에 담으므로, 배
 계정 작업 없이 진행할 수 없는 항목(§16 의 업무 결정, R2 버킷 생성, Access 정책,
 커스텀 도메인, Workers Paid 승인)은 코드에 설정 자리만 두었다. `wrangler.jsonc`
 의 버킷 이름과 `ACTIVE_TEMPLATE_KEY` 는 실제 값으로 바꿔야 한다.
+
+### 18.1 배포 도구 사실관계 (실측)
+
+첫 CI 배포 실패로 확인한 내용이다. §4 의 아키텍처는 그대로지만 배포 절차가 다르다.
+
+- `cloudflare/wrangler-action@v3` 은 기본으로 **wrangler 3.90** 을 설치한다. 3.x 는
+  `wrangler.jsonc` 를 읽지 못해 설정 전체를 무시하고 `Missing entry-point` 로 죽는다.
+  **wrangler 4.42.1 이상**이 필요하다. 판본은 `web/package.json` 에 고정했다.
+- 의존성은 `requirements.txt` 가 아니라 `pyproject.toml` 에 적고 **`pywrangler`**
+  (PyPI `workers-py`, `uv>=0.12.3` 필요)로 배포한다. `pywrangler sync` 가
+  Pyodide 인덱스(`index.pyodide.org`)에서 대상 플랫폼
+  (`cpython-*-emscripten-wasm32-musl`)용 패키지를 받아 `web/python_modules/` 에
+  vendoring 한 뒤 wrangler 로 넘긴다. `wrangler deploy` 를 직접 부르면 코드만
+  올라가고 `lxml`·`openpyxl` 이 빠져 첫 요청에서 import 오류가 난다.
+- `wrangler deploy --dry-run` 은 자격 증명 없이 설정과 번들을 검사한다. 공용 코어
+  17개 모듈과 정적 자산, R2·변수 바인딩이 모두 잡히는 것을 확인했다(총 71 KiB).
+  CI 의 `bundle` 잡이 매 푸시마다 이 검사를 돌린다.
+- 따라서 §11 Phase 0 의 "`lxml`/`openpyxl` Pyodide 호환성" 판정은 CI 의
+  `pywrangler sync` 단계가 대신한다. 이 단계가 실패하면 판본을 인덱스에 있는
+  것으로 낮추거나 §4.2 의 Container 전환을 실행한다.

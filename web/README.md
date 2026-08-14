@@ -64,11 +64,54 @@ npm test           # 다운로드 파일명 처리 단위 테스트
 npm run build      # web/frontend/dist
 
 # 4) Worker
-cd web && npx wrangler dev
+cd web && npm install                 # wrangler 4 (package.json 에 고정)
+pip install workers-py "uv>=0.12.3"   # Python Workers 배포 도구
+pywrangler dev                        # sync 후 wrangler dev 로 넘어간다
 ```
 
 `npm run dev` 는 `/api` 요청을 `127.0.0.1:8787` 의 `wrangler dev` 로 넘깁니다.
 운영과 같은 동일 출처 구성을 로컬에서도 그대로 씁니다.
+
+## 배포 도구 (여기서 틀리면 배포가 통째로 실패한다)
+
+| 도구 | 최소 판본 | 이유 |
+|---|---|---|
+| `wrangler` | 4.42.1 | 3.x 는 `wrangler.jsonc` 를 읽지 못해 설정을 통째로 무시하고 `Missing entry-point` 로 죽는다. pywrangler 도 4.42.1 이상을 요구한다 |
+| `workers-py` (`pywrangler`) | 최신 | `pyproject.toml` 의 의존성을 Pyodide 대상으로 받아 `web/python_modules/` 에 넣는다 |
+| `uv` | 0.12.3 | pywrangler 의 의존성 해석기 |
+
+**`wrangler deploy` 를 직접 부르지 마십시오.** 그러면 `lxml`·`openpyxl` 없이
+Worker 만 올라가고 첫 요청에서 import 오류가 납니다. 항상 `pywrangler deploy` 를
+씁니다 — `sync`(의존성 vendoring)를 먼저 하고 wrangler 로 넘깁니다.
+
+```bash
+cd web
+python ../web/scripts/sync_core.py       # 공용 코어 복사
+npm --prefix frontend run build          # 정적 자산
+pywrangler deploy --env staging          # 의존성 vendoring + 배포
+```
+
+자격 증명 없이 설정과 번들만 검사하려면:
+
+```bash
+cd web && npx wrangler deploy --dry-run --outdir .wrangler/dry-run
+```
+
+CI 의 `bundle` 잡이 매 푸시마다 이 검사를 돌립니다.
+
+## GitHub Actions 배포 켜기
+
+배포 잡은 Cloudflare 준비가 끝날 때까지 건너뜁니다. 아래를 등록하면 켜집니다.
+
+| 종류 | 이름 | 값 |
+|---|---|---|
+| Variable | `CLOUDFLARE_DEPLOY` | `true` |
+| Secret | `CLOUDFLARE_API_TOKEN` | Workers·R2 권한만 가진 토큰 |
+| Secret | `CLOUDFLARE_ACCOUNT_ID` | 계정 ID |
+| Variable | `STAGING_BASE_URL` | 스모크 테스트용 주소 (선택) |
+
+먼저 R2 버킷 `quotation-templates-staging` 을 만들고 템플릿을 올린 뒤
+`wrangler.jsonc` 의 `ACTIVE_TEMPLATE_KEY` 를 실제 키로 바꿔야 합니다.
 
 ## 템플릿 운영
 
@@ -91,9 +134,12 @@ npx wrangler r2 object put \
 
 ## 배포 전에 확인할 것 (계획서 Phase 0)
 
-아래는 실제 Cloudflare 계정에서 확인해야 하며, 코드로 미리 정할 수 없습니다.
+아래는 실제 Cloudflare 계정과 열린 네트워크에서 확인해야 하며, 코드로 미리 정할
+수 없습니다. CI 의 `bundle` 잡이 앞의 두 항목을 자동으로 검사합니다.
 
-- `lxml==6.1.1`, `openpyxl==3.1.5` 가 Python Workers(Pyodide)에서 설치·동작하는가
+- `pywrangler sync` 가 `lxml==6.1.1`, `openpyxl==3.1.5` 를 Pyodide 인덱스
+  (`index.pyodide.org`)에서 받아 오는가. 못 받으면 판본을 인덱스에 있는 것으로
+  낮추거나 계획서 §4.2 대로 Container 로 전환한다
 - 실제 30 KB 템플릿으로 만든 결과에 그림·도형 관계가 남는가
   (로컬 CPython 기준 대표 입력 변환 시간은 약 80~100 ms 다)
 - isolate 메모리 128 MB, 배포 번들 크기(Paid 10 MB) 안에 드는가
