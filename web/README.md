@@ -138,14 +138,32 @@ CI 의 `bundle` 잡이 매 푸시마다 이 검사를 돌립니다.
 
 대시보드 → Workers & Pages → 해당 Worker → **Settings → Build**.
 
+**프로덕션 브랜치와 그 외 브랜치의 설정이 따로다.** 둘 다 채워야 한다. 한쪽만
+고치면 다른 쪽 빌드는 계속 기본값(`npx wrangler deploy` / `npx wrangler versions
+upload`)으로 돌아 `Missing entry-point` 로 죽는다.
+
 | 항목 | 값 |
 |---|---|
 | Root directory | 아무 값이나 무방 (비워 두어도 된다) |
-| Build command | `bash "$(git rev-parse --show-toplevel)"/web/scripts/cf_build.sh` |
-| Deploy command | `bash "$(git rev-parse --show-toplevel)"/web/scripts/cf_deploy.sh` |
+| Build command (양쪽 공통) | `bash "$(git rev-parse --show-toplevel)"/web/scripts/cf_build.sh` |
+| Deploy command (프로덕션) | `bash "$(git rev-parse --show-toplevel)"/web/scripts/cf_deploy.sh deploy` |
+| Deploy command (프리뷰) | `bash "$(git rev-parse --show-toplevel)"/web/scripts/cf_deploy.sh versions upload` |
 
-스테이징 Worker(`quotation-web-staging`)라면 Deploy command 뒤에 `--env staging`
-을 붙인다. 인자는 그대로 wrangler 까지 전달된다.
+스테이징 Worker(`quotation-web-staging`)라면 `deploy` 뒤에 `--env staging` 을
+붙인다. 인자는 그대로 wrangler 까지 전달된다.
+
+프리뷰 빌드를 아예 돌리고 싶지 않으면 Settings → Build → Branch control 에서
+프로덕션 브랜치(`main`)만 남긴다. 작업 브랜치 푸시마다 빌드가 도는 것을 막는다.
+
+로그에서 어느 설정이 쓰였는지 바로 알 수 있다.
+
+```
+Executing user build command: ...       ← 이 줄이 없으면 Build command 가 비어 있다
+Executing user deploy command: npx wrangler versions upload
+                                        ← 기본값. 프리뷰 설정이 안 채워졌다는 뜻
+Installing project dependencies: pip install -r requirements.txt
+                                        ← 저장소 루트의 파일. Root directory 가 루트다
+```
 
 두 스크립트는 **자기 위치를 보고 `web/` 으로 이동한다.** 그래서 대시보드의
 Root directory 값이 무엇이든 똑같이 동작한다. 이 장치가 없으면 Root directory
