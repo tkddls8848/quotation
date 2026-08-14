@@ -127,9 +127,12 @@ jobs:
         working-directory: web/frontend
       - name: 공용 코어를 Worker 번들로 복사
         run: python web/scripts/sync_core.py
-      - name: 인증 확인
+      - name: 인증 확인 (진단용)
         # 토큰이 잘못됐을 때 업로드까지 갔다가 code 10000 으로 죽는 대신
         # 여기서 무슨 권한을 갖고 있는지 먼저 보여 준다.
+        # whoami 는 User Details 권한을 따로 요구하므로 실패해도 배포는 시도한다.
+        # 판정은 다음 단계의 실제 배포가 한다.
+        continue-on-error: true
         run: npx wrangler whoami
         working-directory: web
         env:

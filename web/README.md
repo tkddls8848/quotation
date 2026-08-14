@@ -141,8 +141,16 @@ My Profile → API Tokens → Create Token 에서 **Edit Cloudflare Workers** �
 - **토큰이 다른 계정 소속이거나 만료됐다.** `CLOUDFLARE_ACCOUNT_ID` 와 같은
   계정인지 확인합니다.
 
+토큰만 따로 1초에 검사하는 방법:
+
+```bash
+curl -sS https://api.cloudflare.com/client/v4/user/tokens/verify \
+  -H "Authorization: Bearer <토큰>"
+# 정상이면 "status": "active"
+```
+
 CI 의 배포 잡은 업로드 전에 `wrangler whoami` 를 돌려 토큰이 무엇을 볼 수 있는지
-로그에 남깁니다.
+로그에 남깁니다(실패해도 배포는 시도하며, 판정은 실제 배포가 합니다).
 
 먼저 R2 버킷 `quotation-templates-staging` 을 만들고 템플릿을 올린 뒤
 `wrangler.jsonc` 의 `ACTIVE_TEMPLATE_KEY` 를 실제 키로 바꿔야 합니다.
