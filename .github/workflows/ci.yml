@@ -127,6 +127,14 @@ jobs:
         working-directory: web/frontend
       - name: 공용 코어를 Worker 번들로 복사
         run: python web/scripts/sync_core.py
+      - name: 인증 확인
+        # 토큰이 잘못됐을 때 업로드까지 갔다가 code 10000 으로 죽는 대신
+        # 여기서 무슨 권한을 갖고 있는지 먼저 보여 준다.
+        run: npx wrangler whoami
+        working-directory: web
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
       - name: 배포
         # pywrangler 가 pyproject.toml 의 의존성을 python_modules 로 vendoring 한 뒤
         # wrangler 에 넘긴다. wrangler 만 직접 부르면 lxml·openpyxl 이 빠진다.

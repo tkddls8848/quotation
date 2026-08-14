@@ -106,9 +106,43 @@ CI 의 `bundle` 잡이 매 푸시마다 이 검사를 돌립니다.
 | 종류 | 이름 | 값 |
 |---|---|---|
 | Variable | `CLOUDFLARE_DEPLOY` | `true` |
-| Secret | `CLOUDFLARE_API_TOKEN` | Workers·R2 권한만 가진 토큰 |
+| Secret | `CLOUDFLARE_API_TOKEN` | 아래 권한을 가진 **API 토큰** |
 | Secret | `CLOUDFLARE_ACCOUNT_ID` | 계정 ID |
 | Variable | `STAGING_BASE_URL` | 스모크 테스트용 주소 (선택) |
+
+### API 토큰 권한
+
+토큰 권한이 모자라면 업로드 직전에 이렇게 죽습니다.
+
+```
+✘ [ERROR] A request to the Cloudflare API (/accounts/.../workers/services/...) failed.
+  Authentication error [code: 10000]
+✘ [ERROR] Failed to automatically retrieve account IDs for the logged in user.
+```
+
+My Profile → API Tokens → Create Token 에서 **Edit Cloudflare Workers** 템플릿으로
+만들고, R2 를 쓰므로 아래를 확인합니다.
+
+| 범위 | 권한 | 용도 |
+|---|---|---|
+| Account | Workers Scripts — Edit | Worker 와 정적 자산 업로드 (필수) |
+| Account | Workers R2 Storage — Edit | 템플릿 버킷 바인딩·업로드 (필수) |
+| Account | Account Settings — Read | 계정 조회 |
+| User | User Details — Read | `wrangler whoami` |
+| Zone | Workers Routes — Edit | 커스텀 도메인을 붙일 때만 |
+
+흔한 실수:
+
+- **Global API Key 를 넣었다.** 그것은 `CLOUDFLARE_API_TOKEN` 이 아니라
+  `CLOUDFLARE_API_KEY` + `CLOUDFLARE_EMAIL` 로 넘겨야 합니다. API 토큰을 새로
+  만드는 쪽이 낫습니다.
+- **토큰 값 대신 토큰 ID 를 붙여넣었다.** 값은 생성 직후 한 번만 보입니다.
+- **줄바꿈·공백이 함께 붙여넣어졌다.**
+- **토큰이 다른 계정 소속이거나 만료됐다.** `CLOUDFLARE_ACCOUNT_ID` 와 같은
+  계정인지 확인합니다.
+
+CI 의 배포 잡은 업로드 전에 `wrangler whoami` 를 돌려 토큰이 무엇을 볼 수 있는지
+로그에 남깁니다.
 
 먼저 R2 버킷 `quotation-templates-staging` 을 만들고 템플릿을 올린 뒤
 `wrangler.jsonc` 의 `ACTIVE_TEMPLATE_KEY` 를 실제 키로 바꿔야 합니다.
