@@ -14,9 +14,13 @@ from quotation_desktop import paths
 
 # --- 템플릿 ------------------------------------------------------------------
 
-def test_bundled_template_resource_exists():
-    """개발 실행에서는 공용 코어의 기준 템플릿을 리소스로 쓴다."""
-    assert (paths.resource_dir() / paths.TEMPLATE_NAME).is_file()
+def test_desktop_uses_the_one_shared_template():
+    """양식은 하나뿐이다. 데스크톱이 웹과 같은 원본을 쓰는지 확인한다."""
+    from quotation.core import resources
+
+    bundled = paths.resource_dir() / paths.TEMPLATE_NAME
+    assert bundled.is_file()
+    assert bundled.resolve() == resources.default_template_path().resolve()
 
 
 def test_template_lives_outside_the_exe(tmp_path, monkeypatch):
