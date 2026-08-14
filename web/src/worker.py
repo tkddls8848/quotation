@@ -24,32 +24,56 @@ import template
 API_PREFIX = "/api/v1"
 
 
-async def _read_bytes(blob) -> bytes:
-    """JS Blob/File 본문 -> bytes."""
-    buffer = await blob.arrayBuffer()
-    data = buffer.to_py()
-    return data.tobytes() if hasattr(data, "tobytes") else bytes(data)
+async def _read_bytes(entry) -> bytes:
+    """업로드된 File 의 본문 -> bytes.
+
+    `workers` SDK 의 `File` 은 `bytes()` 를 준다. JS 쪽 `arrayBuffer()` 를 부르면
+    안 된다 — SDK 가 감싼 파이썬 객체에는 그 이름이 없다.
+    """
+    return bytes(await entry.bytes())
 
 
-async def _uploads(request) -> list[api.Upload]:
-    """multipart/form-data 의 파일 필드를 읽는다."""
+async def _uploads(request, request_id: str) -> list[api.Upload]:
+    """multipart/form-data 의 파일 필드를 읽는다.
+
+    **여기 이름은 `workers` SDK 의 파이썬 API 다.** SDK 는 JS Request 를 파이썬
+    `Request` 로, FormData 를 `FormData` 로, 파일을 `File` 로 감싸서 넘긴다.
+    그래서 JS 이름(`formData`, `getAll`, `arrayBuffer`, `type`)을 부르면
+    `AttributeError` 가 나고, 그것이 아래 `except` 에 걸려 사용자에게는
+    "첨부 화일을 읽지 못했습니다" 로만 보인다. 실제로 그렇게 죽은 적이 있다.
+
+        JS               workers SDK
+        formData()   ->  form_data()
+        getAll()     ->  get_all()
+        arrayBuffer() -> bytes()
+        .type        ->  .content_type
+
+    이 대응이 어긋나지 않는지는 `web/tests/test_worker_runtime.py` 가 지킨다.
+    """
     content_type = (request.headers.get("content-type") or "").lower()
     if "multipart/form-data" not in content_type:
         raise errors.invalid_request("multipart/form-data 로 보내야 합니다.")
 
     try:
-        form = await request.formData()
+        form = await request.form_data()
+        entries = form.get_all("file")
     except Exception as exc:  # 깨진 multipart
+        # 무엇 때문에 막혔는지는 로그에 남긴다. 예전에는 이 자리에서 삼킨
+        # AttributeError 가 사용자 문구 하나로만 보여, 모든 변환이 실패하는데도
+        # 배포 로그에 아무 단서가 없었다. 예외 **종류만** 남기므로 견적 내용이
+        # 새지 않는다 (계획서 §13).
+        _note(request_id, "upload_read_failed", type(exc).__name__)
         raise errors.invalid_request("첨부 화일을 읽지 못했습니다.") from exc
 
     found: list[api.Upload] = []
-    for entry in form.getAll("file"):
-        if isinstance(entry, str) or not hasattr(entry, "arrayBuffer"):
+    for entry in entries:
+        if isinstance(entry, str) or not hasattr(entry, "bytes"):
+            _note(request_id, "upload_not_a_file", type(entry).__name__)
             raise errors.invalid_request("첨부 화일을 읽지 못했습니다.")
         found.append(api.Upload(
             filename=getattr(entry, "name", "") or "",
             content=await _read_bytes(entry),
-            content_type=getattr(entry, "type", "") or "",
+            content_type=getattr(entry, "content_type", "") or "",
         ))
     return found
 
@@ -57,6 +81,16 @@ async def _uploads(request) -> list[api.Upload]:
 def _js_response(result: api.ApiResponse, request_id: str) -> Response:
     _log(result, request_id)
     return Response(result.body, status=result.status, headers=result.headers)
+
+
+def _note(request_id: str, event: str, detail: str) -> None:
+    """진단용 한 줄. 견적 내용이 아니라 **무엇이 막았는지** 만 남긴다.
+
+    사용자에게 보이는 문구는 바뀌지 않는다. 운영자가 로그만 보고도 원인을
+    좁힐 수 있게 하려는 것이다 (계획서 §18.6).
+    """
+    print(json.dumps({"request_id": request_id, "event": event,
+                      "detail": detail}, ensure_ascii=False))
 
 
 def _log(result: api.ApiResponse, request_id: str) -> None:
@@ -117,7 +151,7 @@ class Default(WorkerEntrypoint):
                 origin=request.headers.get("origin"),
                 sec_fetch_site=request.headers.get("sec-fetch-site"),
             )
-            uploads = await _uploads(request)
+            uploads = await _uploads(request, request_id)
             result = api.convert_response(
                 uploads,
                 template_bytes=template.template_bytes(),
