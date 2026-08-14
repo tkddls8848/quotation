@@ -378,7 +378,26 @@ quotation/resources/견적서_template.xlsx   ← 유일한 원본
           build_browser_engine.py 가 그것을 quotation-core.zip 에 담는다
 ```
 
-바꾸는 절차:
+**데스크톱에서 쓰는 양식과 저장소 원본은 저절로 같아지지 않는다.** 데스크톱은
+EXE 옆 사본을 쓰고 사용자가 그 사본을 직접 고친다. 그렇게 고친 양식은 누군가
+저장소 원본으로 되돌려 놓기 전까지 웹에 반영되지 않는다. 웹 산출물의 머리말
+글꼴·정렬이 데스크톱과 다르다면 거의 이 경우다 — 변환기는 머리말 도형·로고·
+테마·행높이·열너비를 템플릿에서 **바이트 그대로** 옮긴다.
+
+쓰고 계신 양식을 저장소에 반영하는 절차:
+
+```bash
+# 검증에 합격해야만 원본을 덮고, 파생물(Worker 번들·브라우저 엔진)까지 다시 만든다
+python web/scripts/verify_template.py "<EXE 옆>/견적서_template.xlsx" --adopt
+
+# 골든 회귀 테스트
+python -m pytest -q
+
+# 커밋하면 배포와 함께 반영된다
+git add quotation/resources/견적서_template.xlsx && git commit
+```
+
+저장소에서 직접 고칠 때도 같다.
 
 ```bash
 # 1) Excel 에서 quotation/resources/견적서_template.xlsx 를 고친다
@@ -392,6 +411,11 @@ python -m pytest -q
 
 # 4) 커밋하면 배포와 함께 반영된다
 ```
+
+어느 양식으로 만든 견적서인지는 내용 해시로 구분한다. 화면 아래의 `템플릿
+sha256-…` 과 `/py/engine.json` 이 그 값이며, 데스크톱 쪽 파일의 값은
+`python web/scripts/verify_template.py <그 파일>` 이 찍어 준다. 두 값이 다르면
+서로 다른 양식을 쓰고 있는 것이다.
 
 되돌리려면 그 커밋을 되돌린다. 템플릿 판본은 내용 해시(`sha256-…`)로 계산되어
 화면 아래와 `/py/engine.json`, 응답의 `X-Template-Version` 에 실린다. 어떤
