@@ -12,7 +12,7 @@
 # wrangler 가 설정을 못 찾아 "Missing entry-point" 로 죽는다.)
 #
 # 무료 계정 기준 배포에는 Python Worker 가 없다. 변환은 브라우저에서 돌고
-# Cloudflare 는 정적 자산만 내려 준다(계획서 §18.5). 그래서 여기서 pywrangler
+# Cloudflare 는 정적 자산만 내려 준다(결정 decisions/0002). 그래서 여기서 pywrangler
 # 나 Pyodide vendoring 을 하지 않는다 — 빌드가 짧아지고 실패 지점이 줄어든다.
 # Workers Paid 에 서버 변환 API 까지 올릴 때만 cf_deploy.sh 가 그것을 챙긴다.
 #

@@ -144,7 +144,7 @@ jobs:
         # workers SDK 는 JS 객체를 파이썬 클래스로 감싸서 준다. JS 이름을 부르면
         # AttributeError 가 나는데 worker.py 가 그것을 사용자 문구 하나로 접어
         # 버려, 배포된 앱이 모든 변환을 거절하면서도 아무 단서를 남기지 않았다
-        # (계획서 §18.6). sync 로 받은 실제 SDK 소스와 대조한다.
+        # (사고 기록 incidents/0001). sync 로 받은 실제 SDK 소스와 대조한다.
         run: python -m pytest web/tests/test_worker_runtime.py -q
         working-directory: ${{ github.workspace }}
       - name: Paid 서버 환경 검사 (자격 증명 없이)

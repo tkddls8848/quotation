@@ -12,7 +12,6 @@ a = Analysis(
     pathex=[str(HERE), str(REPO)],
     binaries=[],
     # 템플릿을 번들에 넣는다. paths.resource_dir() 가 sys._MEIPASS/resources 를 본다.
-    # 원본 .xls 는 편집용이라 번들에 넣지 않는다.
     datas=[(str(TEMPLATE), "resources")],
     hiddenimports=["quotation_desktop.ui.main_window"],
     hookspath=[],

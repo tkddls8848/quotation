@@ -183,7 +183,7 @@ def test_browser_rejects_what_the_server_rejects(name, content, status,
 
     # 문구는 원본 프로그램과 같은 접두사까지 대조한다. 그 뒤에 붙는 libxml2 의
     # 진단 문장은 lxml 판본마다 말이 달라진다 (여기 CPython 은 6.1.1, Pyodide
-    # 는 6.0.0 — 계획서 §18.2). 운영에서는 Worker 도 브라우저도 6.0.0 이라
+    # 는 6.0.0 — 실측 measurements/runtime.md). 운영에서는 Worker 도 브라우저도 6.0.0 이라
     # 같은 문장이 나온다. 변환 결과와는 무관하다.
     prefix = "XML을 로드하는중 장애 발생. 장애코드: "
     if want["message"].startswith(prefix):

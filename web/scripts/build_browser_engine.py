@@ -1,7 +1,7 @@
-"""브라우저에서 도는 변환 엔진 자산을 만든다 (계획서 §18.5).
+"""브라우저에서 도는 변환 엔진 자산을 만든다 (결정 decisions/0002).
 
 Cloudflare Workers Free 플랜은 요청당 CPU 10 ms 다. 견적서 한 건을 만드는 데는
-가장 작은 입력도 73 ms 가 든다(계획서 §18.3 실측). 그래서 무료 계정에서는
+가장 작은 입력도 73 ms 가 든다(실측 measurements/runtime.md). 그래서 무료 계정에서는
 변환을 브라우저로 옮기고 Cloudflare 는 정적 자산만 내려 준다. 브라우저가 돌리는
 파이썬은 Worker 가 돌리던 것과 **같은 파일** 이다. 그래야 결과가 같다.
 
@@ -40,7 +40,7 @@ OUT = WEB / "frontend" / "public" / "py"
 CACHE = WEB / ".engine-cache"
 
 #: Pyodide 배포판. Worker 가 쓰는 것과 같은 판본이라야 lxml 판본이 갈리지 않는다.
-#: (pywrangler 가 Pyodide 0.28.3 인덱스에서 lxml 6.0.0 을 받는다 — 계획서 §18.2)
+#: (pywrangler 가 Pyodide 0.28.3 인덱스에서 lxml 6.0.0 을 받는다 — 실측 measurements/runtime.md)
 PYODIDE_VERSION = "0.28.3"
 PYODIDE_BASE = f"https://cdn.jsdelivr.net/pyodide/v{PYODIDE_VERSION}/full/"
 

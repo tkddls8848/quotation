@@ -7,7 +7,7 @@ IBM eConfig Export XML을 기존 견적서 양식의 Excel 파일(`.xlsx`)로 �
 | 실행 방식 | 위치 | 상태 |
 |---|---|---|
 | 데스크톱 앱 (Windows 단일 EXE) | [`desktop/`](desktop/) | 운영 중 |
-| 웹 앱 (Cloudflare Workers) | [`web/`](web/) | 구현 중 — [구현 계획서](doc/CLOUDFLARE_WORKERS_WEB_IMPLEMENTATION_PLAN.md) |
+| 웹 앱 (Cloudflare Workers) | [`web/`](web/) | 운영 중 — [문서](doc/) |
 
 웹 앱은 **브라우저 안에서** 변환합니다. Cloudflare Workers 무료 계정의 CPU
 한도(요청당 10 ms)로는 견적서를 만들 수 없기 때문이며, 브라우저가 돌리는 파이썬은
@@ -32,7 +32,7 @@ quotation/              공용 코어 — Excel·GUI·경로에 의존하지 않
     convert.py          변환 오케스트레이션 (convert / convert_bytes)
     resources.py        기준 템플릿 위치
     writer/             openpyxl 기반 견적서 작성 및 도형 보존
-  resources/            기준 템플릿 (.xls 편집 원본과 .xlsx 배포본)
+  resources/            기준 템플릿 (.xlsx 한 벌이 유일한 원본)
 
 desktop/                데스크톱 전용 — 웹에서 쓰지 않는다
   quotation_desktop/    Tkinter 화면, 사용자 설정, 실행 경로
@@ -51,9 +51,13 @@ web/                    웹 전용 — 데스크톱에서 쓰지 않는다
   wrangler.jsonc        기본=정적 자산(무료), env.server=Python Worker(Paid)
 
 tests/                  공용 코어 테스트 + 익명화 fixture(tests/fixtures/public)
-tools/                  공용 개발 도구 (골든 비교, 템플릿 덤프·변환)
-doc/                    설계·구현 계획서
+tools/                  공용 개발 도구 (골든 비교, 템플릿 변환)
+doc/                    성격별로 나눈 문서 — 명세·안내·계획·결정·사고·실측
 ```
+
+`quotation/`, `tests/`, `tools/` 는 **데스크톱과 웹이 함께 쓰는 공용 자산**
+입니다. 어느 한쪽에 딸린 것이 아니므로 `desktop/` 이나 `web/` 아래로 옮기지
+않습니다.
 
 경계는 테스트로 지킵니다. `web/tests/test_worker_smoke.py` 는 Worker 층과 공용
 코어가 `tkinter`·`quotation_desktop` 을 import 하지 못하게 막고,
@@ -101,22 +105,26 @@ XML도 결과 파일도 네트워크를 타지 않습니다. 처음 한 번 변�
 
 ## 개발
 
-요구 사항: Python 3.11 이상. 웹 UI 작업에는 Node.js 22 이상. 템플릿의 원본
-`.xls`를 다시 변환할 때만 Microsoft Excel이 필요합니다.
+요구 사항: Python 3.11 이상. 웹 UI 작업에는 Node.js 22 이상. `.xls` 골든
+견적서를 `.xlsx` 로 변환할 때만 Microsoft Excel이 필요합니다.
 
 ```powershell
 python -m venv .venv
 .\.venv\Scripts\python.exe -m pip install -r requirements.txt
 
-# 전체 테스트 (Excel 불필요)
-.\.venv\Scripts\python.exe -m pytest tests web\tests desktop\tests -q
+# 웹 코어 사본과 템플릿 모듈 생성 (web/tests 를 돌리기 전에 한 번)
+.\.venv\Scripts\python.exe web\scripts\sync_core.py
 
-# 원본 .xls 템플릿을 다시 .xlsx 로 변환할 때만 실행 (Excel 필요)
+# 전체 테스트 (Excel 불필요)
+.\.venv\Scripts\python.exe -m pytest -q
+
+# samples\ 의 .xls 골든을 .cache\ 로 변환할 때만 실행 (Excel 필요)
 .\tools\xls2xlsx.ps1
 
-# 데스크톱 EXE 빌드
+# 데스크톱 EXE 빌드 (산출물은 desktop\dist, 중간물은 desktop\build)
 .\.venv\Scripts\python.exe -m pip install -r desktop\requirements.txt
-.\.venv\Scripts\python.exe -m PyInstaller desktop\QuotationTool.spec --noconfirm --clean
+.\.venv\Scripts\python.exe -m PyInstaller desktop\QuotationTool.spec --noconfirm --clean `
+    --distpath desktop\dist --workpath desktop\build
 .\desktop\tools\acceptance.ps1
 ```
 
@@ -127,8 +135,10 @@ python -m venv .venv
 건너뜁니다. 자료 없이도 도는 검증은 `tests/fixtures/public/` 의 익명화 fixture가
 담당합니다.
 
-셀 매핑과 상세 검증 기준은 [SPEC_CELLMAP.md](SPEC_CELLMAP.md), 기존 프로그램에서
-달라진 동작의 상세는 [MIGRATION.md](MIGRATION.md)를 참고하십시오.
+셀 매핑과 상세 검증 기준은 [doc/spec/SPEC_CELLMAP.md](doc/spec/SPEC_CELLMAP.md),
+기존 프로그램에서 달라진 동작의 상세는
+[doc/guide/MIGRATION.md](doc/guide/MIGRATION.md)를 참고하십시오. 설계 경위와
+실측은 [doc/](doc/) 에 성격별로 나눠 두었습니다.
 
 ## 원본 대비 주요 변경 사항
 

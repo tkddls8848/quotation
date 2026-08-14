@@ -1,13 +1,14 @@
 param()
 
 $ErrorActionPreference = "Continue"
-# desktop\tools -> desktop -> 저장소 루트. PyInstaller 는 루트의 dist\ 에 낸다.
-$root = Split-Path -Parent (Split-Path -Parent $PSScriptRoot)
-$gui = Join-Path $root "dist\QuotationTool.exe"
-$cli = Join-Path $root "dist\QuotationTool-cli.exe"
+# desktop\tools -> desktop. 배포본은 desktop\dist 에 낸다 (--distpath).
+$desktop = Split-Path -Parent $PSScriptRoot
+$dist = Join-Path $desktop "dist"
+$gui = Join-Path $dist "QuotationTool.exe"
+$cli = Join-Path $dist "QuotationTool-cli.exe"
 $templateName = (-join @([char]0xACAC, [char]0xC801, [char]0xC11C)) +
     "_template.xlsx"
-$distTemplate = Join-Path (Join-Path $root "dist") $templateName
+$distTemplate = Join-Path $dist $templateName
 
 $pass = 0
 $fail = 0

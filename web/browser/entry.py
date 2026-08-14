@@ -1,7 +1,7 @@
 """브라우저(Pyodide) 안에서 도는 변환 진입점.
 
 Cloudflare Workers Free 플랜의 CPU 한도(요청당 10 ms)로는 XLSX 생성을 할 수
-없다(계획서 §18.3 실측: 가장 작은 견적서도 73 ms). 그래서 무료 계정에서는
+없다(실측 measurements/runtime.md: 가장 작은 견적서도 73 ms). 그래서 무료 계정에서는
 변환을 **브라우저에서** 돌리고 Cloudflare 는 정적 자산만 내려 준다.
 
 여기서 하는 일은 JS 가 넘긴 바이트를 `api` 층 자료형으로 바꾸고, 돌려받은

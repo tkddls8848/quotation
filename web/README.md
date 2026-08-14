@@ -4,13 +4,15 @@
 **여러 개를 한 번에 고를 수 있고, XML 하나마다 `.xlsx` 하나가 같은 이름으로
 내려옵니다.** 변환은 한 건씩 하므로 한 개만 변환할 때와 결과가 같습니다 —
 `web/tests/test_browser_e2e.py` 가 매번 대조합니다.
-설계 근거와 단계별 계획은
-[`doc/CLOUDFLARE_WORKERS_WEB_IMPLEMENTATION_PLAN.md`](../doc/CLOUDFLARE_WORKERS_WEB_IMPLEMENTATION_PLAN.md).
+설계 경위는 [`doc/`](../doc/) 에 성격별로 나눠 두었습니다 —
+[계획](../doc/plan/web-app-plan.md),
+[결정](../doc/decisions/), [사고](../doc/incidents/),
+[실측](../doc/measurements/runtime.md).
 
 ## 변환은 브라우저에서 돈다 (무료 계정 기준)
 
 Cloudflare Workers **Free 는 요청당 CPU 10 ms** 다. 견적서 한 건을 만드는 데는
-가장 작은 입력도 73 ms, 큰 것은 423 ms 가 든다(계획서 §18.3 실측). 서버에서
+가장 작은 입력도 73 ms, 큰 것은 423 ms 가 든다(실측 measurements/runtime.md). 서버에서
 만드는 길은 무료 계정에서 애초에 성립하지 않는다.
 
 그래서 변환을 브라우저로 옮겼다. Cloudflare 는 정적 자산만 내려 준다.

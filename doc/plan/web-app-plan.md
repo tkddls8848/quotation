@@ -1,11 +1,27 @@
 # 견적 변환 웹 앱 구현 계획 — Cloudflare Workers
 
 - 작성일: 2026-08-14
-- 대상 저장소: `C:\quotation\quotation`
 - 대상 서비스: IBM eConfig Export XML → 기존 견적서 양식 `.xlsx` 변환
-- 문서 상태: 구현 착수안
+- 문서 상태: **착수안 (역사 기록)**. 착수 시점 그대로 두고 고치지 않는다
+
+> **이 문서는 지금의 구조가 아니다.** 구현하면서 두 군데가 뒤집혔고, 그 이유는
+> 계획을 덮어쓰는 대신 결정 기록으로 남겼다. 지금 무엇이 사실인지는
+> [`doc/README.md`](../README.md) 를 보라.
+>
+> | 이 문서의 | 지금 | 기록 |
+> |---|---|---|
+> | §1·§4 Python Worker 가 변환 | 브라우저가 변환 (무료 계정) | [결정 0002](../decisions/0002-convert-in-browser.md) |
+> | §8 템플릿을 비공개 R2 에 | 저장소 원본을 번들에 담는다 | [결정 0001](../decisions/0001-template-in-bundle.md) |
+>
+> 뒤집히지 않은 부분(§2 현행 분석, §3 범위, §5 변환 설계, §6 API 계약,
+> §7 UI 규칙, §9 보안, §12 테스트 전략, §13 관측성)은 그대로 유효하다.
 
 ## 1. 결론
+
+> **§1 은 뒤집혔다** — [결정 0002](../decisions/0002-convert-in-browser.md).
+> 변환은 Python Worker 가 아니라 브라우저에서 돈다. R2 는 쓰지 않는다.
+> 다만 "TypeScript 로 OOXML 생성기를 재작성하지 않는다" 는 판단은 지금도
+> 유효하다 — 브라우저에서 도는 것은 **같은 파이썬**이다.
 
 1차 구현은 **Cloudflare Workers Static Assets + Python Worker API + 비공개 R2 템플릿** 구조로 진행한다.
 
@@ -24,7 +40,7 @@
 
 | 영역 | 현재 구현 | 웹 전환 시 처리 |
 |---|---|---|
-| 사용자 화면 | `quotation/ui/main_window.py`, Tkinter | SPA로 교체 |
+| 사용자 화면 | Tkinter 화면 (지금은 `desktop/quotation_desktop/ui/main_window.py`) | SPA로 교체 |
 | 변환 오케스트레이션 | `quotation/core/convert.py` | 경로 기반 처리와 분리하여 재사용 |
 | XML 파싱 | `quotation/core/xml_reader.py`, lxml | 바이트 입력 지원, 보안 제한 강화 |
 | 데이터 모델/계산 | `models.py`, `money.py`, `naming.py` | 그대로 재사용 |
@@ -75,6 +91,11 @@
 - 모바일 화면에서 Excel 내용을 미리 보는 기능
 
 ## 4. 권장 아키텍처
+
+> **§4 는 뒤집혔다** — [결정 0002](../decisions/0002-convert-in-browser.md).
+> 아래 그림은 `env.server`(Workers Paid) 배포에만 해당한다. 무료 계정 기본
+> 배포에는 Worker 스크립트도 R2 도 Access 도 없고, Cloudflare 는 정적 자산만
+> 내려 준다. §4.2 의 Container 전환도 하지 않는다.
 
 ```text
 사용자 브라우저
@@ -168,7 +189,7 @@ Cloudflare 계정의 최대 업로드 한도보다 작은 애플리케이션 자
 | 항목 | 초깃값 | 비고 |
 |---|---:|---|
 | XML 업로드 | 10 MiB | 실제 샘플 분포 측정 후 축소 가능 |
-| 한 요청의 파일 수 | 1 | 다중 변환은 후속 기능 |
+| 한 요청의 파일 수 | 1 | 화면은 최대 50개를 골라 **한 건씩** 되풀이한다 (`web/frontend/src/batch.ts`) |
 | `ProductLineItem` | 5,000개 | 비정상 문서/메모리 폭주 방지 |
 | 그룹 | 200개 | Excel 시트 폭증 방지 |
 | 생성 XLSX | 20 MiB | 초과 시 422 또는 413 계열 응답 |
@@ -248,6 +269,12 @@ Cloudflare 계정의 최대 업로드 한도보다 작은 애플리케이션 자
 
 ## 8. 템플릿 운영 계획
 
+> **§8 은 뒤집혔다** — [결정 0001](../decisions/0001-template-in-bundle.md).
+> R2 는 쓰지 않는다. 저장소 원본 `quotation/resources/견적서_template.xlsx`
+> 하나를 번들에 담고, 판본은 내용 해시로 매긴다. 아래 절차는 R2 로 되돌릴 때
+> 참고할 설계로만 남긴다. 지금의 템플릿 운영 절차는
+> [`web/README.md` 템플릿 운영](../../web/README.md#템플릿-운영)에 있다.
+
 ### 8.1 저장 및 선택
 
 - R2 버킷은 공개 액세스를 끄고 Worker binding으로만 읽는다.
@@ -284,43 +311,42 @@ Cloudflare 계정의 최대 업로드 한도보다 작은 애플리케이션 자
 
 ## 10. 저장소 목표 구조
 
+> 아래는 **실제로 그렇게 됐다.** 달라진 것은 두 가지뿐이다 — `web/browser/`
+> 와 `web/frontend/src/` 의 변환 일꾼이 [결정 0002]
+> (../decisions/0002-convert-in-browser.md) 로 생겼고, R2 대신 템플릿을
+> 번들에 담는다([결정 0001](../decisions/0001-template-in-bundle.md)).
+
 ```text
 quotation/                      공용 순수 도메인/변환 로직 (데스크톱·웹 공용)
   core/
     convert.py                  convert() 경로 어댑터 + convert_bytes() 순수 함수
     xml_reader.py               parse() / parse_bytes()
+    models.py, money.py, naming.py
     resources.py                기준 템플릿 위치
     writer/                     build() / build_bytes(), carry_over_bytes()
-  resources/                    기준 템플릿(.xls 편집 원본, .xlsx 배포본)
+  resources/                    기준 템플릿 (.xlsx 가 유일한 원본)
 desktop/                        데스크톱 전용. 웹 번들에 절대 들어가지 않는다
   quotation_desktop/            Tkinter 화면, config.py, paths.py
   launcher.py, QuotationTool.spec
-  tools/, tests/
+  tools/, tests/, dist/
 web/
-  pyproject.toml                Python Worker 의존성
-  wrangler.jsonc                assets, R2, 변수, observability 설정
-  src/
-    worker.py                   HTTP 엔트리포인트
+  pyproject.toml                Python Worker 의존성 (env.server 전용)
+  wrangler.jsonc                기본=정적 자산(무료), env.server=Python Worker(Paid)
+  src/                          Worker 와 브라우저가 함께 쓰는 층
+    worker.py                   Workers 전용 진입점
     api.py                      요청 검증/응답 매핑
     conversion_adapter.py       bytes 기반 코어 호출
-    limits.py, errors.py, clock.py
+    limits.py, errors.py, clock.py, template.py
     quotation/                  배포 직전 복사되는 공용 코어 (추적하지 않음)
-  frontend/
-    package.json
-    src/
-    vite.config.ts
-  scripts/
-    sync_core.py                공용 코어를 src/ 로 복사
-    verify_template.py          템플릿 검증
-  tests/
-    test_api.py
-    test_worker_smoke.py
+  browser/entry.py              브라우저(Pyodide) 진입점. worker.py 와 같은 역할
+  frontend/                     Vite + TypeScript SPA + Pyodide 변환 일꾼
+  scripts/                      코어 동기화, 브라우저 엔진 포장, 템플릿 검증
+  tests/                        API 계약, 층 경계, 브라우저/CPython 동일성
 tests/
   fixtures/public/              익명화된 추적 가능 fixture
   ...                           기존 코어/골든 테스트
 tools/                          공용 개발 도구 (골든 비교, 템플릿 변환)
-doc/
-  CLOUDFLARE_WORKERS_WEB_IMPLEMENTATION_PLAN.md
+doc/                            성격별로 나눈 문서 (doc/README.md 참고)
 ```
 
 데스크톱 앱을 당장 제거하지 않는다. 동일한 순수 코어를 데스크톱 어댑터와 Worker 어댑터가 함께 사용하게 하여 전환 기간에 결과를 대조한다. 다만 **데스크톱 전용 코드와 웹 전용 코드는 같은 폴더에 섞지 않는다.** Tkinter 화면·사용자 설정·실행 경로·PyInstaller 정의는 `desktop/` 아래로 모으고, 공용 패키지 `quotation/` 에는 실행 환경을 모르는 코어만 남긴다. 이 경계는 `web/tests/test_worker_smoke.py` 가 정적으로 검사한다.
@@ -328,6 +354,11 @@ doc/
 Worker 는 `main` 이 있는 폴더 아래 모듈만 번들에 담으므로, 배포 직전 `web/scripts/sync_core.py` 가 공용 코어를 `web/src/quotation/` 으로 복사한다. 복사본은 저장소에서 추적하지 않는다. 심볼릭 링크를 쓰지 않는 이유는 개발이 Windows 에서도 이루어지기 때문이다.
 
 ## 11. 단계별 구현 계획
+
+> 각 단계가 지금 어디까지 왔는지는
+> [`doc/README.md` 구현 현황](../README.md#구현-현황)에 있다. Phase 0 의 게이트가
+> 의존성 설치만 보고 실제 변환을 돌리지 않아 결함을 하나 놓쳤다 —
+> [사고 0002](../incidents/0002-pyodide-lxml-euckr.md).
 
 ### Phase 0 — 기준선 고정 및 런타임 기술검증 (1~2일)
 
@@ -558,252 +589,4 @@ Worker 는 `main` 이 있는 폴더 아래 모듈만 번들에 담으므로, 배
 - [Workers GitHub Actions deployment](https://developers.cloudflare.com/workers/ci-cd/external-cicd/github-actions/)
 
 위 한도와 제품 상태는 2026-08-14 기준으로 작성했으며 구현 착수 시 다시 확인한다.
-
-## 18. 구현 현황
-
-| 단계 | 상태 | 비고 |
-|---|---|---|
-| Phase 0 기준선·fixture | 코드 부분 완료 | `tests/fixtures/public/` 에 신규·증설·N/C·REMOVE·EUC-KR·인라인 DTD fixture 작성. **Pyodide 런타임 기술검증은 실제 Cloudflare 계정에서 남아 있다.** |
-| Phase 1 코어 bytes I/O | 완료 | `parse_bytes`, `build_bytes`, `carry_over_bytes`, `convert_bytes`. 경로 API 는 데스크톱 어댑터로 유지. path/bytes 동등성 테스트 통과 |
-| Phase 2 Worker API | 완료 | `/convert`, `/status`, `/config`, 상한·오류코드·보안 헤더·Asia/Seoul 날짜·구조화 로그. `wrangler dev` 실측은 남아 있다 |
-| Phase 3 웹 UI | 완료 | 드래그앤드롭, 단계 상태, 취소, 중복 제출 방지, 접근성, 한글 파일명 다운로드. 브라우저 E2E 는 남아 있다 |
-| Phase 4 보안·운영 | 설정만 | Access 정책·Rate Limiting·부하 테스트·런북은 계정 작업 |
-| Phase 5 CI/CD | 부분 완료 | `.github/workflows/ci.yml` 의 테스트·빌드·스테이징 배포. Cloudflare 토큰 등록 필요 |
-| Phase 6 병행 운영 | 미착수 | 파일럿과 결과 대조는 배포 후 |
-
-계정 작업 없이 진행할 수 없는 항목(§16 의 업무 결정, R2 버킷 생성, Access 정책,
-커스텀 도메인, Workers Paid 승인)은 코드에 설정 자리만 두었다. `wrangler.jsonc`
-의 버킷 이름과 `ACTIVE_TEMPLATE_KEY` 는 실제 값으로 바꿔야 한다.
-
-### 18.1 배포 도구 사실관계 (실측)
-
-첫 CI 배포 실패로 확인한 내용이다. §4 의 아키텍처는 그대로지만 배포 절차가 다르다.
-
-- `cloudflare/wrangler-action@v3` 은 기본으로 **wrangler 3.90** 을 설치한다. 3.x 는
-  `wrangler.jsonc` 를 읽지 못해 설정 전체를 무시하고 `Missing entry-point` 로 죽는다.
-  **wrangler 4.42.1 이상**이 필요하다. 판본은 `web/package.json` 에 고정했다.
-- 의존성은 `requirements.txt` 가 아니라 `pyproject.toml` 에 적고 **`pywrangler`**
-  (PyPI `workers-py`, `uv>=0.12.3` 필요)로 배포한다. `pywrangler sync` 가
-  Pyodide 인덱스(`index.pyodide.org`)에서 대상 플랫폼
-  (`cpython-*-emscripten-wasm32-musl`)용 패키지를 받아 `web/python_modules/` 에
-  vendoring 한 뒤 wrangler 로 넘긴다. `wrangler deploy` 를 직접 부르면 코드만
-  올라가고 `lxml`·`openpyxl` 이 빠져 첫 요청에서 import 오류가 난다.
-- `wrangler deploy --dry-run` 은 자격 증명 없이 설정과 번들을 검사한다. 공용 코어
-  17개 모듈과 정적 자산, R2·변수 바인딩이 모두 잡히는 것을 확인했다(총 71 KiB).
-  CI 의 `bundle` 잡이 매 푸시마다 이 검사를 돌린다.
-- 따라서 §11 Phase 0 의 "`lxml`/`openpyxl` Pyodide 호환성" 판정은 CI 의
-  `pywrangler sync` 단계가 대신한다. 이 단계가 실패하면 판본을 인덱스에 있는
-  것으로 낮추거나 §4.2 의 Container 전환을 실행한다.
-
-### 18.2 Phase 0 런타임 검증 결과 (2026-08-14, CI 실측)
-
-**Python Worker 로 간다.** Container 전환은 하지 않는다.
-
-| 항목 | 실측 | 기준 |
-|---|---|---|
-| `lxml` | **6.0.0** (Pyodide 0.28.3 인덱스) | 데스크톱은 6.1.1. 인덱스에 6.1.1 wheel 이 없어 판본이 갈린다 |
-| `openpyxl` | 3.1.5 | 데스크톱과 동일 |
-| 부수 의존성 | `et-xmlfile` 2.0.0, `workers-runtime-sdk` 1.6.13 | |
-| vendoring 크기 | 8.3 MB (`lxml` 6.6 MB + `openpyxl` 1.4 MB) | |
-| 배포 번들 | **7,532 KiB (gzip 1,943 KiB)**, 352 모듈 | Paid 10 MB 한도 안. 여유는 넉넉하지 않다 |
-| 변환 시간 | 로컬 CPython 기준 대표 입력 80~100 ms | Worker 실측은 `wrangler dev` 로 |
-
-`lxml` 판본이 데스크톱과 갈리므로 CI 의 코어 테스트를 6.1.1 과 6.0.0 양쪽에서
-돌린다.
-
-배포 실측에서 확인한 요금제 제약: `limits.cpu_ms` 는 **Workers Paid 전용**이라
-Free 계정에서는 그 항목이 있는 것만으로 배포가 거부된다(`code: 100328`). 기본
-설정에서는 빼 두고 Paid 전환 시 되살린다.
-
-### 18.4 §8 변경 — 템플릿을 R2 에서 번들로
-
-계획서 §8 은 템플릿을 비공개 R2 에 두고 `ACTIVE_TEMPLATE_KEY` 로 전환하도록
-설계했다. 1차 출시에서는 이를 **번들 내장으로 바꾼다.**
-
-바꾼 이유:
-
-- 템플릿은 중앙 한 개뿐이고 사용자별 템플릿 요건은 아직 확정되지 않았다(§16-5).
-- 활성 키를 바꾸는 것도 결국 Worker 재배포가 필요하다. "코드 배포 없이 교체"
-  라는 이점이 크지 않았다.
-- 대신 버킷 생성, 토큰 R2 권한, 업로드 절차, 키 관리, 요청 경로의 R2 실패
-  가능성(`TEMPLATE_UNAVAILABLE`)이 늘었다. 운영 관문이 하나 더 생긴 셈이다.
-
-바뀐 구조:
-
-- 원본은 `quotation/resources/견적서_template.xlsx` 하나뿐이고 데스크톱과 웹이
-  같은 파일을 쓴다.
-- 배포 직전 `web/scripts/sync_core.py` 가 그 파일을 base64 로 담은
-  `web/src/template_data.py` 를 만든다(30 KB → 41 KB, 7.5 MB 번들 대비 무시할
-  수준). 생성물은 추적하지 않는다.
-- 템플릿 판본은 내용 해시(`sha256-…`)다. `/status` 와 `X-Template-Version` 에
-  그대로 실려 추적성은 유지된다.
-- 교체는 `.xlsx` 를 고쳐 커밋하는 것이고, 롤백은 그 커밋을 되돌리는 것이다.
-- 번들 템플릿이 저장소 원본과 같은지는 테스트가 매번 확인한다.
-
-§8.1 의 "공개 정적 자산으로 노출하지 않는다" 는 지켜진다. 템플릿은 정적 자산
-폴더가 아니라 Worker 모듈로만 들어가므로 URL 로 받아 갈 수 없다.
-
-**되돌리는 조건:** 회사별·사용자별 템플릿이 필요해지거나, 개발자를 거치지 않고
-템플릿을 교체해야 하는 운영 요건이 확정되면 §8 의 R2 설계로 돌아간다. 그때는
-`web/src/template.py` 의 출처만 바꾸면 되고 나머지 층은 그대로다.
-
-### 18.3 변환 1건의 CPU 시간 (네이티브 CPython 실측)
-
-`time.process_time()` 기준, 워밍업 후 평균. I/O 대기는 포함하지 않으므로 Workers
-의 CPU 한도와 직접 비교할 수 있다.
-
-| 입력 | 라인 | CPU | Free 한도(10ms) 대비 |
-|---|---:|---:|---:|
-| `euckr_quote.xml` | 1 | 73 ms | 7배 |
-| `new_quote.xml` | 3 | 108 ms | 11배 |
-| `upgrade_quote.xml` | 2 | 82 ms | 8배 |
-| 합성 대형 (7시트) | 51 | 423 ms | 42배 |
-
-가장 작은 견적서도 Free 한도를 7배 넘는다. Pyodide(WASM)는 네이티브보다 통상
-2~5배 느리고 첫 요청의 import 비용이 더해지므로 실제 소요는 이보다 크다.
-**§4.2 의 "운영 기준은 Workers Paid" 판단은 실측으로 확정됐다.** Free 에서도
-정적 화면과 `/status`·`/config` 는 동작하므로 배포 파이프라인 검증까지는
-무료로 진행할 수 있다.
- 남은 미검증 항목은 **실제 isolate 의 메모리·CPU 사용량과 도형 보존**
-이며, 이는 계정과 R2 템플릿이 준비된 뒤 `wrangler dev` 로 확인한다.
-
-### 18.5 §4 변경 — 무료 계정 운영을 위해 변환을 브라우저로 옮긴다
-
-§4.2 는 "운영 기준은 Workers Paid" 로 잡았고 §18.3 의 실측이 그 판단을
-확정했다. 그런데 운영 계정이 **무료 계정** 이라면 그 길이 닫혀 있다. Free 의
-요청당 CPU 10 ms 로는 가장 작은 견적서(73 ms)도 만들 수 없고, 이것은 코드를
-빨리 만들어서 넘길 수 있는 차이가 아니다(7~42배).
-
-Paid 로 올리지 않고 무료 계정에서 **원활히** 돌리는 길은 하나뿐이다. 변환을
-서버에서 빼는 것이다. 그렇다고 변환기를 다시 쓰면 결과가 달라질 위험이 생기고,
-그것은 견적서에서 용납되지 않는다. 그래서 **같은 파이썬을 브라우저에서 돌린다.**
-
-    이전   브라우저 --XML--> Worker(Pyodide) --XLSX--> 브라우저
-    이후   브라우저(Pyodide) 안에서 시작하고 끝난다. Cloudflare 는 자산만 준다
-
-바뀌지 않는 것:
-
-- 변환 코어(`quotation.core`), 검증·가드(`conversion_adapter`, `limits`),
-  응답 계약(`api`), 견적 날짜(`clock`), 템플릿(`template`) — **파일이 같다.**
-  사본을 두지 않고 `build_browser_engine.py` 가 `web/src` 를 그대로 담는다.
-- 부르는 함수도 같다. `worker.py` 와 `browser/entry.py` 가 둘 다
-  `api.convert_response` 를 부른다.
-- API 계약(§6)과 화면(§7)의 겉모습.
-
-바뀌는 것:
-
-| | 이전 | 이후 |
-|---|---|---|
-| 변환 위치 | Worker (Pyodide) | 브라우저 (Pyodide) |
-| 기본 배포 | Python Worker + 자산 | **자산만** (`main` 없음) |
-| 요청당 CPU 한도 | 걸린다 | 해당 없음 |
-| 하루 요청 한도 | 변환마다 소모 | 소모 없음 (정적 자산은 무료·무제한) |
-| 배포 도구 | pywrangler + uv + vendoring | wrangler 만 |
-| 업로드 XML | 서버 메모리를 거친다 | 브라우저 밖으로 나가지 않는다 |
-| 첫 방문 비용 | 없음 | 엔진 14.4 MiB (한 번, 이후 재검증만) |
-| 변환 1건 | — | 약 0.3 초 (기동 후) |
-
-§4.2 의 Container 전환은 하지 않는다. 그것은 Paid 를 전제로 하며 무료 계정
-문제를 풀지 못한다. 서버 변환 자체는 버리지 않고 `wrangler.jsonc` 의
-`env.server`(Workers Paid 전용)로 남겨 둔다. 화면은 브라우저 엔진을 못 띄웠을
-때만 그쪽으로 넘어간다.
-
-#### 결과가 같다는 것을 무엇으로 증명하는가
-
-"같은 코드를 쓴다" 는 설계일 뿐이므로 테스트로 못박는다.
-
-| 테스트 | 지키는 것 |
-|---|---|
-| `test_browser_engine.py` | 엔진에 담기는 코드와 양식이 저장소 원본과 바이트가 같다. lxml·openpyxl 판본이 `web/pyproject.toml` 과 같다. 받아 오는 파일은 모두 sha256 으로 고정되어 있다 |
-| `test_browser_parity.py` | Node 로 엔진을 돌려 만든 견적서가 CPython 산출물과 같다. `.xlsx`(zip) 안의 모든 부품을 바이트로, 그리고 골든 회귀와 같은 비교기(`tools/compare.py`)로 셀 단위로. 오류 사례의 상태 코드·오류 코드도 함께 |
-| `test_browser_e2e.py` | 운영과 같은 CSP 를 건 서버에서 실제 Chromium 으로 내려받은 파일이 CPython 산출물과 같다 |
-
-정규화하는 것은 둘뿐이며 둘 다 견적서 내용이 아니다 — 파일 생성 **시각**
-(`docProps/core.xml` 의 `dcterms:modified`)과 `<mergeCell>` 의 나열 **순서**
-(집합은 같아야 하고, 다르면 테스트가 잡는다). 근거는 `web/tests/xlsx_parity.py`.
-
-#### 이 과정에서 드러난 결함 — Pyodide 의 libxml2 는 EUC-KR 을 모른다
-
-실제로 돌려 보니 EUC-KR 견적서가 통째로 변환되지 않았다.
-
-    XMLSyntaxError: Unsupported encoding EUC-KR, line 1, column 38
-
-Pyodide 의 lxml 이 iconv 없이 빌드되어 있다. **§4 의 Python Worker 로 갔어도
-같은 결과였다.** Phase 0 의 게이트(§11)가 `pywrangler sync` 성공까지만 보고
-실제 변환을 돌리지 않아 놓쳤다. 2005년 형식 견적 XML 은 EUC-KR 이 흔하므로
-그대로 두면 그 견적서들은 웹에서 만들 수 없었다.
-
-`quotation/core/xml_reader.py` 에 좁은 대비책을 두었다. 파싱이 **아예 실패한
-경우에 한해**, 선언된 인코딩을 파이썬 표준 코덱(Pyodide 에도 EUC-KR·CP949·
-Shift_JIS 등이 모두 있다)으로 디코딩해 UTF-8 로 다시 적고 한 번만 더 읽는다.
-문자는 하나도 바뀌지 않으므로 파서가 보는 문서는 iconv 가 있는 데스크톱이 보는
-것과 같다. 이미 읽히는 문서에는 이 경로가 닿지 않고, 다시 읽어도 실패하면
-처음 오류 문구를 그대로 알린다(원본 프로그램과 같은 문구를 지킨다).
-
-#### 남은 것
-
-- 첫 방문 14.4 MiB 는 Cloudflare 가 압축해 보내지만 여전히 크다. 줄일 여지는
-  lxml(1.7 MiB)을 걷어내는 것뿐인데, 파서를 바꾸면 동작이 갈릴 수 있으므로
-  하지 않는다.
-- WebAssembly 를 못 쓰는 브라우저에서는 `env.server` 배포가 있어야 변환된다.
-  무료 계정만 쓸 때는 그런 브라우저를 지원하지 않는다는 뜻이 된다.
-
-### 18.6 운영 사고 — 배포된 Worker 가 모든 변환을 거절했다
-
-증상은 하나뿐이었다. 어떤 XML 을 올려도 화면에 이것만 나왔다.
-
-    첨부 화일을 읽지 못했습니다.   (INVALID_REQUEST, 400)
-
-원인은 이름이었다. `workers` SDK(`workers-runtime-sdk`)는 JS 객체를 그대로
-넘기지 않고 **파이썬 클래스로 감싸서** 준다. `WorkerEntrypoint.fetch` 가 받는
-것은 `js.Request` 가 아니라 `workers.Request` 다. 그런데 `worker.py` 는 JS
-이름을 불렀다.
-
-| `worker.py` 가 부른 것 | 실제 SDK API | 결과 |
-|---|---|---|
-| `await request.formData()` | `await request.form_data()` | `AttributeError` |
-| `form.getAll("file")` | `form.get_all("file")` | `AttributeError` |
-| `await entry.arrayBuffer()` | `await entry.bytes()` | `AttributeError` |
-| `entry.type` | `entry.content_type` | 항상 빈 문자열 |
-
-첫 줄에서 이미 `AttributeError` 가 났고, 그것을 감싸고 있던
-
-    except Exception as exc:
-        raise errors.invalid_request("첨부 화일을 읽지 못했습니다.") from exc
-
-가 원인을 통째로 삼켰다. 사용자에게는 "깨진 multipart" 로 보였고 로그에도
-`INVALID_REQUEST` 만 남아, **모든 변환이 실패하는데 단서가 없었다.**
-
-#### 왜 배포 전에 못 잡았나
-
-`web/tests/` 는 순수 층(`api`, `conversion_adapter`)만 직접 불렀고, `worker.py`
-는 `test_worker_smoke.py` 가 **소스를 정적으로** 보는 것이 전부였다. 런타임
-객체를 다루는 그 스무 줄만 어떤 테스트도 실행하지 않았다. 계약 테스트가
-아무리 촘촘해도, 런타임과 만나는 층을 한 번도 돌리지 않으면 그 층은 배포에서
-처음 돈다.
-
-#### 고친 것
-
-1. `worker.py` 가 SDK 의 파이썬 이름을 쓴다.
-2. `web/tests/test_worker_runtime.py` — SDK 와 같은 모양의 가짜 런타임으로
-   `fetch()` 를 실제로 돌린다. 변환 성공, 파일 아닌 필드, 깨진 multipart,
-   multipart 아닌 POST, `/status`·`/config`, 정적 자산 통과, 교차 출처 거절까지
-   본다. 이름을 되돌려 놓으면 이 테스트가 프로덕션과 **똑같은 문구**로 죽는다.
-3. 같은 파일의 `test_worker_uses_only_real_sdk_names` 가 `pywrangler sync` 로
-   받아 둔 실제 SDK 소스를 파싱해, 가짜가 진짜와 어긋나지 않았는지 대조한다.
-   CI 의 `bundle` 잡이 sync 직후 이것을 돌린다.
-4. 삼키던 자리에 진단 한 줄을 남긴다 — 예외 **종류만** 남기므로 견적 내용은
-   새지 않는다(§13). 이번 사고였다면 로그에 `AttributeError` 가 찍혔다.
-
-#### 이 사고가 §18.5 의 판단에 주는 무게
-
-이 버그는 **서버 변환 경로에만** 있다. §18.5 대로 무료 계정 배포에서는 그
-경로가 아예 없고 변환이 브라우저에서 끝나므로, 이 사고는 재발할 자리가 없다.
-서버 경로는 `env.server`(Workers Paid)에만 남으며, 화면이 그쪽으로 넘어가는
-것은 브라우저 엔진을 못 띄웠을 때뿐이다.
-
-덧붙여 무료 계정 배포에는 Worker 가 없어 `/api/v1/convert` 가 정적 자산
-처리기로 넘어가고 SPA 의 `index.html` 이 200 으로 돌아온다. 그것을 받아
-`.xlsx` 로 저장하면 HTML 이 든 견적서가 된다. 대비책 경로가 응답의
-`Content-Type` 을 확인하도록 했다.
 

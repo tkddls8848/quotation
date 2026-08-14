@@ -15,6 +15,7 @@ desktop/
   requirements.txt      코어 의존성 + PyInstaller
   tools/acceptance.ps1  빌드 산출물 인수 테스트
   tests/                데스크톱 전용 테스트
+  dist/                 배포본 (EXE). 폴더만 추적하고 내용물은 추적하지 않는다
 ```
 
 ## 실행
@@ -32,11 +33,16 @@ desktop/
 ## 빌드
 
 ```powershell
-.\.venv\Scripts\python.exe -m PyInstaller desktop\QuotationTool.spec --noconfirm --clean
+.\.venv\Scripts\python.exe -m PyInstaller desktop\QuotationTool.spec --noconfirm --clean `
+    --distpath desktop\dist --workpath desktop\build
 .\desktop\tools\acceptance.ps1
 ```
 
-`dist\QuotationTool.exe` 하나만 배포하면 됩니다. 처음 실행할 때 EXE 옆에
+산출물은 `desktop\dist`, PyInstaller 중간물은 `desktop\build` 에 냅니다. 둘 다
+데스크톱 전용이라 저장소 루트를 어지럽히지 않게 여기로 모았습니다. `dist` 폴더
+자체는 `.gitkeep` 으로 남기고 내용물은 추적하지 않습니다.
+
+`desktop\dist\QuotationTool.exe` 하나만 배포하면 됩니다. 처음 실행할 때 EXE 옆에
 `견적서_template.xlsx` 를 만들어 놓고, 이후로는 그 파일을 그대로 씁니다. 원본은
 `quotation/resources/견적서_template.xlsx` 이며 spec 이 번들에 넣습니다.
 

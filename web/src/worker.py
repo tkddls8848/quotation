@@ -87,7 +87,7 @@ def _note(request_id: str, event: str, detail: str) -> None:
     """진단용 한 줄. 견적 내용이 아니라 **무엇이 막았는지** 만 남긴다.
 
     사용자에게 보이는 문구는 바뀌지 않는다. 운영자가 로그만 보고도 원인을
-    좁힐 수 있게 하려는 것이다 (계획서 §18.6).
+    좁힐 수 있게 하려는 것이다 (사고 기록 incidents/0001).
     """
     print(json.dumps({"request_id": request_id, "event": event,
                       "detail": detail}, ensure_ascii=False))

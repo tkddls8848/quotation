@@ -1,4 +1,4 @@
-"""템플릿 검증과 교체 (계획서 §8.2 - 2단계).
+"""템플릿 검증과 교체 (결정 decisions/0001).
 
 필수 시트·도형 관계를 보고, 공개 fixture 로 실제 변환까지 해 본 뒤 해시를 찍는다.
 
@@ -106,8 +106,7 @@ def adopt(source: Path) -> int:
     print("\n교체 완료. 이어서 확인하십시오:")
     print("  python -m pytest -q")
     print("  git add quotation/resources/견적서_template.xlsx && git commit")
-    print("\n주의: .xls 편집 원본은 그대로입니다. 그쪽도 함께 고쳐 두십시오")
-    print("      (quotation/resources/견적서_template.xls, tools/xls2xlsx.ps1).")
+    print("\n양식 원본은 이 파일 하나뿐입니다. 따로 맞춰 둘 곳은 없습니다.")
     return 0
 
 

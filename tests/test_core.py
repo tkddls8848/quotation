@@ -266,7 +266,7 @@ def test_xxe_is_blocked(tmp_path):
     assert "TOPSECRET" not in str(q.groups[0].items[0].line_number)
 
 
-# --- libxml2 가 모르는 인코딩 대비책 (계획서 §18.5) -----------------------------
+# --- libxml2 가 모르는 인코딩 대비책 (결정 decisions/0002) -----------------------------
 #
 # Pyodide 의 libxml2 는 iconv 없이 빌드되어 EUC-KR 을 거부한다. 여기 CPython 의
 # libxml2 는 받아들이므로 대비책이 발동하지 않는다. 그래서 대비책 자체를 직접
