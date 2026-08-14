@@ -1,6 +1,9 @@
 # 웹 앱 (Cloudflare Workers)
 
 브라우저에서 eConfig XML 을 고르면 견적서 `.xlsx` 가 만들어져 바로 내려옵니다.
+**여러 개를 한 번에 고를 수 있고, XML 하나마다 `.xlsx` 하나가 같은 이름으로
+내려옵니다.** 변환은 한 건씩 하므로 한 개만 변환할 때와 결과가 같습니다 —
+`web/tests/test_browser_e2e.py` 가 매번 대조합니다.
 설계 근거와 단계별 계획은
 [`doc/CLOUDFLARE_WORKERS_WEB_IMPLEMENTATION_PLAN.md`](../doc/CLOUDFLARE_WORKERS_WEB_IMPLEMENTATION_PLAN.md).
 

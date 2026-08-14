@@ -33,7 +33,7 @@ FRONTEND = ROOT / "web" / "frontend"
 DIST = FRONTEND / "dist"
 SMOKE = FRONTEND / "e2e" / "browser_smoke.mjs"
 
-CASES = ("new_quote.xml", "euckr_quote.xml")
+CASES = ("new_quote.xml", "euckr_quote.xml", "upgrade_quote.xml")
 
 
 def _reason() -> str | None:
@@ -101,6 +101,15 @@ def test_browser_names_the_download_after_the_source(downloads):
         assert report[name]["downloaded_as"] == f"{Path(name).stem}.xlsx"
         assert report[name]["bytes"] > 0
         assert not report[name]["error_shown"], report[name]["status_text"]
+
+
+def test_one_batch_yields_one_file_per_input(downloads):
+    """여러 건을 한 번에 골라도 건마다 한 개씩, 제 이름으로 내려와야 한다."""
+    report = json.loads((downloads / "result.json").read_text(encoding="utf-8"))
+    batch = report["#batch"]
+    assert batch["selected"] == len(CASES)
+    assert batch["downloaded"] == len(CASES), batch["status_text"]
+    assert "실패" not in batch["status_text"], batch["status_text"]
 
 
 def test_the_page_reports_the_active_template(downloads):

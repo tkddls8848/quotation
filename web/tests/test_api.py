@@ -234,6 +234,30 @@ def test_config_reports_client_side_limits():
     assert payload["max_upload_bytes"] == limits.MAX_UPLOAD_BYTES
     assert payload["allowed_suffixes"] == [".xml"]
     assert payload["max_file_count"] == 1
+    assert payload["max_batch_files"] == limits.MAX_BATCH_FILES
+
+
+def test_the_screen_carries_the_same_limits():
+    """화면은 상한을 물어보지 않고 빌드 시점 사본을 쓴다 (무료 계정의 요청을
+    아끼기 위해서다). 그 사본이 여기 값과 어긋나면 안 된다."""
+    import re
+    from pathlib import Path
+
+    source = (Path(__file__).resolve().parents[2] / "web" / "frontend" / "src"
+              / "api.ts").read_text(encoding="utf-8")
+    block = re.search(r"APP_CONFIG: AppConfig = \{(.*?)\};", source, re.S)
+    assert block, "api.ts 에서 APP_CONFIG 를 찾지 못했습니다"
+    body = block.group(1)
+
+    def value(name: str) -> str:
+        found = re.search(rf"{name}:\s*([^,\n]+)", body)
+        assert found, f"api.ts 에 {name} 이 없습니다"
+        return found.group(1).strip()
+
+    assert eval(value("max_upload_bytes")) == limits.MAX_UPLOAD_BYTES
+    assert int(value("max_file_count")) == limits.MAX_FILE_COUNT
+    assert int(value("max_batch_files")) == limits.MAX_BATCH_FILES
+    assert "'.xml'" in value("allowed_suffixes")
 
 
 def test_status_reports_versions_only():

@@ -12,6 +12,7 @@
 import './styles.css';
 
 import { APP_CONFIG, AppConfig, ConvertError } from './api';
+import { Tally, progressLabel, selectFiles, summarize } from './batch';
 import { Converter } from './converter';
 import { saveBlob } from './download';
 
@@ -34,10 +35,12 @@ const errorBox = el<HTMLDivElement>('error');
 const errorMessage = el<HTMLParagraphElement>('error-message');
 const errorId = el<HTMLElement>('error-id');
 const maxSize = el<HTMLElement>('max-size');
+const maxBatch = el<HTMLElement>('max-batch');
+const queue = el<HTMLUListElement>('queue');
 
 const config: AppConfig = APP_CONFIG;
 const converter = new Converter();
-let chosen: File | null = null;
+let chosen: File[] = [];
 let running: AbortController | null = null;
 
 // --- 화면 상태 ---------------------------------------------------------------
@@ -59,7 +62,7 @@ function clearError(): void {
 }
 
 function setBusy(busy: boolean): void {
-  submit.disabled = busy || chosen === null;
+  submit.disabled = busy || chosen.length === 0;
   cancel.hidden = !busy;
   dropzone.setAttribute('aria-disabled', String(busy));
   document.body.classList.toggle('is-busy', busy);
@@ -73,48 +76,75 @@ function humanSize(bytes: number): string {
 
 // --- 파일 선택 ---------------------------------------------------------------
 
-function rejectReason(file: File): string | null {
-  const name = file.name.toLowerCase();
-  const allowed = config.allowed_suffixes.some((suffix) => name.endsWith(suffix));
-  if (!allowed) return 'XML 화일만 변환할 수 있습니다.';
-  if (file.size === 0) return '빈 화일입니다.';
-  if (file.size > config.max_upload_bytes) {
-    return `화일이 너무 큽니다. 최대 ${Math.floor(config.max_upload_bytes / MiB)} MiB 까지 올릴 수 있습니다.`;
-  }
-  return null;
+/** 대기 목록 한 줄. 변환이 진행되면 이 줄의 상태만 바꾼다. */
+function queueRow(index: number): HTMLElement {
+  return queue.children[index] as HTMLElement;
 }
 
-function choose(file: File | null): void {
+function setRowState(index: number, state: string, text: string): void {
+  const row = queueRow(index);
+  if (!row) return;
+  row.dataset.state = state;
+  (row.querySelector('.queue__state') as HTMLElement).textContent = text;
+}
+
+function drawQueue(files: readonly File[]): void {
+  queue.replaceChildren();
+  for (const file of files) {
+    const row = document.createElement('li');
+    row.className = 'queue__item';
+    row.dataset.state = 'waiting';
+
+    const name = document.createElement('span');
+    name.className = 'queue__name';
+    name.textContent = file.name;
+
+    const size = document.createElement('span');
+    size.className = 'queue__size';
+    size.textContent = humanSize(file.size);
+
+    const state = document.createElement('span');
+    state.className = 'queue__state';
+    state.textContent = '대기';
+
+    row.append(name, size, state);
+    queue.append(row);
+  }
+  queue.hidden = files.length === 0;
+}
+
+function choose(files: readonly File[]): void {
   clearError();
   setStatus('');
 
-  if (!file) {
-    chosen = null;
-    selected.hidden = true;
-    submit.disabled = true;
-    return;
-  }
+  const { accepted, rejected } = selectFiles(files, config);
+  chosen = accepted;
+  drawQueue(accepted);
 
-  const reason = rejectReason(file);
-  if (reason) {
-    chosen = null;
-    selected.hidden = true;
-    submit.disabled = true;
-    showError(reason, null);
-    return;
-  }
+  selected.hidden = accepted.length === 0;
+  selected.textContent =
+    accepted.length === 1
+      ? '화일 1개'
+      : `화일 ${accepted.length}개 · 합계 ${humanSize(
+          accepted.reduce((sum, f) => sum + f.size, 0),
+        )}`;
+  submit.disabled = accepted.length === 0;
 
-  chosen = file;
-  selected.textContent = `${file.name} · ${humanSize(file.size)}`;
-  selected.hidden = false;
-  submit.disabled = false;
-  setStatus('<변환 및 다운로드> 를 누르면 변환을 시작합니다.');
-  // 고르는 동안 엔진을 미리 띄워 둔다. 누른 뒤 기다리는 시간이 줄어든다.
-  converter.warmup();
+  if (rejected.length) {
+    showError(
+      rejected.map((r) => `${r.name} — ${r.reason}`).join('\n'),
+      null,
+    );
+  }
+  if (accepted.length) {
+    setStatus('<변환 및 다운로드> 를 누르면 변환을 시작합니다.');
+    // 고르는 동안 엔진을 미리 띄워 둔다. 누른 뒤 기다리는 시간이 줄어든다.
+    converter.warmup();
+  }
 }
 
 function pickFromInput(): void {
-  choose(fileInput.files?.[0] ?? null);
+  choose(Array.from(fileInput.files ?? []));
 }
 
 // --- 드래그앤드롭 ------------------------------------------------------------
@@ -136,16 +166,12 @@ dropzone.addEventListener('drop', (event) => {
   if (running) return;
   const files = event.dataTransfer?.files;
   if (!files?.length) return;
-  if (files.length > config.max_file_count) {
-    showError('한 번에 한 개의 XML 화일만 변환합니다.', null);
-    return;
-  }
-  // 드롭한 파일을 입력 요소에도 반영해 두면 폼 상태가 화면과 어긋나지 않는다.
+  // 드롭한 화일을 입력 요소에도 반영해 두면 폼 상태가 화면과 어긋나지 않는다.
   fileInput.files = files;
-  choose(files[0]);
+  choose(Array.from(files));
 });
 
-// 키보드만으로도 파일을 고를 수 있어야 한다.
+// 키보드만으로도 화일을 고를 수 있어야 한다.
 dropzone.addEventListener('click', () => {
   if (!running) fileInput.click();
 });
@@ -159,38 +185,71 @@ fileInput.addEventListener('change', pickFromInput);
 
 // --- 변환 --------------------------------------------------------------------
 
+/** 한 건 변환하고 바로 내려 준다. 실패는 던지지 않고 이유를 돌려준다. */
+async function convertOne(file: File, index: number,
+                          controller: AbortController): Promise<string | null> {
+  setRowState(index, 'working', '변환 중');
+  try {
+    const result = await converter.convert(file, {
+      signal: controller.signal,
+      onStage: (stage) =>
+        setStatus(chosen.length === 1 ? stage : `(${index + 1}/${chosen.length}) ${stage}`),
+    });
+    saveBlob(result.blob, result.filename);
+    showTemplateVersion(result.templateVersion);
+    setRowState(index, 'done', '내려받음');
+    return null;
+  } catch (error) {
+    if (controller.signal.aborted) throw error;
+    const reason =
+      error instanceof ConvertError
+        ? error.message
+        : '변환 엔진을 불러오지 못했습니다. 새로 고친 뒤 다시 시도하십시오.';
+    setRowState(index, 'failed', '실패');
+    return reason;
+  }
+}
+
 form.addEventListener('submit', async (event) => {
   event.preventDefault();
-  if (running || !chosen) return; // 중복 제출 방지
+  if (running || chosen.length === 0) return; // 중복 제출 방지
 
   const controller = new AbortController();
+  const files = chosen;
   running = controller;
   setBusy(true);
   clearError();
   setStatus('변환을 준비하는 중…');
 
-  try {
-    const result = await converter.convert(chosen, {
-      signal: controller.signal,
-      onStage: (stage) => setStatus(stage),
-    });
+  const failures: string[] = [];
+  const tally: Tally = { done: 0, failed: 0, total: files.length, cancelled: false };
 
-    setStatus('다운로드 준비 완료');
-    saveBlob(result.blob, result.filename);
-    setStatus(`${result.filename} 을 내려받았습니다.`);
-    showTemplateVersion(result.templateVersion);
-  } catch (error) {
-    if (controller.signal.aborted) {
-      setStatus('변환을 취소했습니다.');
-    } else if (error instanceof ConvertError) {
-      setStatus('변환에 실패했습니다.');
-      showError(error.message, error.requestId);
-    } else {
-      setStatus('변환에 실패했습니다.');
-      showError('변환 엔진을 불러오지 못했습니다. 새로 고친 뒤 다시 시도하십시오.',
-                null);
+  try {
+    for (const [index, file] of files.entries()) {
+      if (controller.signal.aborted) break;
+      setStatus(progressLabel(index, files.length, file.name));
+
+      const reason = await convertOne(file, index, controller);
+      if (reason === null) {
+        tally.done += 1;
+      } else {
+        tally.failed += 1;
+        failures.push(`${file.name} — ${reason}`);
+      }
+      // 브라우저가 연달아 내려받기를 삼키지 않도록 사이를 조금 둔다.
+      if (index < files.length - 1) {
+        await new Promise((done) => setTimeout(done, 150));
+      }
     }
+  } catch {
+    // 취소로 빠져나온 경우다. 아래에서 함께 정리한다.
   } finally {
+    tally.cancelled = controller.signal.aborted;
+    for (let i = tally.done + tally.failed; i < files.length; i += 1) {
+      setRowState(i, 'skipped', tally.cancelled ? '취소' : '건너뜀');
+    }
+    setStatus(summarize(tally));
+    if (failures.length) showError(failures.join('\n'), null);
     running = null;
     setBusy(false);
   }
@@ -213,6 +272,7 @@ function showTemplateVersion(version: string | null): void {
  */
 async function boot(): Promise<void> {
   maxSize.textContent = String(Math.floor(config.max_upload_bytes / MiB));
+  maxBatch.textContent = String(config.max_batch_files);
   el('deployment-version').textContent = __DEPLOYMENT_VERSION__;
 
   try {

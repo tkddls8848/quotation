@@ -210,3 +210,69 @@ button:focus-visible {
   white-space: nowrap;
   border: 0;
 }
+
+/* --- 대기 목록 (여러 화일) ------------------------------------------------- */
+
+.queue {
+  list-style: none;
+  margin: 0.75rem 0 0;
+  padding: 0;
+  border: 1px solid var(--line, #d5d8dc);
+  border-radius: 6px;
+  max-height: 18rem;
+  overflow-y: auto;
+}
+
+.queue__item {
+  display: grid;
+  grid-template-columns: 1fr auto auto;
+  gap: 0.75rem;
+  align-items: center;
+  padding: 0.4rem 0.7rem;
+  border-top: 1px solid var(--line, #d5d8dc);
+  font-size: 0.9rem;
+}
+
+.queue__item:first-child {
+  border-top: 0;
+}
+
+.queue__name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.queue__size {
+  color: #6b7076;
+  font-variant-numeric: tabular-nums;
+}
+
+.queue__state {
+  min-width: 4.5rem;
+  text-align: right;
+  color: #6b7076;
+}
+
+.queue__item[data-state='working'] .queue__state {
+  color: #1b5fb8;
+  font-weight: 600;
+}
+
+.queue__item[data-state='done'] .queue__state {
+  color: #1f7a3d;
+}
+
+.queue__item[data-state='failed'] .queue__state {
+  color: #b3261e;
+  font-weight: 600;
+}
+
+.queue__item[data-state='skipped'] {
+  opacity: 0.55;
+}
+
+/* 여러 화일의 실패 이유를 줄 단위로 보여 준다 */
+#error-message {
+  white-space: pre-line;
+}

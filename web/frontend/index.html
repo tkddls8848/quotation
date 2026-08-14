@@ -13,8 +13,8 @@
         <h1>견적서 작성기</h1>
         <p class="lede">
           IBM eServer and TotalStorage — eConfig Export XML 을 견적서 Excel 화일로
-          바꿉니다. 지원 형식은 <code>.xml</code> 한 개이며, 결과는
-          <code>.xlsx</code> 로 바로 내려받습니다.
+          바꿉니다. 여러 개를 한 번에 고를 수 있고, XML 하나마다
+          <code>.xlsx</code> 하나를 같은 이름으로 내려받습니다.
         </p>
       </header>
 
@@ -28,18 +28,21 @@
         >
           <span class="dropzone__title">XML 화일을 끌어다 놓거나 눌러서 고르십시오</span>
           <span id="dropzone-help" class="dropzone__help">
-            확장자 <code>.xml</code>, 최대 <span id="max-size">10</span> MiB
+            확장자 <code>.xml</code>, 한 개당 최대 <span id="max-size">10</span> MiB,
+            한 번에 <span id="max-batch">50</span> 개까지
           </span>
           <input
             id="file"
             class="visually-hidden"
             type="file"
             name="file"
+            multiple
             accept=".xml,text/xml,application/xml"
           />
         </div>
 
         <p id="selected" class="selected" hidden></p>
+        <ul id="queue" class="queue" hidden></ul>
 
         <div class="actions">
           <button id="submit" type="submit" disabled>변환 및 다운로드</button>

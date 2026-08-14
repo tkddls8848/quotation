@@ -11,7 +11,10 @@ import { filenameFromDisposition, outputNameFor } from './download';
 
 export interface AppConfig {
   max_upload_bytes: number;
+  /** 서버 API 가 한 요청에 받는 파일 수. 언제나 1이다. */
   max_file_count: number;
+  /** 한 번에 골라 변환할 수 있는 파일 수. 브라우저가 그만큼 되풀이한다. */
+  max_batch_files: number;
   allowed_suffixes: string[];
   output_suffix: string;
 }
@@ -53,6 +56,7 @@ const XLSX_CONTENT_TYPE =
 export const APP_CONFIG: AppConfig = {
   max_upload_bytes: 10 * 1024 * 1024,
   max_file_count: 1,
+  max_batch_files: 50,
   allowed_suffixes: ['.xml'],
   output_suffix: '.xlsx',
 };
