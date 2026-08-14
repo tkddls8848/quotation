@@ -31,8 +31,9 @@ launcher.spec
 node_modules/
 web/frontend/dist/
 .wrangler/
-# 배포 전에 web/scripts/sync_core.py 가 공용 코어를 복사해 넣는 자리
+# 배포 전에 web/scripts/sync_core.py 가 만들어 넣는 것들
 web/src/quotation/
+web/src/template_data.py
 # pywrangler 가 Pyodide 의존성을 받아 두는 자리 (pylock.toml 로 재현한다)
 web/python_modules/
 web/.venv-workers/

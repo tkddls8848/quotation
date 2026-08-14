@@ -7,19 +7,21 @@
 ```text
 web/
   src/
-    worker.py              HTTP 진입점 (라우팅, R2, 로그)
+    worker.py              HTTP 진입점 (라우팅, 로그)
     api.py                 요청 검증·응답 매핑 (런타임 비의존, 테스트 가능)
     conversion_adapter.py  바이트 기반 코어 호출과 오류 분류
     limits.py              업로드·품목·그룹·결과 크기 상한
     errors.py              오류 코드와 사용자 메시지
     clock.py               Asia/Seoul 견적 날짜
+    template.py            번들에 담긴 견적서 템플릿
     quotation/             배포 직전 복사되는 공용 코어 (추적하지 않음)
+    template_data.py       배포 직전 생성되는 템플릿 (추적하지 않음)
   frontend/                Vite + TypeScript SPA
   scripts/
-    sync_core.py           공용 코어를 src/ 로 복사
+    sync_core.py           공용 코어 복사 + 템플릿 내장 모듈 생성
     verify_template.py     템플릿 검증 (필수 시트·도형·실변환)
   tests/                   API 계약과 층 경계 테스트
-  wrangler.jsonc           Workers·R2·정적 자산 설정
+  wrangler.jsonc           Workers·정적 자산 설정
   pyproject.toml           Worker 런타임 의존성
 ```
 
@@ -229,13 +231,12 @@ Root directory 값이 무엇이든 똑같이 동작한다. 이 장치가 없으�
 ✘ [ERROR] Failed to automatically retrieve account IDs for the logged in user.
 ```
 
-My Profile → API Tokens → Create Token 에서 **Edit Cloudflare Workers** 템플릿으로
-만들고, R2 를 쓰므로 아래를 확인합니다.
+My Profile → API Tokens → Create Token 에서 **Edit Cloudflare Workers** 템플릿을
+그대로 쓰면 됩니다. 별도 권한 추가는 필요 없습니다(R2 를 쓰지 않습니다).
 
 | 범위 | 권한 | 용도 |
 |---|---|---|
 | Account | Workers Scripts — Edit | Worker 와 정적 자산 업로드 (필수) |
-| Account | Workers R2 Storage — Edit | 템플릿 버킷 바인딩·업로드 (필수) |
 | Account | Account Settings — Read | 계정 조회 |
 | User | User Details — Read | `wrangler whoami` |
 | Zone | Workers Routes — Edit | 커스텀 도메인을 붙일 때만 |
@@ -261,27 +262,39 @@ curl -sS https://api.cloudflare.com/client/v4/user/tokens/verify \
 CI 의 배포 잡은 업로드 전에 `wrangler whoami` 를 돌려 토큰이 무엇을 볼 수 있는지
 로그에 남깁니다(실패해도 배포는 시도하며, 판정은 실제 배포가 합니다).
 
-먼저 R2 버킷 `quotation-templates-staging` 을 만들고 템플릿을 올린 뒤
-`wrangler.jsonc` 의 `ACTIVE_TEMPLATE_KEY` 를 실제 키로 바꿔야 합니다.
-
 ## 템플릿 운영
 
-템플릿은 공개 정적 자산이 아니라 비공개 R2 버킷에 버전별로 둡니다.
+템플릿은 저장소에 한 벌만 둔다. 데스크톱 앱과 웹이 같은 파일을 쓴다.
 
-```bash
-# 1) 검증
-python web/scripts/verify_template.py quotation/resources/견적서_template.xlsx
-
-# 2) 불변 키로 업로드
-npx wrangler r2 object put \
-  quotation-templates/templates/2026-08-13-baseline/quotation-template.xlsx \
-  --file quotation/resources/견적서_template.xlsx --remote
-
-# 3) wrangler.jsonc 의 ACTIVE_TEMPLATE_KEY 를 새 키로 바꾸고 스테이징 배포 → 검증 → 운영 배포
+```text
+quotation/resources/견적서_template.xlsx   ← 유일한 원본
+   ├─ 데스크톱: EXE 옆으로 복사되어 사용자가 직접 편집
+   └─ 웹: sync_core.py 가 web/src/template_data.py 로 만들어 번들에 넣는다
 ```
 
-문제가 생기면 `ACTIVE_TEMPLATE_KEY` 를 이전 키로 되돌려 재배포합니다. 정상 버전은
-최소 3개 유지합니다. 자세한 절차는 계획서 §8.2.
+바꾸는 절차:
+
+```bash
+# 1) Excel 에서 quotation/resources/견적서_template.xlsx 를 고친다
+#    (견적번호는 TOTAL!B2, 담당자·회사는 상단 머리말 도형)
+
+# 2) 검증 — 필수 시트, 도형, 공개 fixture 로 실제 변환까지 해 본다
+python web/scripts/verify_template.py quotation/resources/견적서_template.xlsx
+
+# 3) 골든 회귀 테스트
+python -m pytest -q
+
+# 4) 커밋하면 배포와 함께 반영된다
+```
+
+되돌리려면 그 커밋을 되돌린다. 템플릿 판본은 내용 해시(`sha256-…`)로 계산되어
+`/api/v1/status` 와 응답의 `X-Template-Version` 에 실린다. 어떤 템플릿으로 만든
+견적서인지 나중에도 추적할 수 있다.
+
+배포된 번들의 템플릿이 저장소 원본과 같은지는
+`web/tests/test_api.py::test_bundled_template_matches_the_repository_original`
+이 매번 확인한다.
+
 
 ## 배포 전에 확인할 것 (계획서 Phase 0)
 
@@ -308,6 +321,6 @@ Container 로 옮깁니다(계획서 §4.2). `api.py` 와 `conversion_adapter.py
 
 ## 저장 정책
 
-올린 XML과 만든 견적서는 R2·KV·로그 어디에도 저장하지 않습니다. 요청을 처리하는
+올린 XML과 만든 견적서는 서버 어디에도 저장하지 않습니다. 요청을 처리하는
 동안만 메모리에 두었다가 응답과 함께 버립니다. 로그에는 요청 ID, 결과 코드, 크기
 구간, 품목·그룹 수, 처리 시간, 템플릿 버전만 남깁니다(계획서 §13).

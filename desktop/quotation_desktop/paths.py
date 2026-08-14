@@ -1,6 +1,7 @@
 """개발 실행과 PyInstaller 단일 EXE의 파일 경로를 제공한다.
 
-데스크톱 전용이다. Worker 는 이 모듈을 import 하지 않는다 (템플릿을 R2 에서 읽는다).
+데스크톱 전용이다. Worker 는 이 모듈을 import 하지 않는다
+(웹은 같은 템플릿을 번들에 담아 간다).
 """
 from __future__ import annotations
 

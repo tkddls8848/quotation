@@ -19,17 +19,9 @@
     "run_worker_first": ["/api/*"]
   },
 
-  // 비공개 템플릿 버킷. 공개 액세스를 끄고 binding 으로만 읽는다 (§8.1).
-  "r2_buckets": [
-    {
-      "binding": "TEMPLATES",
-      "bucket_name": "quotation-templates"
-    }
-  ],
-
+  // 템플릿은 번들에 담겨 온다 (web/src/template.py). 외부 저장소를 쓰지 않으므로
+  // 요청 경로에 네트워크 실패 지점이 없고 코드와 템플릿 판본이 항상 일치한다.
   "vars": {
-    // 새 템플릿을 올린 뒤 이 값만 바꿔 배포한다. 문제가 생기면 이전 키로 되돌린다.
-    "ACTIVE_TEMPLATE_KEY": "templates/2026-08-13-baseline/quotation-template.xlsx",
     "DEPLOYMENT_VERSION": "0.1.0"
   },
 
@@ -52,15 +44,8 @@
     "staging": {
       "name": "quotation-staging",
       "vars": {
-        "ACTIVE_TEMPLATE_KEY": "templates/2026-08-13-baseline/quotation-template.xlsx",
         "DEPLOYMENT_VERSION": "0.1.0-staging"
-      },
-      "r2_buckets": [
-        {
-          "binding": "TEMPLATES",
-          "bucket_name": "quotation-templates-staging"
-        }
-      ]
+      }
     }
   }
 }

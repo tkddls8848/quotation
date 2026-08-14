@@ -289,3 +289,35 @@ def test_seoul_date_is_used_for_the_sheet(fixtures, template_bytes):
     res = _convert([_upload(fixtures, "new_quote.xml")], template_bytes,
                    today=today)
     assert load_workbook(BytesIO(res.body))["TOTAL"]["C3"].value == "2026-08-14"
+
+
+# --- 번들 내장 템플릿 ----------------------------------------------------------
+
+def test_bundled_template_matches_the_repository_original(template_bytes):
+    """번들 템플릿은 저장소 원본과 바이트가 같아야 한다.
+
+    R2 를 쓰지 않고 배포 직전에 sync_core.py 가 만들어 넣는다. 이 검증이 없으면
+    낡은 사본이 조용히 배포될 수 있다.
+    """
+    import template
+
+    assert template.template_bytes() == template_bytes
+    assert template.template_version().startswith("sha256-")
+
+
+def test_bundled_template_passes_validation():
+    import conversion_adapter
+    import template
+
+    conversion_adapter.validate_template(template.template_bytes())
+
+
+def test_convert_with_the_bundled_template(fixtures):
+    """운영과 같은 경로: 업로드 + 번들 템플릿 -> 견적서."""
+    import template
+
+    res = _convert([_upload(fixtures, "new_quote.xml")], template.template_bytes(),
+                   template_version=template.template_version())
+    assert res.status == 200
+    assert res.headers["X-Template-Version"].startswith("sha256-")
+    assert load_workbook(BytesIO(res.body))["TOTAL"]["C3"].value == TODAY.isoformat()

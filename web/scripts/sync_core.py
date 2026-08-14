@@ -1,20 +1,28 @@
-"""공용 코어를 Worker 번들 안으로 복사한다.
+"""Worker 번들에 들어갈 것을 저장소에서 만들어 낸다.
 
-Worker 는 `main` 이 있는 폴더 아래 모듈만 번들에 담는다. 공용 코어는 저장소
-루트의 `quotation/` 에 있으므로 배포 직전에 `web/src/quotation/` 으로 복사한다.
-복사본은 저장소에서 추적하지 않는다(.gitignore).
+Worker 는 `main` 이 있는 폴더 아래 모듈만 번들에 담는다. 그래서 배포 직전에
+두 가지를 `web/src/` 로 만들어 넣는다. 둘 다 저장소에서 추적하지 않는다.
 
-    python web/scripts/sync_core.py           복사
-    python web/scripts/sync_core.py --check   복사본이 최신인지만 확인 (CI 용)
+    quotation/          공용 코어 사본
+    template_data.py    견적서 템플릿 (base64)
+
+템플릿의 유일한 원본은 `quotation/resources/견적서_template.xlsx` 다. 데스크톱
+앱과 웹이 같은 파일을 쓴다. 여기서 파생물을 만들 뿐 사본을 따로 두지 않는다.
+
+    python web/scripts/sync_core.py           생성
+    python web/scripts/sync_core.py --check   최신인지만 확인 (CI 용)
 
 심볼릭 링크를 쓰지 않는 이유: 개발이 Windows 에서도 이루어진다.
 """
 from __future__ import annotations
 
 import argparse
+import base64
 import filecmp
+import hashlib
 import shutil
 import sys
+import textwrap
 from pathlib import Path
 
 WEB = Path(__file__).resolve().parents[1]
@@ -22,7 +30,10 @@ ROOT = WEB.parent
 SOURCE = ROOT / "quotation"
 TARGET = WEB / "src" / "quotation"
 
-#: 템플릿 리소스는 R2 에서 오므로 번들에 넣지 않는다 (§8.1).
+TEMPLATE_SOURCE = SOURCE / "resources" / "견적서_template.xlsx"
+TEMPLATE_MODULE = WEB / "src" / "template_data.py"
+
+#: 리소스 폴더는 코어 사본에 넣지 않는다. 템플릿은 template_data.py 로 따로 담는다.
 EXCLUDE_DIRS = {"__pycache__", "resources"}
 
 
@@ -36,7 +47,30 @@ def _wanted() -> list[Path]:
     return files
 
 
-def sync() -> list[Path]:
+def _template_module_text() -> str:
+    """템플릿 바이트를 담은 파이썬 모듈 본문."""
+    raw = TEMPLATE_SOURCE.read_bytes()
+    digest = hashlib.sha256(raw).hexdigest()
+    encoded = base64.b64encode(raw).decode("ascii")
+    body = "\n".join(f'    "{line}"'
+                     for line in textwrap.wrap(encoded, 76))
+    return (
+        '"""생성 파일 — 직접 고치지 마십시오.\n\n'
+        "web/scripts/sync_core.py 가 quotation/resources/견적서_template.xlsx 에서\n"
+        '만듭니다. 템플릿을 바꾸려면 그 .xlsx 를 바꾸고 다시 생성하십시오.\n"""\n'
+        "\n"
+        f'TEMPLATE_NAME = "{TEMPLATE_SOURCE.name}"\n'
+        f'TEMPLATE_SHA256 = "{digest}"\n'
+        f'TEMPLATE_VERSION = "sha256-{digest[:12]}"\n'
+        f"TEMPLATE_SIZE = {len(raw)}\n"
+        "\n"
+        "TEMPLATE_B64 = (\n"
+        f"{body}\n"
+        ")\n"
+    )
+
+
+def sync() -> tuple[list[Path], str]:
     if TARGET.exists():
         shutil.rmtree(TARGET)
     copied = []
@@ -45,44 +79,54 @@ def sync() -> list[Path]:
         destination.parent.mkdir(parents=True, exist_ok=True)
         shutil.copyfile(SOURCE / relative, destination)
         copied.append(relative)
-    return copied
+
+    text = _template_module_text()
+    TEMPLATE_MODULE.write_text(text, encoding="utf-8")
+    return copied, text
 
 
-def check() -> list[Path]:
-    """복사본과 원본이 다른 파일 목록. 비어 있으면 최신이다."""
-    stale = []
+def check() -> list[str]:
+    """생성물과 원본이 어긋난 항목. 비어 있으면 최신이다."""
+    stale: list[str] = []
     for relative in _wanted():
         destination = TARGET / relative
         if not destination.exists() or not filecmp.cmp(
                 SOURCE / relative, destination, shallow=False):
-            stale.append(relative)
+            stale.append(relative.as_posix())
 
     if TARGET.exists():
         wanted = set(_wanted())
         for path in TARGET.rglob("*.py"):
             if path.relative_to(TARGET) not in wanted:
-                stale.append(path.relative_to(TARGET))
+                stale.append(path.relative_to(TARGET).as_posix())
+
+    if not TEMPLATE_MODULE.exists():
+        stale.append(TEMPLATE_MODULE.name)
+    elif TEMPLATE_MODULE.read_text(encoding="utf-8") != _template_module_text():
+        stale.append(TEMPLATE_MODULE.name)
     return stale
 
 
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--check", action="store_true",
-                        help="복사만 확인하고 바꾸지 않는다")
+                        help="생성만 확인하고 바꾸지 않는다")
     args = parser.parse_args()
 
     if args.check:
         stale = check()
         if stale:
-            print("코어 복사본이 최신이 아닙니다. python web/scripts/sync_core.py 를 실행하십시오.")
-            for relative in stale:
-                print(f"  - {relative.as_posix()}")
+            print("생성물이 최신이 아닙니다. python web/scripts/sync_core.py 를 실행하십시오.")
+            for name in stale:
+                print(f"  - {name}")
             return 1
-        print(f"코어 복사본 최신 ({len(_wanted())}개 모듈)")
+        print(f"생성물 최신 (코어 {len(_wanted())}개 모듈 + 템플릿)")
         return 0
 
-    copied = sync()
+    copied, _ = sync()
+    size = TEMPLATE_SOURCE.stat().st_size
     print(f"{SOURCE} -> {TARGET} : {len(copied)}개 모듈 복사")
+    print(f"{TEMPLATE_SOURCE.name} -> {TEMPLATE_MODULE.name} : {size:,} bytes 내장")
     return 0
 
 

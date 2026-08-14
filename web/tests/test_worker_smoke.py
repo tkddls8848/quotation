@@ -18,7 +18,9 @@ import pytest
 #: Worker 번들에 절대 들어오면 안 되는 것들
 FORBIDDEN_MODULES = {
     "tkinter", "quotation_desktop", "PyInstaller", "shutil", "webbrowser",
-    "quotation.core.resources",  # 템플릿은 R2 에서 온다. 저장소 사본을 쓰지 않는다.
+    # 템플릿은 배포 시 생성된 template_data 로 들어온다. 런타임에 저장소
+    # 경로를 읽으려 하면 안 된다 (번들에 그 경로가 없다).
+    "quotation.core.resources",
 }
 FORBIDDEN_CALLS = {"startfile", "system", "popen"}
 
