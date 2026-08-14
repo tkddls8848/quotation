@@ -66,7 +66,7 @@ npm run build      # web/frontend/dist
 # 4) Worker
 cd web && npm install                 # wrangler 4 (package.json 에 고정)
 pip install workers-py "uv>=0.12.3"   # Python Workers 배포 도구
-pywrangler dev                        # sync 후 wrangler dev 로 넘어간다
+python3 -m pywrangler dev            # sync 후 wrangler dev 로 넘어간다
 ```
 
 `npm run dev` 는 `/api` 요청을 `127.0.0.1:8787` 의 `wrangler dev` 로 넘깁니다.
@@ -80,15 +80,40 @@ pywrangler dev                        # sync 후 wrangler dev 로 넘어간다
 | `workers-py` (`pywrangler`) | 최신 | `pyproject.toml` 의 의존성을 Pyodide 대상으로 받아 `web/python_modules/` 에 넣는다 |
 | `uv` | 0.12.3 | pywrangler 의 의존성 해석기 |
 
-**`wrangler deploy` 를 직접 부르지 마십시오.** 그러면 `lxml`·`openpyxl` 없이
-Worker 만 올라가고 첫 요청에서 import 오류가 납니다. 항상 `pywrangler deploy` 를
-씁니다 — `sync`(의존성 vendoring)를 먼저 하고 wrangler 로 넘깁니다.
+### `pywrangler` 가 하는 일
+
+`wrangler` 는 JavaScript 배포 도구다. `.py` 파일은 그대로 올려 주지만
+**Python 패키지를 받아 오지는 않는다.** `pyproject.toml` 을 읽지 않는다.
+
+`pywrangler` (PyPI `workers-py`)는 그 앞단을 채운다.
+
+```
+python3 -m pywrangler deploy
+   │
+   ├─ 1) sync : pyproject.toml 의 lxml·openpyxl 을 Pyodide 인덱스에서
+   │            emscripten-wasm32 wheel 로 받아 web/python_modules/ 에 푼다
+   │
+   └─ 2) npx wrangler deploy 를 그대로 실행 (인자도 그대로 넘어간다)
+```
+
+즉 `pywrangler deploy` = `pywrangler sync` + `wrangler deploy` 다. 나머지는
+평범한 wrangler 이므로 `--env staging` 같은 옵션도 똑같이 쓴다.
+
+차이는 번들에서 바로 드러난다.
+
+| 명령 | 번들 |
+|---|---|
+| `wrangler deploy` | 17 모듈 · 71 KiB — **우리 코드만.** 첫 요청에서 `import lxml` 실패 |
+| `python3 -m pywrangler deploy` | 352 모듈 · 7,532 KiB — 의존성 포함, 정상 동작 |
+
+설치는 `pip install workers-py "uv>=0.12.3"` 이고 내부적으로 `npx wrangler`
+(4.42.1 이상)를 부른다. `cf_build.sh` 의 1단계가 이 설치를 한다.
 
 ```bash
 cd web
 python ../web/scripts/sync_core.py       # 공용 코어 복사
 npm --prefix frontend run build          # 정적 자산
-pywrangler deploy --env staging          # 의존성 vendoring + 배포
+python3 -m pywrangler deploy --env staging   # 의존성 vendoring + 배포
 ```
 
 자격 증명 없이 설정과 번들만 검사하려면:
@@ -117,7 +142,10 @@ CI 의 `bundle` 잡이 매 푸시마다 이 검사를 돌립니다.
 |---|---|
 | Root directory | `web` |
 | Build command | `bash scripts/cf_build.sh` |
-| Deploy command | `pywrangler deploy` (Worker 이름이 `quotation-web`) 또는 `pywrangler deploy --env staging` (`quotation-web-staging`) |
+| Deploy command | `python3 -m pywrangler deploy` (Worker 이름이 `quotation-web`) 또는 `python3 -m pywrangler deploy --env staging` (`quotation-web-staging`) |
+
+`pywrangler` 대신 `python3 -m pywrangler` 로 부르는 이유는 pip 이 설치한 실행
+파일이 빌드 환경의 PATH 에 없을 수 있어서다. 모듈로 부르면 그 문제가 없다.
 
 - **Root directory 를 `web` 으로 두지 않으면** wrangler 가 설정을 못 찾아
   `Missing entry-point to Worker script or to assets directory` 로 죽는다.

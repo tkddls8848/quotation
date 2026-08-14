@@ -81,7 +81,7 @@ jobs:
         # lxml·openpyxl 을 Pyodide 대상으로 받아 web/python_modules 에 넣는다.
         # 여기서 실패하면 Python Worker 로는 배포할 수 없다는 뜻이므로, 계획서
         # §11 Phase 0 의 결정 게이트대로 대체 파서 또는 Container 로 간다.
-        run: pywrangler sync
+        run: python3 -m pywrangler sync
         working-directory: web
       - name: 해석된 판본과 번들 크기
         # 여기 찍히는 판본을 web/pylock.toml 로 고정한다. 배포 번들 한도
@@ -141,7 +141,7 @@ jobs:
       - name: 배포
         # pywrangler 가 pyproject.toml 의 의존성을 python_modules 로 vendoring 한 뒤
         # wrangler 에 넘긴다. wrangler 만 직접 부르면 lxml·openpyxl 이 빠진다.
-        run: pywrangler deploy --env staging
+        run: python3 -m pywrangler deploy --env staging
         working-directory: web
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}

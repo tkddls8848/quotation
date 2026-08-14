@@ -6,8 +6,11 @@
 #
 #   Root directory : web
 #   Build command  : bash scripts/cf_build.sh
-#   Deploy command : pywrangler deploy            (Worker 이름이 quotation-web)
-#                    pywrangler deploy --env staging  (quotation-web-staging)
+#   Deploy command : python3 -m pywrangler deploy               (quotation-web)
+#                    python3 -m pywrangler deploy --env staging  (quotation-web-staging)
+#
+# pywrangler 를 `python3 -m` 으로 부르는 이유: pip 이 설치한 실행 파일이 빌드
+# 환경의 PATH 에 없을 수 있다. 모듈로 부르면 그 문제가 없다.
 #
 # 순서가 중요하다.
 #   1) 배포 도구: pywrangler 가 Pyodide 의존성을 vendoring 한다. wrangler 만
