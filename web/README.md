@@ -124,6 +124,23 @@ cd web && npx wrangler deploy --dry-run --outdir .wrangler/dry-run
 
 CI 의 `bundle` 잡이 매 푸시마다 이 검사를 돌립니다.
 
+## 요금제 (Free 에서는 배포가 거부된다)
+
+Worker 설정에 CPU 한도(`limits.cpu_ms`)를 두면 Free 플랜에서는 배포 API 가
+거부한다.
+
+```
+✘ CPU limits are not supported for the Free plan [code: 100328]
+```
+
+그래서 `wrangler.jsonc` 에서 `limits` 를 빼 두었다. Free 플랜에서도 배포는 되지만
+**운영은 Workers Paid 를 전제로 한다**(계획서 §4.2). XLSX 생성은 Free 의 CPU
+한도로는 부족해서, 배포가 되더라도 요청 중 `Worker exceeded CPU time limit` 이
+날 수 있다. Paid 로 올린 뒤 `wrangler.jsonc` 의 주석 처리된 `limits` 를 되살린다.
+
+Worker 이름은 대시보드에 연결된 이름(`quotation`)과 맞춰 두었다. 다르면 배포 때
+경고가 나고 Cloudflare 가 이름을 고치는 PR 을 연다.
+
 ## 배포 경로는 하나만 켠다
 
 같은 Worker 에 배포하는 길이 둘 있다. 둘을 함께 켜두면 두 번 배포되며 서로를

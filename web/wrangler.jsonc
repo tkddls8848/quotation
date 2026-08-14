@@ -3,7 +3,10 @@
   //   배포 전에 반드시 실행: python scripts/sync_core.py  (공용 코어를 src/ 로 복사)
   //                          npm --prefix frontend run build
   "$schema": "node_modules/wrangler/config-schema.json",
-  "name": "quotation-web",
+  // 대시보드(Workers Builds)에 연결된 Worker 이름과 같아야 한다. 다르면
+  // "Failed to match Worker name ... the CI system expected" 경고가 나고
+  // Cloudflare 가 이름을 고치는 PR 을 연다.
+  "name": "quotation",
   "main": "src/worker.py",
   "compatibility_date": "2026-08-01",
   "compatibility_flags": ["python_workers"],
@@ -35,14 +38,19 @@
     "head_sampling_rate": 1
   },
 
-  // XLSX 생성은 10ms 로 끝나지 않는다. 운영 전제는 Workers Paid 다 (§4.2).
-  "limits": {
-    "cpu_ms": 30000
-  },
+  // CPU 한도는 Workers Paid 에서만 설정할 수 있다. Free 플랜에서 이 항목이
+  // 있으면 배포 자체가 거부된다.
+  //
+  //   ✘ CPU limits are not supported for the Free plan [code: 100328]
+  //
+  // 그래서 기본값에서는 빼 둔다. XLSX 생성은 Free 의 CPU 한도로는 부족하므로
+  // (계획서 §4.2) 운영 전에 Paid 로 올리고 아래를 되살린다.
+  //
+  //   "limits": { "cpu_ms": 30000 },
 
   "env": {
     "staging": {
-      "name": "quotation-web-staging",
+      "name": "quotation-staging",
       "vars": {
         "ACTIVE_TEMPLATE_KEY": "templates/2026-08-13-baseline/quotation-template.xlsx",
         "DEPLOYMENT_VERSION": "0.1.0-staging"

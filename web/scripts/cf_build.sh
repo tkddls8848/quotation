@@ -26,6 +26,10 @@ echo "=== 1/3 배포 도구 설치"
 python3 -m pip install --quiet --disable-pip-version-check workers-py "uv>=0.12.3"
 python3 -m pywrangler --version
 
+# Cloudflare 빌드 환경은 pyproject.toml 을 보고 `pip install .` 을 먼저 돌린다.
+# 그 부산물(*.egg-info)이 web/ 에 남으면 Worker 번들에 딸려 올라간다.
+rm -rf ./*.egg-info
+
 echo "=== 2/3 공용 코어를 Worker 번들로 복사"
 python3 scripts/sync_core.py
 
