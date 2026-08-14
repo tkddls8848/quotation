@@ -38,6 +38,10 @@ export class ConvertError extends Error {
 
 const DEFAULT_MESSAGE = '변환에 실패했습니다. 잠시 후 다시 시도하십시오.';
 
+/** `web/src/api.py` 의 XLSX_CONTENT_TYPE 과 같은 값. */
+const XLSX_CONTENT_TYPE =
+  'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';
+
 /**
  * 브라우저 1차 검사에 쓰는 상한. `web/src/limits.py` 와 같은 값이며
  * 어긋나면 `web/tests/test_api.py` 가 잡는다.
@@ -83,6 +87,14 @@ export async function convertOnServer(file: File, signal: AbortSignal): Promise<
   });
 
   if (!response.ok) throw await readError(response);
+
+  // 무료 계정 배포에는 Worker 가 없다. 그때 `/api/v1/convert` 는 정적 자산
+  // 처리기가 받아 SPA 의 index.html 을 200 으로 돌려준다. 그것을 그대로
+  // 내려 주면 사용자는 HTML 이 든 .xlsx 를 받게 된다. 형식을 확인한다.
+  const kind = (response.headers.get('Content-Type') ?? '').split(';')[0].trim();
+  if (kind !== XLSX_CONTENT_TYPE) {
+    throw new Error(`서버가 견적서를 돌려주지 않았습니다 (${kind || '형식 없음'}).`);
+  }
 
   return {
     blob: await response.blob(),

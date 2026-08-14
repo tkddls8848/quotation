@@ -77,6 +77,27 @@ Pyodide 다.
 가 있는 데스크톱이 보는 것과 같다. 이미 읽히는 문서에는 이 경로가 닿지 않고,
 다시 읽어도 실패하면 **처음 오류 문구 그대로** 알린다.
 
+### 서버 경로에 있던 버그 (무료 배포에는 없는 자리)
+
+배포돼 있던 Worker 는 어떤 XML 을 올려도 `첨부 화일을 읽지 못했습니다` 로
+거절했다. `workers` SDK 가 JS 객체를 파이썬 클래스로 감싸 주는데 `worker.py` 가
+JS 이름을 부른 탓이다.
+
+| 부른 것 | 실제 SDK API |
+|---|---|
+| `await request.formData()` | `await request.form_data()` |
+| `form.getAll("file")` | `form.get_all("file")` |
+| `await entry.arrayBuffer()` | `await entry.bytes()` |
+| `entry.type` | `entry.content_type` |
+
+첫 줄의 `AttributeError` 를 `except Exception` 이 삼켜 사용자 문구 하나로만
+보였다. `web/tests/test_worker_runtime.py` 가 SDK 와 같은 모양의 가짜 런타임으로
+`fetch()` 를 실제로 돌려 이것을 잡는다 — 이름을 되돌리면 프로덕션과 똑같은
+문구로 죽는다.
+
+무료 계정 배포에는 이 경로가 아예 없다. 변환이 브라우저에서 끝나므로 XML 이
+서버로 가지 않는다. 서버 경로는 `env.server`(Paid)에만 남는다.
+
 ## 폴더
 
 ```text
