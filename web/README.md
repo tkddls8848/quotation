@@ -99,6 +99,39 @@ cd web && npx wrangler deploy --dry-run --outdir .wrangler/dry-run
 
 CI 의 `bundle` 잡이 매 푸시마다 이 검사를 돌립니다.
 
+## 배포 경로는 하나만 켠다
+
+같은 Worker 에 배포하는 길이 둘 있다. 둘을 함께 켜두면 두 번 배포되며 서로를
+덮어쓴다. 하나를 골라 반대쪽은 끈다.
+
+| 경로 | 트리거 | 끄는 방법 |
+|---|---|---|
+| Cloudflare Workers Builds | 대시보드에 연결한 Git 저장소 | Worker → Settings → Build → Git 연결 해제 |
+| GitHub Actions | main 푸시 | 저장소 변수 `CLOUDFLARE_DEPLOY` 삭제 |
+
+## Cloudflare Workers Builds 설정
+
+대시보드 → Workers & Pages → 해당 Worker → **Settings → Build**.
+
+| 항목 | 값 |
+|---|---|
+| Root directory | `web` |
+| Build command | `bash scripts/cf_build.sh` |
+| Deploy command | `pywrangler deploy` (Worker 이름이 `quotation-web`) 또는 `pywrangler deploy --env staging` (`quotation-web-staging`) |
+
+- **Root directory 를 `web` 으로 두지 않으면** wrangler 가 설정을 못 찾아
+  `Missing entry-point to Worker script or to assets directory` 로 죽는다.
+  `wrangler.jsonc` 는 저장소 루트가 아니라 `web/` 에 있다.
+- Deploy command 의 이름/`--env` 는 `wrangler.jsonc` 의 Worker 이름과 맞아야 한다
+  (top-level `quotation-web`, `env.staging` 은 `quotation-web-staging`).
+- **`wrangler deploy` 를 쓰지 말고 `pywrangler deploy`** 를 쓴다. 의존성
+  vendoring 이 빠진다.
+- 빌드 단계의 실제 순서는 `web/scripts/cf_build.sh` 가 갖고 있다. 대시보드에
+  긴 명령을 넣지 않는 이유는 설정과 코드가 어긋나지 않게 하기 위함이다.
+- `Failed: The build token ... has been deleted or rolled` 는 API 토큰이 아니라
+  **Workers Builds 전용 빌드 토큰** 문제다. Settings → Build → Build token 에서
+  갱신하고 재시도한다.
+
 ## GitHub Actions 배포 켜기
 
 배포 잡은 Cloudflare 준비가 끝날 때까지 건너뜁니다. 아래를 등록하면 켜집니다.
