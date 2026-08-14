@@ -12,12 +12,17 @@ requires-python = ">=3.12"
 #
 #   × Because lxml==6.1.1 has no usable wheels ... requirements are unsatisfiable
 #
-# 그래서 여기서는 판본을 못 박지 않고 인덱스가 주는 것을 받는다. CI 의 bundle
-# 잡이 해석된 판본을 로그에 찍고 web/pylock.toml 로 고정한다. 데스크톱과 판본이
-# 갈리면 tests/test_bytes_api.py 의 동등성 검증으로 차이를 잡는다.
+# 아래 판본은 Pyodide 인덱스가 실제로 주는 것을 CI 에서 확인해 고정한 값이다
+# (2026-08-14, pyodide 0.28.3 기준). 올릴 때는 CI 의 bundle 잡 로그에서 해석된
+# 판본을 먼저 확인한다.
+#
+#   lxml     6.0.0   ← 데스크톱은 6.1.1. 인덱스에 6.1.1 wheel 이 없다
+#   openpyxl 3.1.5   ← 데스크톱과 동일
+#
+# lxml 판본이 갈리므로 CI 의 코어 테스트를 두 판본 모두에서 돌린다.
 dependencies = [
-  "lxml",
-  "openpyxl",
+  "lxml==6.0.0",
+  "openpyxl==3.1.5",
 ]
 
 [tool.quotation]

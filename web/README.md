@@ -134,15 +134,21 @@ npx wrangler r2 object put \
 
 ## 배포 전에 확인할 것 (계획서 Phase 0)
 
-아래는 실제 Cloudflare 계정과 열린 네트워크에서 확인해야 하며, 코드로 미리 정할
-수 없습니다. CI 의 `bundle` 잡이 앞의 두 항목을 자동으로 검사합니다.
+의존성과 번들은 CI 에서 확인했습니다 (2026-08-14).
 
-- `pywrangler sync` 가 `lxml==6.1.1`, `openpyxl==3.1.5` 를 Pyodide 인덱스
-  (`index.pyodide.org`)에서 받아 오는가. 못 받으면 판본을 인덱스에 있는 것으로
-  낮추거나 계획서 §4.2 대로 Container 로 전환한다
+| 항목 | 실측 |
+|---|---|
+| `lxml` | **6.0.0** — 데스크톱은 6.1.1. Pyodide 인덱스에 6.1.1 wheel 이 없다 |
+| `openpyxl` | 3.1.5 (데스크톱과 동일) |
+| 배포 번들 | 7,532 KiB (gzip 1,943 KiB) — Paid 10 MB 한도 안 |
+
+lxml 판본이 갈리므로 CI 의 코어 테스트를 6.1.1·6.0.0 양쪽에서 돌립니다.
+
+아래는 계정이 준비되어야 확인할 수 있습니다.
+
 - 실제 30 KB 템플릿으로 만든 결과에 그림·도형 관계가 남는가
   (로컬 CPython 기준 대표 입력 변환 시간은 약 80~100 ms 다)
-- isolate 메모리 128 MB, 배포 번들 크기(Paid 10 MB) 안에 드는가
+- isolate 메모리 128 MB 안에 드는가
 - Workers Paid 의 CPU 한도 안에서 warm p95 5초 목표를 지키는가
 
 하나라도 실패하면 API 계약과 화면은 그대로 두고 변환 실행부만 Cloudflare

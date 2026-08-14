@@ -594,3 +594,20 @@ Worker 는 `main` 이 있는 폴더 아래 모듈만 번들에 담으므로, 배
 - 따라서 §11 Phase 0 의 "`lxml`/`openpyxl` Pyodide 호환성" 판정은 CI 의
   `pywrangler sync` 단계가 대신한다. 이 단계가 실패하면 판본을 인덱스에 있는
   것으로 낮추거나 §4.2 의 Container 전환을 실행한다.
+
+### 18.2 Phase 0 런타임 검증 결과 (2026-08-14, CI 실측)
+
+**Python Worker 로 간다.** Container 전환은 하지 않는다.
+
+| 항목 | 실측 | 기준 |
+|---|---|---|
+| `lxml` | **6.0.0** (Pyodide 0.28.3 인덱스) | 데스크톱은 6.1.1. 인덱스에 6.1.1 wheel 이 없어 판본이 갈린다 |
+| `openpyxl` | 3.1.5 | 데스크톱과 동일 |
+| 부수 의존성 | `et-xmlfile` 2.0.0, `workers-runtime-sdk` 1.6.13 | |
+| vendoring 크기 | 8.3 MB (`lxml` 6.6 MB + `openpyxl` 1.4 MB) | |
+| 배포 번들 | **7,532 KiB (gzip 1,943 KiB)**, 352 모듈 | Paid 10 MB 한도 안. 여유는 넉넉하지 않다 |
+| 변환 시간 | 로컬 CPython 기준 대표 입력 80~100 ms | Worker 실측은 `wrangler dev` 로 |
+
+`lxml` 판본이 데스크톱과 갈리므로 CI 의 코어 테스트를 6.1.1 과 6.0.0 양쪽에서
+돌린다. 남은 미검증 항목은 **실제 isolate 의 메모리·CPU 사용량과 도형 보존**
+이며, 이는 계정과 R2 템플릿이 준비된 뒤 `wrangler dev` 로 확인한다.
