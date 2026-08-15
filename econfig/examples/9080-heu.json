@@ -1,0 +1,15 @@
+{
+  "request_id": "Q-1180",
+  "preset": "balanced",
+  "country": "KR",
+  "language": "ko-KR",
+  "selections": {
+    "compute": "performance",
+    "memory": "balanced",
+    "boot_storage": "quad",
+    "ethernet": "dense",
+    "fibre_channel": "dense",
+    "software": "aix-standard",
+    "support": "advanced-3y"
+  }
+}
