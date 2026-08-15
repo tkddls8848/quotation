@@ -1,0 +1,533 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>econfig</title>
+<style>
+:root{
+  --bg:#f6f7f9; --panel:#fff; --ink:#14161a; --muted:#6b7280; --line:#e2e5ea;
+  --accent:#0f62fe; --accent-soft:#e8f0fe; --add:#0a7c42; --add-soft:#e6f4ec;
+  --del:#b42318; --del-soft:#fdeceb; --warn:#8a5a00; --warn-soft:#fdf3e2;
+  --mono:ui-monospace,"Cascadia Mono","SF Mono",Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#0d1117; --panel:#151a21; --ink:#e6e9ef; --muted:#9aa4b2; --line:#262d38;
+  --accent:#4d8dff; --accent-soft:#16233b; --add:#4ec98a; --add-soft:#11291d;
+  --del:#ff7b72; --del-soft:#2d1615; --warn:#e3b341; --warn-soft:#2a2113;
+}}
+*{box-sizing:border-box}
+html,body{height:100%}
+body{margin:0;background:var(--bg);color:var(--ink);
+  font:14px/1.5 system-ui,-apple-system,"Segoe UI","Malgun Gothic",sans-serif;
+  display:grid;grid-template-columns:300px 1fr;grid-template-rows:100%}
+
+/* ---------- sidebar ---------- */
+aside{background:var(--panel);border-right:1px solid var(--line);display:flex;flex-direction:column;min-height:0}
+.brand{padding:16px 18px 12px;border-bottom:1px solid var(--line)}
+.brand h1{margin:0;font-size:15px;letter-spacing:-.01em}
+.brand p{margin:2px 0 0;font-size:12px;color:var(--muted)}
+#drop{margin:12px;padding:18px 12px;border:1.5px dashed var(--line);border-radius:10px;
+  text-align:center;color:var(--muted);font-size:12.5px;cursor:pointer;transition:.15s}
+#drop:hover,#drop.hot{border-color:var(--accent);background:var(--accent-soft);color:var(--accent)}
+#files{list-style:none;margin:0;padding:0 8px 12px;overflow:auto;flex:1;min-height:0}
+#files li{padding:9px 10px;border-radius:8px;cursor:pointer;margin-bottom:2px;position:relative}
+#files li:hover{background:var(--bg)}
+#files li.on{background:var(--accent-soft)}
+#files .nm{font-size:12.5px;font-weight:550;word-break:break-all;padding-right:18px}
+#files .mt{font-size:11.5px;color:var(--muted);font-family:var(--mono);margin-top:2px}
+#files .x{position:absolute;top:7px;right:7px;border:0;background:0;color:var(--muted);
+  cursor:pointer;font-size:15px;line-height:1;padding:2px 4px;border-radius:5px;opacity:0}
+#files li:hover .x{opacity:1}
+#files .x:hover{background:var(--del-soft);color:var(--del)}
+
+/* ---------- main ---------- */
+main{display:flex;flex-direction:column;min-width:0;min-height:0}
+nav{display:flex;gap:2px;padding:12px 20px 0;border-bottom:1px solid var(--line);background:var(--panel)}
+nav button{border:0;background:0;color:var(--muted);padding:9px 14px;font-size:13px;
+  cursor:pointer;border-radius:8px 8px 0 0;border-bottom:2px solid transparent;font-weight:550}
+nav button:hover{color:var(--ink)}
+nav button.on{color:var(--accent);border-bottom-color:var(--accent)}
+.view{padding:20px 24px;overflow:auto;flex:1;min-height:0;display:none}
+.view.on{display:block}
+.empty{color:var(--muted);text-align:center;padding:64px 20px;font-size:13.5px}
+
+h2{font-size:14px;margin:0 0 4px}
+.sub{color:var(--muted);font-size:12.5px;margin:0 0 16px}
+.meta{display:flex;flex-wrap:wrap;gap:6px 20px;font-size:12.5px;color:var(--muted);margin-bottom:18px}
+.meta b{color:var(--ink);font-weight:550;font-family:var(--mono)}
+
+.sys{border:1px solid var(--line);border-radius:10px;margin-bottom:14px;overflow:hidden;background:var(--panel)}
+.sys>header{padding:10px 14px;background:var(--bg);border-bottom:1px solid var(--line);
+  display:flex;gap:10px;align-items:baseline;flex-wrap:wrap}
+.sys>header .mtm{font-family:var(--mono);font-weight:650;font-size:13px}
+.sys>header .ds{color:var(--muted);font-size:12.5px}
+.prod{padding:10px 14px;border-top:1px solid var(--line)}
+.prod:first-of-type{border-top:0}
+.prod>.hd{display:flex;gap:10px;align-items:baseline;flex-wrap:wrap;margin-bottom:7px}
+.prod .mtm{font-family:var(--mono);font-weight:600}
+.tag{font-size:10.5px;letter-spacing:.04em;padding:1px 6px;border-radius:4px;
+  background:var(--bg);color:var(--muted);border:1px solid var(--line)}
+.fc{display:grid;grid-template-columns:auto auto 1fr;gap:2px 12px;font-size:12.5px;padding-left:6px}
+.fc .c{font-family:var(--mono);font-weight:600}
+.fc .q{font-family:var(--mono);color:var(--muted);text-align:right}
+.fc .d{color:var(--muted)}
+
+table{border-collapse:collapse;width:100%;font-size:12.5px}
+th{text-align:left;font-weight:600;color:var(--muted);font-size:11.5px;letter-spacing:.03em;
+  padding:6px 10px;border-bottom:1px solid var(--line)}
+td{padding:6px 10px;border-bottom:1px solid var(--line)}
+td.m{font-family:var(--mono)}
+tr.up td.m{color:var(--add)} tr.down td.m{color:var(--del)}
+.scroll{overflow-x:auto}
+
+.row{display:flex;gap:10px;align-items:flex-end;flex-wrap:wrap;margin-bottom:18px}
+label{display:block;font-size:11.5px;color:var(--muted);margin-bottom:4px;font-weight:550}
+select,input{font:inherit;font-size:13px;padding:7px 9px;border:1px solid var(--line);
+  border-radius:8px;background:var(--panel);color:var(--ink);min-width:120px}
+select:focus,input:focus{outline:2px solid var(--accent);outline-offset:-1px;border-color:transparent}
+button.go{font:inherit;font-size:13px;font-weight:600;padding:8px 16px;border:0;border-radius:8px;
+  background:var(--accent);color:#fff;cursor:pointer}
+button.go:disabled{opacity:.45;cursor:default}
+button.go.alt{background:var(--panel);color:var(--ink);border:1px solid var(--line)}
+
+.note{border-left:3px solid var(--warn);background:var(--warn-soft);color:var(--ink);
+  padding:11px 14px;border-radius:0 8px 8px 0;font-size:12.5px;margin:16px 0}
+.note b{color:var(--warn)}
+.ok{border-left-color:var(--add);background:var(--add-soft)}
+.err{border-left-color:var(--del);background:var(--del-soft)}
+
+details.rec{border:1px solid var(--line);border-radius:8px;margin-bottom:6px;background:var(--panel)}
+details.rec>summary{padding:8px 12px;cursor:pointer;font-size:12.5px;display:flex;gap:12px}
+details.rec>summary .id{font-family:var(--mono);font-weight:650;min-width:24px}
+details.rec>summary .n{flex:1}
+details.rec>summary .k{color:var(--muted);font-size:11.5px}
+details.rec pre{margin:0;padding:10px 14px;border-top:1px solid var(--line);
+  font-family:var(--mono);font-size:11.5px;overflow-x:auto;color:var(--muted)}
+
+pre.spec{background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:12px 14px;
+  font-family:var(--mono);font-size:11.5px;overflow-x:auto;margin:0;color:var(--ink)}
+input.dirty{border-color:var(--accent);background:var(--accent-soft);font-weight:600}
+code{font-family:var(--mono);font-size:11.5px;background:var(--panel);
+  border:1px solid var(--line);border-radius:4px;padding:1px 5px}
+</style>
+</head>
+<body>
+
+<aside>
+  <div class="brand">
+    <h1>econfig</h1>
+    <p>IBM 구성파일 로컬 뷰어</p>
+  </div>
+  <div id="drop">.cfr 파일을 끌어놓거나 클릭</div>
+  <input type="file" id="pick" accept=".cfr" multiple hidden>
+  <ul id="files"></ul>
+</aside>
+
+<main>
+  <nav>
+    <button data-v="inspect" class="on">구성</button>
+    <button data-v="compare">비교</button>
+    <button data-v="gen">생성</button>
+    <button data-v="edit">수정</button>
+    <button data-v="spec">레코드 규격</button>
+  </nav>
+  <section class="view on" id="v-inspect"><div class="empty">왼쪽에서 .cfr 파일을 추가하세요.</div></section>
+  <section class="view" id="v-compare"></section>
+  <section class="view" id="v-gen"></section>
+  <section class="view" id="v-edit"></section>
+  <section class="view" id="v-spec"><div class="empty">불러오는 중…</div></section>
+</main>
+
+<script>
+const $ = s => document.querySelector(s);
+const el = (t, a = {}, ...kids) => {
+  const n = document.createElement(t);
+  for (const [k, v] of Object.entries(a)) k === 'class' ? n.className = v : n.setAttribute(k, v);
+  for (const c of kids.flat()) if (c != null) n.append(c.nodeType ? c : String(c));
+  return n;
+};
+const esc = s => String(s ?? '');
+
+let files = [];      // [{id,name,...}]
+let current = null;  // id
+
+async function api(path, opts) {
+  const r = await fetch('/api' + path, opts);
+  const body = await r.json();
+  if (!r.ok) throw new Error(body.error || r.statusText);
+  return body;
+}
+
+/* ---------------- files ---------------- */
+
+async function upload(fileList) {
+  for (const f of fileList) {
+    try {
+      const entry = await api('/files', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/octet-stream', 'X-Filename': encodeURIComponent(f.name) },
+        body: await f.arrayBuffer(),
+      });
+      files.push(entry);
+      current = entry.id;
+    } catch (e) {
+      alert(`${f.name}\n${e.message}`);
+    }
+  }
+  renderFiles(); renderAll();
+}
+
+function renderFiles() {
+  const ul = $('#files');
+  ul.replaceChildren(...files.map(f => {
+    const li = el('li', { class: f.id === current ? 'on' : '' },
+      el('div', { class: 'nm' }, f.name),
+      el('div', { class: 'mt' }, `${f.systems.map(s => s.mtm).join(' · ') || '—'}  ${f.featureCount}FC`));
+    const x = el('button', { class: 'x', title: '제거' }, '×');
+    x.onclick = async e => {
+      e.stopPropagation();
+      await api('/files/' + f.id, { method: 'DELETE' });
+      files = files.filter(v => v.id !== f.id);
+      if (current === f.id) current = files[0]?.id ?? null;
+      renderFiles(); renderAll();
+    };
+    li.append(x);
+    li.onclick = () => { current = f.id; renderFiles(); renderAll(); };
+    return li;
+  }));
+}
+
+/* ---------------- inspect ---------------- */
+
+async function renderInspect() {
+  const v = $('#v-inspect');
+  if (!current) return v.replaceChildren(el('div', { class: 'empty' }, '왼쪽에서 .cfr 파일을 추가하세요.'));
+  const s = await api(`/files/${current}/inspect`);
+  const f = files.find(x => x.id === current);
+
+  const meta = el('div', { class: 'meta' },
+    el('span', {}, '생성 ', el('b', {}, (s.created || '').slice(0, 10))),
+    el('span', {}, '엔진 ', el('b', {}, s.creating_application)),
+    el('span', {}, '레벨 ', el('b', {}, s.system_level)),
+    el('span', {}, '지역 ', el('b', {}, `${s.country}/${s.language}`)),
+    el('span', {}, '제품 ', el('b', {}, s.productCount)),
+    el('span', {}, 'FC ', el('b', {}, s.featureCount)));
+
+  const systems = s.systems.map(sys => {
+    const prods = s.products.filter(p => p.uid.startsWith(sys.key)).map(p =>
+      el('div', { class: 'prod' },
+        el('div', { class: 'hd' },
+          el('span', { class: 'mtm' }, p.mtm),
+          el('span', { class: 'tag' }, p.class),
+          el('span', { class: 'tag' }, '×' + p.quantity),
+          el('span', { class: 'ds' }, p.description)),
+        el('div', { class: 'fc' }, p.features.flatMap(ft => [
+          el('span', { class: 'c' }, ft.code),
+          el('span', { class: 'q' }, '×' + ft.quantity),
+          el('span', { class: 'd' }, ft.description)]))));
+    return el('div', { class: 'sys' },
+      el('header', {},
+        el('span', { class: 'mtm' }, sys.mtm),
+        el('span', { class: 'ds' }, sys.description),
+        sys.serial ? el('span', { class: 'tag' }, 's/n ' + sys.serial) : null),
+      ...prods);
+  });
+
+  v.replaceChildren(el('h2', {}, f.name), meta, ...systems);
+}
+
+/* ---------------- compare ---------------- */
+
+function renderCompare() {
+  const v = $('#v-compare');
+  if (files.length < 2) return v.replaceChildren(el('div', { class: 'empty' }, '비교하려면 파일이 2개 이상 필요합니다.'));
+
+  const mk = id => el('select', { id }, ...files.map(f => el('option', { value: f.id }, f.name)));
+  const a = mk('cmp-a'), b = mk('cmp-b');
+  a.value = files[0].id; b.value = files[1].id;
+  const out = el('div');
+  const run = async () => {
+    if (a.value === b.value) return out.replaceChildren(el('div', { class: 'empty' }, '서로 다른 파일을 고르세요.'));
+    const r = await api(`/diff?a=${a.value}&b=${b.value}`);
+    if (!r.rows.length) return out.replaceChildren(el('div', { class: 'note ok' }, 'feature code 구성이 동일합니다.'));
+    out.replaceChildren(
+      el('p', { class: 'sub' }, `${r.rows.length}개 feature code가 다릅니다`),
+      el('div', { class: 'scroll' }, el('table', {},
+        el('thead', {}, el('tr', {},
+          ...['MTM', 'FC', r.a, r.b, '증감', '설명'].map(h => el('th', {}, h)))),
+        el('tbody', {}, ...r.rows.map(x => el('tr', { class: x.delta > 0 ? 'up' : 'down' },
+          el('td', { class: 'm' }, x.mtm),
+          el('td', { class: 'm' }, x.code),
+          el('td', { class: 'm' }, x.left),
+          el('td', { class: 'm' }, x.right),
+          el('td', { class: 'm' }, (x.delta > 0 ? '+' : '') + x.delta),
+          el('td', {}, x.description)))))));
+  };
+  a.onchange = b.onchange = run;
+  v.replaceChildren(
+    el('h2', {}, '구성 비교'),
+    el('p', { class: 'sub' }, 'feature code 단위로 두 구성의 수량 차이를 냅니다.'),
+    el('div', { class: 'row' },
+      el('div', {}, el('label', {}, '기준'), a),
+      el('div', {}, el('label', {}, '대상'), b)),
+    out);
+  run();
+}
+
+/* ---------------- generate ---------------- */
+
+async function renderGen() {
+  const v = $('#v-gen');
+  if (!files.length) return v.replaceChildren(el('div', { class: 'empty' }, '템플릿으로 쓸 .cfr을 먼저 추가하세요.'));
+
+  const tpl = el('select', {}, ...files.map(f => el('option', { value: f.id }, f.name)));
+  tpl.value = current ?? files[0].id;
+  const prod = el('select', {});
+  const mode = el('select', {},
+    el('option', { value: 'merge' }, 'merge — 지정한 코드만 바꾸고 나머지는 유지'),
+    el('option', { value: 'replace' }, 'replace — 지정한 코드만 남기고 전부 제거'));
+  const body = el('tbody');
+  const out = el('div');
+  const specBox = el('pre', { class: 'spec' });
+
+  let summary = null;                 // inspect of the chosen template
+  const edits = new Map();            // CODE -> {qty, description, base}
+
+  const readSpec = () => ({
+    template: files.find(f => f.id === tpl.value)?.name,
+    products: [{
+      mtm: prod.value,
+      mode: mode.value,
+      features: Object.fromEntries([...edits].map(([code, e]) =>
+        [code, e.description ? { qty: e.qty, description: e.description } : e.qty])),
+    }],
+  });
+
+  const paintSpec = () => { specBox.textContent = JSON.stringify(readSpec(), null, 2); };
+
+  function paintRows() {
+    const p = summary.products.find(x => x.mtm === prod.value);
+    const rows = p.features.map(f => {
+      const inp = el('input', { type: 'number', min: '0', step: '1', value: f.quantity, style: 'width:78px' });
+      inp.oninput = () => {
+        const q = Number(inp.value);
+        if (q === f.quantity) edits.delete(f.code); else edits.set(f.code, { qty: q, base: f.quantity });
+        inp.classList.toggle('dirty', q !== f.quantity);
+        paintSpec();
+      };
+      return el('tr', {},
+        el('td', { class: 'm' }, f.code),
+        el('td', {}, f.description),
+        el('td', { class: 'm', style: 'color:var(--muted)' }, f.quantity),
+        el('td', {}, inp));
+    });
+
+    // one extra row for a code the template does not carry
+    const nc = el('input', { placeholder: 'EB46', style: 'width:88px;text-transform:uppercase' });
+    const nq = el('input', { type: 'number', min: '1', step: '1', value: '1', style: 'width:78px' });
+    const nd = el('input', { placeholder: '설명 (선택)', style: 'width:100%' });
+    const add = el('button', { class: 'go alt' }, '추가');
+    add.onclick = () => {
+      const code = nc.value.trim().toUpperCase();
+      if (!code) return;
+      edits.set(code, { qty: Number(nq.value), description: nd.value.trim() || undefined, base: 0 });
+      nc.value = ''; nd.value = ''; nq.value = '1';
+      paintRows(); paintSpec();
+    };
+    for (const [code, e] of edits) {
+      if (p.features.some(f => f.code === code)) continue;
+      rows.push(el('tr', { class: 'up' },
+        el('td', { class: 'm' }, code),
+        el('td', {}, e.description || el('span', { style: 'color:var(--muted)' }, '설명 없음 — 엔진이 채움')),
+        el('td', { class: 'm', style: 'color:var(--muted)' }, '—'),
+        el('td', { class: 'm' }, '×' + e.qty)));
+    }
+    rows.push(el('tr', {},
+      el('td', {}, nc), el('td', {}, nd), el('td', {}, ''), el('td', {}, nq, ' ', add)));
+    body.replaceChildren(...rows);
+  }
+
+  async function loadTemplate() {
+    summary = await api(`/files/${tpl.value}/inspect`);
+    edits.clear();
+    prod.replaceChildren(...summary.products.map(p =>
+      el('option', { value: p.mtm }, `${p.mtm} — ${p.description.slice(0, 40)}`)));
+    paintRows(); paintSpec(); out.replaceChildren();
+  }
+  tpl.onchange = loadTemplate;
+  prod.onchange = () => { edits.clear(); paintRows(); paintSpec(); out.replaceChildren(); };
+  mode.onchange = paintSpec;
+
+  const go = el('button', { class: 'go' }, 'CFR 생성');
+  go.onclick = async () => {
+    go.disabled = true;
+    try {
+      const r = await api('/generate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ templateId: tpl.value, spec: readSpec() }),
+      });
+      const bin = Uint8Array.from(atob(r.cfr), c => c.charCodeAt(0));
+      const url = URL.createObjectURL(new Blob([bin], { type: 'application/octet-stream' }));
+      const dl = el('a', { href: url, download: r.name, class: 'go' });
+      dl.style.cssText = 'text-decoration:none;display:inline-block';
+      dl.textContent = '↓  ' + r.name;
+      const lines = r.report.products.flatMap(p => p.applied.map(a =>
+        el('div', {}, `${p.mtm}  ${a.from === 0 ? 'add ' : a.to === 0 ? 'drop' : 'set '}  ${a.code}  ${a.from} → ${a.to}`)));
+      out.replaceChildren(
+        el('div', { class: 'note ok' }, lines.length ? lines : '변경 없음'),
+        ...r.report.warnings.map(w => el('div', { class: 'note' }, w)),
+        dl);
+    } catch (e) {
+      out.replaceChildren(el('div', { class: 'note err' }, e.message));
+    } finally { go.disabled = false; }
+  };
+
+  v.replaceChildren(
+    el('h2', {}, '스펙으로 CFR 생성'),
+    el('p', { class: 'sub' },
+      '검증된 구성을 템플릿으로 삼아 feature code 수량을 스펙대로 바꿉니다. ' +
+      '템플릿에는 엔진이 넣은 필수 부속과 유효한 문서 헤더가 이미 들어 있습니다.'),
+    el('div', { class: 'row' },
+      el('div', { style: 'flex:1;min-width:200px' }, el('label', {}, '템플릿'), tpl),
+      el('div', { style: 'flex:1;min-width:200px' }, el('label', {}, '제품'), prod),
+      el('div', { style: 'flex:1;min-width:240px' }, el('label', {}, '모드'), mode),
+      go),
+    el('div', { class: 'scroll' }, el('table', {},
+      el('thead', {}, el('tr', {}, ...['FC', '설명', '현재', '새 수량'].map(h => el('th', {}, h)))),
+      body)),
+    el('div', { class: 'note' },
+      el('b', {}, '검증 안 됨. '),
+      '호환성·전원·슬롯·가격은 재계산되지 않고, 엔진 상태 블롭(레코드 06)과 체크섬(레코드 99)도 갱신되지 않습니다. ',
+      'e-config에 올려 reconcile을 거친 뒤에 쓰세요.'),
+    out,
+    el('h2', { style: 'margin-top:24px' }, '스펙 JSON'),
+    el('p', { class: 'sub' }, 'CLI에서 재사용: ', el('code', {}, 'node bin/econfig.mjs gen spec.json')),
+    specBox);
+
+  await loadTemplate();
+}
+
+/* ---------------- edit ---------------- */
+
+async function renderEdit() {
+  const v = $('#v-edit');
+  if (!current) return v.replaceChildren(el('div', { class: 'empty' }, '먼저 파일을 선택하세요.'));
+  const s = await api(`/files/${current}/inspect`);
+  const f = files.find(x => x.id === current);
+
+  const codes = [...new Map(s.products.flatMap(p =>
+    p.features.map(ft => [ft.code, { ...ft, uid: p.uid, mtm: p.mtm }]))).values()];
+
+  const code = el('select', {}, ...codes.map(c =>
+    el('option', { value: c.code }, `${c.code}  ×${c.quantity}  ${c.description.slice(0, 48)}`)));
+  const qty = el('input', { type: 'number', min: '0', step: '1', value: '1', style: 'width:90px' });
+  const scope = el('select', {},
+    el('option', { value: '' }, '해당 코드를 가진 모든 제품'),
+    ...s.products.map(p => el('option', { value: p.uid }, `${p.mtm} — ${p.description.slice(0, 40)}`)));
+  const sync = () => { qty.value = codes.find(c => c.code === code.value)?.quantity ?? 1; };
+  code.onchange = sync; sync();
+
+  const out = el('div');
+  const go = el('button', { class: 'go' }, '수정본 만들기');
+  go.onclick = async () => {
+    go.disabled = true;
+    try {
+      const r = await api(`/files/${current}/set`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ code: code.value, quantity: Number(qty.value), product: scope.value }),
+      });
+      const bin = Uint8Array.from(atob(r.cfr), c => c.charCodeAt(0));
+      const url = URL.createObjectURL(new Blob([bin], { type: 'application/octet-stream' }));
+      const dl = el('a', { href: url, download: r.name, class: 'go' });
+      dl.style.cssText = 'text-decoration:none;display:inline-block';
+      dl.textContent = '↓  ' + r.name;
+      out.replaceChildren(
+        el('div', { class: 'note ok' },
+          ...r.applied.map(a => el('div', {}, `${a.uid} — ${a.code}  ${a.from} → ${a.to}`))),
+        dl);
+    } catch (e) {
+      out.replaceChildren(el('div', { class: 'note err' }, e.message));
+    } finally { go.disabled = false; }
+  };
+
+  v.replaceChildren(
+    el('h2', {}, '수량 수정 — ' + f.name),
+    el('p', { class: 'sub' }, '검증된 구성을 템플릿 삼아 feature code 수량만 바꿉니다.'),
+    el('div', { class: 'row' },
+      el('div', {}, el('label', {}, 'feature code'), code),
+      el('div', {}, el('label', {}, '수량'), qty),
+      el('div', { style: 'flex:1;min-width:220px' }, el('label', {}, '적용 범위'), scope),
+      go),
+    el('div', { class: 'note' },
+      el('b', {}, '검증 안 됨. '),
+      '수정본은 BOM(레코드 08)만 바뀌고 엔진 상태 블롭(레코드 06)은 예전 수량 그대로입니다. ',
+      '체크섬(레코드 99)도 빠집니다. 호환성·가격은 재계산되지 않으니 ',
+      'e-config에 올려 reconcile로 확인하기 전까지 주문에 쓰지 마세요.'),
+    out);
+}
+
+/* ---------------- spec ---------------- */
+
+async function renderSpec() {
+  const v = $('#v-spec');
+  const spec = await api('/spec');
+  const items = Object.entries(spec).sort(([a], [b]) => a.localeCompare(b)).map(([code, rec]) => {
+    const rows = (rec.map || []).map(([from, to, name, opts]) =>
+      `${String(from).padStart(5)}-${String(to).toString().padEnd(5)} (${String(to - from + 1).padStart(3)})  ${name}` +
+      (opts && Object.keys(opts).length ? '   ' + JSON.stringify(opts) : '')).join('\n');
+    return el('details', { class: 'rec' },
+      el('summary', {},
+        el('span', { class: 'id' }, code),
+        el('span', { class: 'n' }, rec.name || ''),
+        el('span', { class: 'k' }, `${(rec.map || []).length} fields`)),
+      el('pre', {}, rows));
+  });
+  v.replaceChildren(
+    el('h2', {}, '고정폭 레코드 규격'),
+    el('p', { class: 'sub' }, '.cfr 레코드 타입별 컬럼 맵. 번들에서 추출한 원본 정의입니다.'),
+    ...items);
+}
+
+/* ---------------- wiring ---------------- */
+
+function renderAll() {
+  const active = document.querySelector('nav button.on').dataset.v;
+  ({ inspect: renderInspect, compare: renderCompare, gen: renderGen, edit: renderEdit, spec: renderSpec })[active]()
+    ?.catch?.(e => alert(e.message));
+}
+
+function showTab(name) {
+  const btn = document.querySelector(`nav button[data-v="${name}"]`) || document.querySelector('nav button');
+  document.querySelectorAll('nav button').forEach(x => x.classList.toggle('on', x === btn));
+  document.querySelectorAll('.view').forEach(x => x.classList.toggle('on', x.id === 'v-' + btn.dataset.v));
+  renderAll();
+}
+document.querySelectorAll('nav button').forEach(b => b.onclick = () => {
+  location.hash = b.dataset.v;          // tabs are deep-linkable
+  showTab(b.dataset.v);
+});
+addEventListener('hashchange', () => showTab(location.hash.slice(1)));
+
+const drop = $('#drop'), pick = $('#pick');
+drop.onclick = () => pick.click();
+pick.onchange = () => { upload(pick.files); pick.value = ''; };
+['dragenter', 'dragover'].forEach(ev => drop.addEventListener(ev, e => {
+  e.preventDefault(); drop.classList.add('hot');
+}));
+['dragleave', 'drop'].forEach(ev => drop.addEventListener(ev, e => {
+  e.preventDefault(); drop.classList.remove('hot');
+}));
+drop.addEventListener('drop', e => upload(e.dataTransfer.files));
+
+api('/files').then(list => {
+  files = list;
+  current = list[0]?.id ?? null;
+  renderFiles();
+  showTab(location.hash.slice(1));
+});
+</script>
+</body>
+</html>

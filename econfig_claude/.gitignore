@@ -1,0 +1,5 @@
+# IBM's application bundle is fetched at setup time, never committed.
+vendor/
+out/
+work/
+node_modules/

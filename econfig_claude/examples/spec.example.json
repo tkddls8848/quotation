@@ -1,0 +1,22 @@
+{
+  "_comment": [
+    "스펙 → CFR. template은 이 파일 기준 상대경로로 해석된다.",
+    "features 값은 숫자(수량)거나 {qty, description} 객체다.",
+    "mode merge   : 적은 코드만 바꾸고 나머지는 템플릿 그대로 (기본값)",
+    "mode replace : 적은 코드만 남기고 나머지는 전부 제거",
+    "수량 0 = 해당 코드 제거."
+  ],
+  "template": "../work/S1124_1CPU_8c_128GB.cfr",
+  "description": "S1124 384GB / 10GbE 4port",
+  "products": [
+    {
+      "mtm": "9824-42A",
+      "mode": "merge",
+      "features": {
+        "EM54": 6,
+        "EB46": { "qty": 4, "description": "10GbE Optical Transceiver SFP+ SR" },
+        "ECW0": 0
+      }
+    }
+  ]
+}
