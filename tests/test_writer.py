@@ -102,8 +102,11 @@ def test_template_header_passes_through(tmp_path):
 def test_total_sheet_keeps_template_drawings(tmp_path):
     """TOTAL 시트 상단의 로고·머리글 도형이 남아 있어야 한다.
 
-    openpyxl 은 저장 시 그림을 버린다. 이것이 빠지면 첫 장 상단이 비어 보인다.
-    상세 시트와 숨김 template 시트에는 골든과 마찬가지로 그림이 없어야 한다.
+    openpyxl 은 저장 시 도형을 버린다. 이것이 빠지면 첫 장 상단이 비어 보인다.
+    상세 시트에는 골든과 마찬가지로 그림이 없어야 한다.
+
+    숨김 template 시트까지 비었는지는 Pillow 유무에 따라 갈리므로
+    `tests/test_bytes_api.py` 가 따로 본다.
     """
     import re
     import zipfile
@@ -115,10 +118,13 @@ def test_total_sheet_keeps_template_drawings(tmp_path):
         drawn = sorted(n for n in names
                        if n.startswith("xl/worksheets/sheet")
                        and re.search(rb"<drawing\s", z.read(n)))
+        shapes = sum(z.read(n).count(b"<xdr:sp ") for n in names
+                     if n.startswith("xl/drawings/drawing"))
 
     assert media, "템플릿의 로고 이미지가 옮겨지지 않았다"
-    assert drawn == ["xl/worksheets/sheet1.xml"], (
-        f"그림은 TOTAL(sheet1)에만 있어야 한다: {drawn}")
+    assert "xl/worksheets/sheet1.xml" in drawn, f"TOTAL(sheet1)에 그림이 없다: {drawn}"
+    assert shapes, "머리글 도형이 옮겨지지 않았다 (openpyxl 은 도형을 만들지 못한다)"
+    assert "xl/worksheets/sheet2.xml" not in drawn, f"상세 시트에 그림이 남았다: {drawn}"
 
 
 @pytest.mark.parametrize("name,today", CASES)

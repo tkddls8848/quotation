@@ -16,7 +16,7 @@ env:
 
 jobs:
   core:
-    name: 공용 코어 · 데스크톱 · Worker 테스트 (lxml ${{ matrix.lxml }})
+    name: 공용 코어 · 데스크톱 · Worker · eConfig 테스트 (lxml ${{ matrix.lxml }})
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
