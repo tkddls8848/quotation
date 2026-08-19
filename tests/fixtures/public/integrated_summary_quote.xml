@@ -1,0 +1,183 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  공개 fixture — 레노버 x86 구성 + DCSC 요약표 (통합 모드, 익명화).
+
+  `integrated_quote.xml` 과 같은 구성에 `SectionData/GroupData` 를 얹었다.
+  요약표가 있으면 품목별 실금액을 적고 하드웨어는 남는 값으로 잡는다
+  (`quotation/core/dcsc_summary.py`).
+
+  GroupData 는 base64 로 적은 gzip XML 이라 눈으로 읽을 수 없다. 담긴 내용은
+  다음과 같다. 고칠 일이 생기면 아래 표대로 XML 을 짓고 다시 눌러 담는다.
+
+      python -c "import base64,gzip,sys;
+                 print(base64.b64encode(gzip.compress(
+                     open(sys.argv[1],'rb').read(), mtime=0)).decode())" summary.xml
+
+  구성 CFG-1  (그룹 1000 · 백업서버_1식)      본체 LP 40,172,000 = SimplePrice
+      7XXXCTO1WW  hardware   29,041,000
+      7SXXCTOBWW  hipo        5,440,001   <- 실금액 5,440,000 + 자리표 1
+      5WS7C00001  service     5,691,000
+                             ==========
+                             40,172,001 - 자리표 1 = 40,172,000
+
+  구성 CFG-2  (그룹 4000 · 메일/스펨_2식)     본체 LP 42,812,000 = SimplePrice
+      7XXXCTO1WW  hardware   41,971,000
+      5PS7C00002  service        841,000   <- 소프트웨어가 없어 자리표도 없다
+
+  랙(그룹 6000)은 요약표에 없다. 본체 없는 그룹이라 제 금액을 그대로 갖는다.
+
+  실데이터가 아니며 품번·금액은 모두 가공값이다.
+-->
+<CFXML>
+  <CFData>
+    <ProductLineItem>
+      <ProductLineNumber>1000</ProductLineNumber>
+      <CPUSIUvalue>1</CPUSIUvalue>
+      <TransactionType>NEW</TransactionType>
+      <ProprietaryGroupIdentifier>1000</ProprietaryGroupIdentifier>
+      <Quantity>1</Quantity>
+      <ProductIdentification>
+        <PartnerProductIdentification>
+          <ProductDescription>SampleSystem SX100 V4-3yr Base Warranty</ProductDescription>
+          <ProductName>백업서버_1식</ProductName>
+          <ProductTypeCode>Hardware</ProductTypeCode>
+          <ProprietaryProductIdentifier>7XXX-CTO1WW</ProprietaryProductIdentifier>
+        </PartnerProductIdentification>
+      </ProductIdentification>
+      <UnitListPrice>
+        <FinancialAmount>
+          <GlobalCurrencyCode>KWON</GlobalCurrencyCode>
+          <MonetaryAmount>4.0172E7</MonetaryAmount>
+        </FinancialAmount>
+        <PriceTerm>0</PriceTerm>
+      </UnitListPrice>
+      <ProductSubLineItem>
+        <TransactionType>ADD</TransactionType>
+        <Quantity>2</Quantity>
+        <ProductIdentification>
+          <PartnerProductIdentification>
+            <ProductDescription>Sample 32GB Memory Module</ProductDescription>
+            <ProductTypeCode>Hardware</ProductTypeCode>
+            <ProprietaryProductIdentifier>AC01</ProprietaryProductIdentifier>
+          </PartnerProductIdentification>
+        </ProductIdentification>
+        <UnitListPrice>
+          <FinancialAmount>
+            <MonetaryAmount>0</MonetaryAmount>
+          </FinancialAmount>
+        </UnitListPrice>
+      </ProductSubLineItem>
+    </ProductLineItem>
+    <ProductLineItem>
+      <ProductLineNumber>2000</ProductLineNumber>
+      <CPUSIUvalue>1</CPUSIUvalue>
+      <TransactionType>NEW</TransactionType>
+      <ProprietaryGroupIdentifier>1000</ProprietaryGroupIdentifier>
+      <Quantity>1</Quantity>
+      <ProductIdentification>
+        <PartnerProductIdentification>
+          <ProductDescription>Sample Linux Subscription</ProductDescription>
+          <ProductName>software1</ProductName>
+          <ProductTypeCode>Software</ProductTypeCode>
+          <ProprietaryProductIdentifier>7SXX-CTOBWW</ProprietaryProductIdentifier>
+        </PartnerProductIdentification>
+      </ProductIdentification>
+      <UnitListPrice>
+        <FinancialAmount>
+          <MonetaryAmount>1</MonetaryAmount>
+        </FinancialAmount>
+      </UnitListPrice>
+    </ProductLineItem>
+    <ProductLineItem>
+      <ProductLineNumber>3000</ProductLineNumber>
+      <CPUSIUvalue>0</CPUSIUvalue>
+      <TransactionType>NEW</TransactionType>
+      <ProprietaryGroupIdentifier>1000</ProprietaryGroupIdentifier>
+      <Quantity>1</Quantity>
+      <ProductIdentification>
+        <PartnerProductIdentification>
+          <ProductDescription>3Yr Premier 24x7 4Hr Resp SX100</ProductDescription>
+          <ProductTypeCode>Services</ProductTypeCode>
+          <ProprietaryProductIdentifier>5WS7C00001</ProprietaryProductIdentifier>
+        </PartnerProductIdentification>
+      </ProductIdentification>
+      <UnitListPrice>
+        <FinancialAmount>
+          <MonetaryAmount>5691000.0</MonetaryAmount>
+        </FinancialAmount>
+      </UnitListPrice>
+    </ProductLineItem>
+    <ProductLineItem>
+      <ProductLineNumber>4000</ProductLineNumber>
+      <CPUSIUvalue>1</CPUSIUvalue>
+      <TransactionType>NEW</TransactionType>
+      <ProprietaryGroupIdentifier>4000</ProprietaryGroupIdentifier>
+      <Quantity>2</Quantity>
+      <ProductIdentification>
+        <PartnerProductIdentification>
+          <ProductDescription>SampleSystem SX100 V4-3yr Base Warranty</ProductDescription>
+          <ProductName>메일/스펨_2식</ProductName>
+          <ProductTypeCode>Hardware</ProductTypeCode>
+          <ProprietaryProductIdentifier>7XXX-CTO1WW</ProprietaryProductIdentifier>
+        </PartnerProductIdentification>
+      </ProductIdentification>
+      <UnitListPrice>
+        <FinancialAmount>
+          <MonetaryAmount>4.2812E7</MonetaryAmount>
+        </FinancialAmount>
+      </UnitListPrice>
+    </ProductLineItem>
+    <ProductLineItem>
+      <ProductLineNumber>5000</ProductLineNumber>
+      <CPUSIUvalue>0</CPUSIUvalue>
+      <TransactionType>NEW</TransactionType>
+      <ProprietaryGroupIdentifier>4000</ProprietaryGroupIdentifier>
+      <Quantity>2</Quantity>
+      <ProductIdentification>
+        <PartnerProductIdentification>
+          <ProductDescription>3Yr Keep Your Drive SX100</ProductDescription>
+          <ProductTypeCode>Services</ProductTypeCode>
+          <ProprietaryProductIdentifier>5PS7C00002</ProprietaryProductIdentifier>
+        </PartnerProductIdentification>
+      </ProductIdentification>
+      <UnitListPrice>
+        <FinancialAmount>
+          <MonetaryAmount>841000.0</MonetaryAmount>
+        </FinancialAmount>
+      </UnitListPrice>
+    </ProductLineItem>
+    <ProductLineItem>
+      <ProductLineNumber>6000</ProductLineNumber>
+      <CPUSIUvalue>0</CPUSIUvalue>
+      <TransactionType>NEW</TransactionType>
+      <ProprietaryGroupIdentifier>6000</ProprietaryGroupIdentifier>
+      <Quantity>2</Quantity>
+      <ProductIdentification>
+        <PartnerProductIdentification>
+          <ProductDescription>Sample 42U Deep Static Rack</ProductDescription>
+          <ProductTypeCode>Hardware</ProductTypeCode>
+          <ProprietaryProductIdentifier>90000PX</ProprietaryProductIdentifier>
+        </PartnerProductIdentification>
+      </ProductIdentification>
+      <UnitListPrice>
+        <FinancialAmount>
+          <MonetaryAmount>8960000.0</MonetaryAmount>
+        </FinancialAmount>
+      </UnitListPrice>
+    </ProductLineItem>
+  </CFData>
+  <SectionData>
+    <GroupData>
+      H4sIAAAAAAAC/9VWX2+bMBB/76fwF4ixKRmNhHhounXTKi0a1ZI+TR5cO2sBu7ZJk28/A0nwVkLQ
+      qqnpE7673/0x97uTo1TkeAmFWAnMntgvKDTmAqf363yJc5HBEmtIDRcFvlailFfMsPgMoeihkm64
+      NpVk5Y44THKs4LEEbRrnBmrBPIspIZFnvztVwXKIp6K45w+IRl4t7mxSiaxMjd4pBqb7Ppo1jq1f
+      k3v64XpE3ezbkBnE4WKxmN5+ofN55NUKF5GBThWX1d+IE5bLJSQbbSBHycJeB30LRucbhS6ZBjRn
+      SrHCbCLPdXKDPZbWzs0mtpXszy5AKp5C7OMJCej7MPIa2UWUBTezv1CtzkWajYT4J1PZE1MQebX4
+      LJd2VVaZ8OqKz4K1Drc2zKesuoArdkLjABMa+p33sBjvQK4t2u2894+t/3+USWrKXA6kDLrhRblG
+      Sfljb3kxScZBQAjxMelnSQOjFayPJlyKV6EI7az/jbNjPE/CKal++xF2nN8pNFOQc1DID9YhCj4q
+      9BW0bLbLyznybmLDkKMcaWE9HNGgVtZwkCbeSbTEP5kd7/e2JsB0Eh7d8S3qdHe8f0Hf9o4/QJnx
+      bDvF/oAp/gwg0Z0oFbpSfAWD57efJBfBkPFtUa86vVWRf77ZIl05FLYcW9v+fDY8R/3q9JxnZ6fb
+      8bfrb2OpY9DyCgAA
+    </GroupData>
+  </SectionData>
+</CFXML>
