@@ -7,7 +7,7 @@ from pathlib import Path
 
 from lxml import etree
 
-from . import integrated, modes
+from . import dcsc_summary, integrated, modes
 from .models import Group, LineItem, Quotation, SubLineItem
 from .money import parse_amount
 from .naming import item_key, safe_sheet_name, sheet_name, unique_sheet_names
@@ -90,7 +90,9 @@ def _reference_names(items: list[LineItem]) -> list[str]:
 
 
 def _build_groups(items: list[LineItem], reference_names: list[str],
-                  mode: str = modes.DEFAULT) -> tuple[Group, ...]:
+                  mode: str = modes.DEFAULT,
+                  summary: dcsc_summary.Summary | None = None,
+                  ) -> tuple[Group, ...]:
     """ProprietaryGroupIdentifier 로 묶는다. 문서 등장 순서를 유지한다.
 
     증설 견적일 때만 두 가지 보정이 붙는다.
@@ -103,7 +105,9 @@ def _build_groups(items: list[LineItem], reference_names: list[str],
 
     통합 모드는 여기서 두 가지가 갈린다 (근거는 `integrated.py`).
       - 장비 이름을 ProductName 에서 딴다.
-      - 본체 LP 에 이미 들어 있는 소프트웨어·서비스 금액을 비운다.
+      - 본체 LP 에 이미 들어 있는 소프트웨어·서비스 금액을 갈라 놓는다.
+        요약표(`summary`)를 읽었으면 품목별 실금액을 적고, 못 읽었으면 금액
+        칸을 비운다. 장비군 합계는 어느 쪽이든 본체 LP 그대로다.
       - 시트명의 금칙 문자를 걷어 내고 겹치는 이름을 갈라 준다.
     """
     is_upgrade = bool(reference_names)
@@ -131,7 +135,7 @@ def _build_groups(items: list[LineItem], reference_names: list[str],
     for index, gid in enumerate(merged):
         members = tuple(buckets[gid])
         if is_integrated:
-            members = integrated.fold_prices(members)
+            members = integrated.fold_prices(members, summary)
             key = integrated.group_key(members)
         elif index < len(reference_names):
             key = reference_names[index]
@@ -291,5 +295,9 @@ def _build(root, mode: str = modes.DEFAULT) -> Quotation:
     if not quoted:
         raise QuotationXmlError("견적서 작성을 위한 Item을 찾을 수 없습니다.")
 
+    # 요약표는 문서 하나에 한 벌이고 장비군에 한 번씩 짝지어 쓴다. 통합 모드가
+    # 아니면 읽지 않는다 — UNIX 경로는 한 줄도 달라지지 않는다.
+    summary = dcsc_summary.parse(root) if mode == modes.INTEGRATED else None
+
     return Quotation(
-        groups=_build_groups(quoted, _reference_names(all_items), mode))
+        groups=_build_groups(quoted, _reference_names(all_items), mode, summary))

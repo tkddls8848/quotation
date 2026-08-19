@@ -18,7 +18,7 @@ MODES = (UNIX, INTEGRATED)
 DEFAULT = UNIX
 
 #: 화면에 보여 줄 이름.
-LABELS = {UNIX: "UNIX", INTEGRATED: "통합"}
+LABELS = {UNIX: "IBM 제품", INTEGRATED: "통합"}
 
 
 def normalize(raw: str | None) -> str:

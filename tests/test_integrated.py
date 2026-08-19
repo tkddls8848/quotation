@@ -4,10 +4,12 @@
 요약표 대조다. fixture 는 `tests/fixtures/public/integrated_quote.xml` 로,
 실데이터가 아니라 그 구조만 남긴 익명화 자료다.
 
-여기서 지키려는 것은 셋이다.
+여기서 지키려는 것은 넷이다.
   1. UNIX 모드는 한 줄도 달라지지 않는다
   2. 같은 기종 여러 대의 시트명이 겹치지 않는다
   3. 본체 LP 에 이미 들어 있는 소프트웨어·서비스 금액을 두 번 세지 않는다
+  4. 요약표가 있으면 그 금액을 H/W·S/W 구간으로 갈라 적는다. 총액은 그대로다
+     (`integrated_summary_quote.xml`, 규칙은 `tests/test_dcsc_summary.py`)
 """
 from __future__ import annotations
 
@@ -191,3 +193,52 @@ def test_detail_sheet_software_total_is_zero(workbook):
     # S/W 구간의 단위가 칸은 비어 있다
     for row in range(software_total - 2, software_total):
         assert detail[f"F{row}"].value is None
+
+
+# --- 요약표가 있는 문서 ---------------------------------------------------------
+
+@pytest.fixture(scope="module")
+def split(fixtures):
+    """같은 구성에 DCSC 요약표(SectionData/GroupData)를 얹은 문서."""
+    return xml_reader.parse_bytes(
+        (fixtures / "integrated_summary_quote.xml").read_bytes(),
+        mode=modes.INTEGRATED)
+
+
+def test_summary_prices_each_line_on_its_own(split):
+    """하드웨어는 남는 값, 소프트웨어·서비스는 제 금액이다."""
+    assert [i.unit_price for i in split.groups[0].items] == [
+        Decimal("29041000"), Decimal("5440000"), Decimal("5691000")]
+
+
+def test_summary_does_not_move_the_group_total(split, integrated):
+    """갈라 적어도 장비군 합계는 요약표를 읽기 전과 같다."""
+    assert [g.amount() for g in split.groups] == [
+        g.amount() for g in integrated.groups]
+
+
+def test_summary_leaves_the_parts_only_group_alone(split):
+    rack = split.groups[2]
+    assert [i.unit_price for i in rack.items] == [Decimal("8960000")]
+
+
+@pytest.fixture(scope="module")
+def split_workbook(split, template_bytes):
+    xlsx = ibm_writer.build_bytes(split, template_bytes, today=TODAY)
+    return load_workbook(BytesIO(xlsx))
+
+
+def test_total_sheet_splits_the_hardware_and_software_sections(split_workbook):
+    total = split_workbook["TOTAL"]
+    assert total["G8"].value == 29041000        # H/W 구간 = 본체 - (SW + 서비스)
+    assert total["G9"].value == 11131000        # S/W 구간 = 5,440,000 + 5,691,000
+    assert "G9:G10" in {str(r) for r in total.merged_cells.ranges}
+
+
+def test_detail_sheet_shows_the_software_unit_price(split_workbook):
+    detail = split_workbook["백업서버_1식"]
+    labels = {c.value: c.row for c in detail["C"] if isinstance(c.value, str)}
+    software_total = labels[ibm_writer.LBL_SW_TOTAL]
+    prices = [detail[f"F{row}"].value
+              for row in range(software_total - 2, software_total)]
+    assert prices == [5440000, 5691000]

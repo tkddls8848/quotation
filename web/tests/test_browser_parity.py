@@ -51,6 +51,8 @@ CASES = (
     ("euckr_quote.xml", ""),
     # 통합 모드도 브라우저와 CPython 이 같은 바이트를 내야 한다.
     ("integrated_quote.xml", "integrated"),
+    # 요약표를 푸는 길(base64+gzip)도 브라우저에서 같아야 한다.
+    ("integrated_summary_quote.xml", "integrated"),
 )
 
 #: 실패도 서버와 같아야 한다. (이름, 내용, 기대 상태)
