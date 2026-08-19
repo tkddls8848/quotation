@@ -1,9 +1,9 @@
 param()
 
 $ErrorActionPreference = "Continue"
-# desktop\tools -> desktop. 배포본은 desktop\dist 에 낸다 (--distpath).
-$desktop = Split-Path -Parent $PSScriptRoot
-$dist = Join-Path $desktop "dist"
+# desktop_ibm\tools -> desktop_ibm. 배포본은 desktop_ibm\dist 에 낸다 (--distpath).
+$desktop_ibm = Split-Path -Parent $PSScriptRoot
+$dist = Join-Path $desktop_ibm "dist"
 $gui = Join-Path $dist "QuotationTool.exe"
 $cli = Join-Path $dist "QuotationTool-cli.exe"
 $templateName = (-join @([char]0xACAC, [char]0xC801, [char]0xC11C)) +

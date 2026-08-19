@@ -30,7 +30,7 @@
 | [`measurements/runtime.md`](measurements/runtime.md) | CPU·판본·크기 실측 |
 
 운영·배포 절차는 문서 폴더가 아니라 코드 옆에 둔다 —
-[`web/README.md`](../web/README.md), [`desktop/README.md`](../desktop/README.md).
+[`web/README.md`](../web/README.md), [`desktop_ibm/README.md`](../desktop_ibm/README.md).
 
 ## 지금 구조
 

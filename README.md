@@ -6,7 +6,7 @@ eConfig Export XML을 기존 견적서 양식의 Excel 파일(`.xlsx`)로 변환
 
 | 실행 방식 | 위치 | 상태 |
 |---|---|---|
-| 데스크톱 앱 (Windows 단일 EXE) | [`desktop/`](desktop/) | 운영 중 |
+| 데스크톱 앱 (Windows 단일 EXE) | [`desktop_ibm/`](desktop_ibm/) | 운영 중 — UNIX(IBM) 전용 |
 | 웹 앱 (Cloudflare Workers) | [`web/`](web/) | 운영 중 — [문서](doc/) |
 
 웹 앱은 **브라우저 안에서** 변환합니다. Cloudflare Workers 무료 계정의 CPU
@@ -50,7 +50,7 @@ quotation/              공용 코어 — Excel·GUI·경로에 의존하지 않
     writer/             openpyxl 기반 견적서 작성 및 도형 보존
   resources/            기준 템플릿 (.xlsx 한 벌이 유일한 원본)
 
-desktop/                데스크톱 전용 — 웹에서 쓰지 않는다
+desktop_ibm/                데스크톱 전용 — 웹에서 쓰지 않는다
   quotation_desktop/    Tkinter 화면, 사용자 설정, 실행 경로
   launcher.py           PyInstaller 진입점
   QuotationTool.spec    단일 EXE 빌드 정의
@@ -72,7 +72,7 @@ doc/                    성격별로 나눈 문서 — 명세·안내·계획·�
 ```
 
 `quotation/`, `tests/`, `tools/` 는 **데스크톱과 웹이 함께 쓰는 공용 자산**
-입니다. 어느 한쪽에 딸린 것이 아니므로 `desktop/` 이나 `web/` 아래로 옮기지
+입니다. 어느 한쪽에 딸린 것이 아니므로 `desktop_ibm/` 이나 `web/` 아래로 옮기지
 않습니다.
 
 경계는 테스트로 지킵니다. `web/tests/test_worker_smoke.py` 는 Worker 층과 공용
@@ -90,7 +90,7 @@ doc/                    성격별로 나눈 문서 — 명세·안내·계획·�
 4. `변환`을 누릅니다.
 
 결과 파일은 **항상 XML 파일과 같은 폴더**에 저장됩니다. 파일명은 XML과 같고
-확장자만 `.xlsx`로 바뀝니다. 자세한 내용은 [desktop/README.md](desktop/README.md).
+확장자만 `.xlsx`로 바뀝니다. 자세한 내용은 [desktop_ibm/README.md](desktop_ibm/README.md).
 
 ## 웹 앱
 
@@ -137,11 +137,11 @@ python -m venv .venv
 # samples\ 의 .xls 골든을 .cache\ 로 변환할 때만 실행 (Excel 필요)
 .\tools\xls2xlsx.ps1
 
-# 데스크톱 EXE 빌드 (산출물은 desktop\dist, 중간물은 desktop\build)
-.\.venv\Scripts\python.exe -m pip install -r desktop\requirements.txt
-.\.venv\Scripts\python.exe -m PyInstaller desktop\QuotationTool.spec --noconfirm --clean `
-    --distpath desktop\dist --workpath desktop\build
-.\desktop\tools\acceptance.ps1
+# 데스크톱 EXE 빌드 (산출물은 desktop_ibm\dist, 중간물은 desktop_ibm\build)
+.\.venv\Scripts\python.exe -m pip install -r desktop_ibm\requirements.txt
+.\.venv\Scripts\python.exe -m PyInstaller desktop_ibm\QuotationTool.spec --noconfirm --clean `
+    --distpath desktop_ibm\dist --workpath desktop_ibm\build
+.\desktop_ibm\tools\acceptance.ps1
 ```
 
 `tests/test_writer.py`는 생성 파일을 골든 견적서와 셀 단위로 비교합니다. 값,

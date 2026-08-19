@@ -1,8 +1,8 @@
 # PyInstaller 빌드 정의 — 무설치 단일 EXE (64bit)
-#   .venv\Scripts\pyinstaller.exe desktop\QuotationTool.spec --noconfirm
+#   .venv\Scripts\pyinstaller.exe desktop_ibm\QuotationTool.spec --noconfirm
 from pathlib import Path
 
-HERE = Path(SPECPATH)          # desktop/
+HERE = Path(SPECPATH)          # desktop_ibm/
 REPO = HERE.parent             # 저장소 루트 (공용 코어 quotation/ 이 있다)
 TEMPLATE = REPO / "quotation" / "resources" / "견적서_template.xlsx"
 

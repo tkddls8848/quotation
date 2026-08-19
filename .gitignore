@@ -4,10 +4,10 @@ __pycache__/
 .pytest_cache/
 .acceptance-tmp/
 
-# 빌드 산출물 — 데스크톱 배포본은 desktop/dist 에 낸다 (폴더만 .gitkeep 으로 남긴다)
+# 빌드 산출물 — 데스크톱 배포본은 desktop_ibm/dist 에 낸다 (폴더만 .gitkeep 으로 남긴다)
 build/
-desktop/dist/*
-!desktop/dist/.gitkeep
+desktop_ibm/dist/*
+!desktop_ibm/dist/.gitkeep
 
 # 골든 .xlsx 변환 캐시 (tools/xls2xlsx.ps1 로 재생성 가능)
 .cache/
@@ -21,7 +21,7 @@ samples/
 
 # 데스크톱 실행 시 자동 생성되는 외부 템플릿
 # (원본은 quotation/resources/견적서_template.xlsx 하나뿐이다)
-desktop/견적서_template.xlsx
+desktop_ibm/견적서_template.xlsx
 
 # QuotationTool.spec 은 직접 작성한 빌드 정의이므로 추적한다.
 # PyInstaller 가 자동 생성하는 spec 만 제외한다.
