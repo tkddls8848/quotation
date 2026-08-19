@@ -20,6 +20,7 @@
 | 문서 | 성격 |
 |---|---|
 | [`spec/SPEC_CELLMAP.md`](spec/SPEC_CELLMAP.md) | 셀 매핑과 검증 기준 |
+| [`spec/SPEC_INTEGRATED.md`](spec/SPEC_INTEGRATED.md) | 통합 모드 (레노버 x86) 해석 규칙 |
 | [`guide/MIGRATION.md`](guide/MIGRATION.md) | 2005년판에서 넘어오는 기존 사용자 안내 |
 | [`plan/web-app-plan.md`](plan/web-app-plan.md) | 웹 앱 구현 계획 (2026-08-14 착수안) |
 | [`decisions/0001-template-in-bundle.md`](decisions/0001-template-in-bundle.md) | 템플릿을 R2 에서 번들로 |

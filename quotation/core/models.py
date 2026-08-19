@@ -54,6 +54,9 @@ class LineItem:
     part_number: str
     description: str
     product_type: str = ""
+    #: ProductName. 구성기에서 사람이 붙인 장비 이름 ('백업서버_1식').
+    #: IBM 문서에는 없거나 비어 있고, 레노버 문서에서 장비군 이름으로 쓴다.
+    product_name: str = ""
     unit_price: Amount = None
     subs: tuple[SubLineItem, ...] = ()
     #: CPUSIUvalue. 1 이면 장비 본체 라인이다 (증설 견적의 장비군 판별에 쓴다).
@@ -84,6 +87,9 @@ class Group:
     item_key: str
     sheet_name: str
     items: tuple[LineItem, ...]
+    #: 상세 시트 C1 에 적을 이름. 시트명과 달리 Excel 금칙 문자를 그대로 둔다
+    #: ('메일/스펨_1식'). 비어 있으면 시트명을 쓴다.
+    title: str = ""
 
     def sections(self) -> tuple[tuple[str, tuple[LineItem, ...]], ...]:
         """TOTAL 시트의 금액 병합 단위. H/W 구간과 S/W 구간이 각각 별도 소계를 가진다.

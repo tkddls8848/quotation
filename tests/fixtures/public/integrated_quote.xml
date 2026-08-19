@@ -1,0 +1,152 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  공개 fixture — 레노버 x86 구성 (통합 모드, 익명화).
+
+  실제 파일에서 통합 모드가 다루어야 하는 것만 남겼다.
+    - 서버 두 대의 ProductDescription 이 같다. 이름은 ProductName 에만 있다
+    - 둘째 서버의 ProductName 에 Excel 시트명 금칙 문자('/')가 있다
+    - 소프트웨어 라인의 MonetaryAmount 는 실제 금액이 아니라 자리표 1 이다
+    - 서비스 금액은 본체 라인 LP 에 이미 들어 있다
+    - 본체 없이 부품만 있는 그룹(랙)은 제 금액을 그대로 갖는다
+
+  실데이터가 아니며 품번·금액은 모두 가공값이다.
+-->
+<CFXML>
+  <CFData>
+    <ProductLineItem>
+      <ProductLineNumber>1000</ProductLineNumber>
+      <CPUSIUvalue>1</CPUSIUvalue>
+      <TransactionType>NEW</TransactionType>
+      <ProprietaryGroupIdentifier>1000</ProprietaryGroupIdentifier>
+      <Quantity>1</Quantity>
+      <ProductIdentification>
+        <PartnerProductIdentification>
+          <ProductDescription>SampleSystem SX100 V4-3yr Base Warranty</ProductDescription>
+          <ProductName>백업서버_1식</ProductName>
+          <ProductTypeCode>Hardware</ProductTypeCode>
+          <ProprietaryProductIdentifier>7XXX-CTO1WW</ProprietaryProductIdentifier>
+        </PartnerProductIdentification>
+      </ProductIdentification>
+      <UnitListPrice>
+        <FinancialAmount>
+          <GlobalCurrencyCode>KWON</GlobalCurrencyCode>
+          <MonetaryAmount>4.0172E7</MonetaryAmount>
+        </FinancialAmount>
+        <PriceTerm>0</PriceTerm>
+      </UnitListPrice>
+      <ProductSubLineItem>
+        <TransactionType>ADD</TransactionType>
+        <Quantity>2</Quantity>
+        <ProductIdentification>
+          <PartnerProductIdentification>
+            <ProductDescription>Sample 32GB Memory Module</ProductDescription>
+            <ProductTypeCode>Hardware</ProductTypeCode>
+            <ProprietaryProductIdentifier>AC01</ProprietaryProductIdentifier>
+          </PartnerProductIdentification>
+        </ProductIdentification>
+        <UnitListPrice>
+          <FinancialAmount>
+            <MonetaryAmount>0</MonetaryAmount>
+          </FinancialAmount>
+        </UnitListPrice>
+      </ProductSubLineItem>
+    </ProductLineItem>
+    <ProductLineItem>
+      <ProductLineNumber>2000</ProductLineNumber>
+      <CPUSIUvalue>1</CPUSIUvalue>
+      <TransactionType>NEW</TransactionType>
+      <ProprietaryGroupIdentifier>1000</ProprietaryGroupIdentifier>
+      <Quantity>1</Quantity>
+      <ProductIdentification>
+        <PartnerProductIdentification>
+          <ProductDescription>Sample Linux Subscription</ProductDescription>
+          <ProductName>software1</ProductName>
+          <ProductTypeCode>Software</ProductTypeCode>
+          <ProprietaryProductIdentifier>7SXX-CTOBWW</ProprietaryProductIdentifier>
+        </PartnerProductIdentification>
+      </ProductIdentification>
+      <UnitListPrice>
+        <FinancialAmount>
+          <MonetaryAmount>1</MonetaryAmount>
+        </FinancialAmount>
+      </UnitListPrice>
+    </ProductLineItem>
+    <ProductLineItem>
+      <ProductLineNumber>3000</ProductLineNumber>
+      <CPUSIUvalue>0</CPUSIUvalue>
+      <TransactionType>NEW</TransactionType>
+      <ProprietaryGroupIdentifier>1000</ProprietaryGroupIdentifier>
+      <Quantity>1</Quantity>
+      <ProductIdentification>
+        <PartnerProductIdentification>
+          <ProductDescription>3Yr Premier 24x7 4Hr Resp SX100</ProductDescription>
+          <ProductTypeCode>Services</ProductTypeCode>
+          <ProprietaryProductIdentifier>5WS7C00001</ProprietaryProductIdentifier>
+        </PartnerProductIdentification>
+      </ProductIdentification>
+      <UnitListPrice>
+        <FinancialAmount>
+          <MonetaryAmount>5691000.0</MonetaryAmount>
+        </FinancialAmount>
+      </UnitListPrice>
+    </ProductLineItem>
+    <ProductLineItem>
+      <ProductLineNumber>4000</ProductLineNumber>
+      <CPUSIUvalue>1</CPUSIUvalue>
+      <TransactionType>NEW</TransactionType>
+      <ProprietaryGroupIdentifier>4000</ProprietaryGroupIdentifier>
+      <Quantity>2</Quantity>
+      <ProductIdentification>
+        <PartnerProductIdentification>
+          <ProductDescription>SampleSystem SX100 V4-3yr Base Warranty</ProductDescription>
+          <ProductName>메일/스펨_2식</ProductName>
+          <ProductTypeCode>Hardware</ProductTypeCode>
+          <ProprietaryProductIdentifier>7XXX-CTO1WW</ProprietaryProductIdentifier>
+        </PartnerProductIdentification>
+      </ProductIdentification>
+      <UnitListPrice>
+        <FinancialAmount>
+          <MonetaryAmount>4.2812E7</MonetaryAmount>
+        </FinancialAmount>
+      </UnitListPrice>
+    </ProductLineItem>
+    <ProductLineItem>
+      <ProductLineNumber>5000</ProductLineNumber>
+      <CPUSIUvalue>0</CPUSIUvalue>
+      <TransactionType>NEW</TransactionType>
+      <ProprietaryGroupIdentifier>4000</ProprietaryGroupIdentifier>
+      <Quantity>2</Quantity>
+      <ProductIdentification>
+        <PartnerProductIdentification>
+          <ProductDescription>3Yr Keep Your Drive SX100</ProductDescription>
+          <ProductTypeCode>Services</ProductTypeCode>
+          <ProprietaryProductIdentifier>5PS7C00002</ProprietaryProductIdentifier>
+        </PartnerProductIdentification>
+      </ProductIdentification>
+      <UnitListPrice>
+        <FinancialAmount>
+          <MonetaryAmount>841000.0</MonetaryAmount>
+        </FinancialAmount>
+      </UnitListPrice>
+    </ProductLineItem>
+    <ProductLineItem>
+      <ProductLineNumber>6000</ProductLineNumber>
+      <CPUSIUvalue>0</CPUSIUvalue>
+      <TransactionType>NEW</TransactionType>
+      <ProprietaryGroupIdentifier>6000</ProprietaryGroupIdentifier>
+      <Quantity>2</Quantity>
+      <ProductIdentification>
+        <PartnerProductIdentification>
+          <ProductDescription>Sample 42U Deep Static Rack</ProductDescription>
+          <ProductTypeCode>Hardware</ProductTypeCode>
+          <ProprietaryProductIdentifier>90000PX</ProprietaryProductIdentifier>
+        </PartnerProductIdentification>
+      </ProductIdentification>
+      <UnitListPrice>
+        <FinancialAmount>
+          <MonetaryAmount>8960000.0</MonetaryAmount>
+        </FinancialAmount>
+      </UnitListPrice>
+    </ProductLineItem>
+  </CFData>
+</CFXML>

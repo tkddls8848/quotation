@@ -12,13 +12,35 @@
       <header class="page__head">
         <h1>견적서 작성기</h1>
         <p class="lede">
-          IBM eServer and TotalStorage — eConfig Export XML 을 견적서 Excel 화일로
-          바꿉니다. 여러 개를 한 번에 고를 수 있고, XML 하나마다
-          <code>.xlsx</code> 하나를 같은 이름으로 내려받습니다.
+          eConfig Export XML 을 견적서 Excel 화일로 바꿉니다. 여러 개를 한 번에
+          고를 수 있고, XML 하나마다 <code>.xlsx</code> 하나를 같은 이름으로
+          내려받습니다.
         </p>
       </header>
 
       <form id="form" novalidate>
+        <fieldset class="mode">
+          <legend class="mode__legend">변환 모드</legend>
+          <div class="mode__choices" role="radiogroup">
+            <label class="mode__choice">
+              <input type="radio" name="mode" value="unix" checked />
+              <span class="mode__name">UNIX</span>
+              <span class="mode__help">
+                IBM eServer and TotalStorage — 지금까지와 같습니다.
+              </span>
+            </label>
+            <label class="mode__choice">
+              <input type="radio" name="mode" value="integrated" />
+              <span class="mode__name">통합</span>
+              <span class="mode__help">
+                레노버 x86 (ThinkSystem) 구성. 장비 이름을 구성기에 적어 넣은
+                이름으로 붙이고, 서버 본체 LP 에 이미 들어 있는 SW·서비스 금액을
+                두 번 세지 않습니다.
+              </span>
+            </label>
+          </div>
+        </fieldset>
+
         <div
           id="dropzone"
           class="dropzone"

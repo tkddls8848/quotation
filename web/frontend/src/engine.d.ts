@@ -12,6 +12,8 @@ export interface EngineUpload {
   content: Uint8Array;
   contentType?: string;
   deploymentVersion?: string;
+  /** 변환 모드. 비우면 UNIX. `web/src/quotation/core/modes.py` 와 같은 값. */
+  mode?: string;
 }
 
 /** 서버의 `POST /api/v1/convert` 응답과 같은 모양. */
@@ -26,6 +28,7 @@ export interface Engine {
   manifest: EngineManifest;
   templateVersion: string;
   today(): string;
+  modes(): string[];
   convert(upload: EngineUpload): EngineResult;
 }
 

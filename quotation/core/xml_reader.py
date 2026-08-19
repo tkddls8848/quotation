@@ -7,9 +7,10 @@ from pathlib import Path
 
 from lxml import etree
 
+from . import integrated, modes
 from .models import Group, LineItem, Quotation, SubLineItem
 from .money import parse_amount
-from .naming import item_key, sheet_name
+from .naming import item_key, safe_sheet_name, sheet_name, unique_sheet_names
 
 # --- 원본 프로그램의 XPath (변경 금지) ---------------------------------------
 XP_CFDATA = "./CFData"
@@ -22,6 +23,7 @@ XP_TXN_TYPE = "./TransactionType"
 XP_GROUP_ID = "./ProprietaryGroupIdentifier"
 XP_QUANTITY = "./Quantity"
 XP_DESC = "./ProductIdentification/PartnerProductIdentification/ProductDescription"
+XP_PRODUCT_NAME = "./ProductIdentification/PartnerProductIdentification/ProductName"
 XP_TYPE_CODE = "./ProductIdentification/PartnerProductIdentification/ProductTypeCode"
 XP_PART_NO = ("./ProductIdentification/PartnerProductIdentification"
               "/ProprietaryProductIdentifier")
@@ -62,6 +64,7 @@ def _parse_line(el) -> LineItem:
         part_number=_text(el, XP_PART_NO),
         description=_text(el, XP_DESC),
         product_type=_text(el, XP_TYPE_CODE),
+        product_name=_text(el, XP_PRODUCT_NAME),
         unit_price=parse_amount(_text(el, XP_AMOUNT) or None),
         subs=tuple(_parse_sub(s) for s in el.findall(XP_SUB_LINE_ITEM)),
         siu=_int(el, XP_SIU, default=0),
@@ -86,8 +89,8 @@ def _reference_names(items: list[LineItem]) -> list[str]:
     return names
 
 
-def _build_groups(items: list[LineItem],
-                  reference_names: list[str]) -> tuple[Group, ...]:
+def _build_groups(items: list[LineItem], reference_names: list[str],
+                  mode: str = modes.DEFAULT) -> tuple[Group, ...]:
     """ProprietaryGroupIdentifier 로 묶는다. 문서 등장 순서를 유지한다.
 
     증설 견적일 때만 두 가지 보정이 붙는다.
@@ -97,8 +100,14 @@ def _build_groups(items: list[LineItem],
 
     신규 견적에서는 합치지 않는다. TS4300 골든의 'No CPUSIU for the following
     products' 그룹은 본체 라인이 없어도 제 장을 갖는다.
+
+    통합 모드는 여기서 두 가지가 갈린다 (근거는 `integrated.py`).
+      - 장비 이름을 ProductName 에서 딴다.
+      - 본체 LP 에 이미 들어 있는 소프트웨어·서비스 금액을 비운다.
+      - 시트명의 금칙 문자를 걷어 내고 겹치는 이름을 갈라 준다.
     """
     is_upgrade = bool(reference_names)
+    is_integrated = mode == modes.INTEGRATED
 
     ordered: list[str] = []
     buckets: dict[str, list[LineItem]] = {}
@@ -117,16 +126,33 @@ def _build_groups(items: list[LineItem],
         else:
             merged.append(gid)
 
-    groups: list[Group] = []
+    keys: list[str] = []
+    members_by_group: list[tuple[LineItem, ...]] = []
     for index, gid in enumerate(merged):
-        members = buckets[gid]
-        if index < len(reference_names):
+        members = tuple(buckets[gid])
+        if is_integrated:
+            members = integrated.fold_prices(members)
+            key = integrated.group_key(members)
+        elif index < len(reference_names):
             key = reference_names[index]
         else:
             key = item_key(members[0].description)
-        groups.append(Group(group_id=gid, item_key=key, sheet_name=sheet_name(key),
-                            items=tuple(members)))
-    return tuple(groups)
+        keys.append(key)
+        members_by_group.append(members)
+
+    if is_integrated:
+        titles = [sheet_name(k) for k in keys]
+        names = unique_sheet_names([safe_sheet_name(k) for k in keys])
+    else:
+        titles = [""] * len(keys)
+        names = [sheet_name(k) for k in keys]
+
+    return tuple(
+        Group(group_id=gid, item_key=key, sheet_name=name, title=title,
+              items=members)
+        for gid, key, name, title, members
+        in zip(merged, keys, names, titles, members_by_group)
+    )
 
 
 def _parser() -> etree.XMLParser:
@@ -189,8 +215,11 @@ def _utf8_equivalent(raw: bytes) -> bytes | None:
         lambda m: f'{m.group(1)}UTF-8{m.group(3)}', text, count=1).encode("utf-8")
 
 
-def parse(source: str | Path) -> Quotation:
+def parse(source: str | Path, *, mode: str = modes.DEFAULT) -> Quotation:
     """eConfig XML 파일 -> Quotation. (데스크톱 경로 입력)
+
+    Args:
+        mode: 문서를 읽는 방식. `modes.UNIX` 또는 `modes.INTEGRATED`.
 
     Raises:
         QuotationXmlError: 로드 실패 또는 필수 노드 누락.
@@ -202,8 +231,8 @@ def parse(source: str | Path) -> Quotation:
             raw = Path(source).read_bytes()
         except OSError:
             raw = b""  # 다시 읽을 수 없으면 처음 오류 그대로 알린다
-        return _build(_retry_as_utf8(raw, exc))
-    return _build(tree.getroot())
+        return _build(_retry_as_utf8(raw, exc), mode)
+    return _build(tree.getroot(), mode)
 
 
 def _retry_as_utf8(raw: bytes, original: "etree.XMLSyntaxError"):
@@ -222,7 +251,7 @@ def _retry_as_utf8(raw: bytes, original: "etree.XMLSyntaxError"):
         f"XML을 로드하는중 장애 발생. 장애코드: {original}") from original
 
 
-def parse_bytes(data: bytes) -> Quotation:
+def parse_bytes(data: bytes, *, mode: str = modes.DEFAULT) -> Quotation:
     """eConfig XML 바이트 -> Quotation. (웹 업로드 입력)
 
     파일시스템을 건드리지 않는다. 인코딩은 XML 선언을 따르므로 UTF-8 과
@@ -239,10 +268,10 @@ def parse_bytes(data: bytes) -> Quotation:
         root = etree.fromstring(raw, _parser())
     except etree.XMLSyntaxError as exc:
         root = _retry_as_utf8(raw, exc)
-    return _build(root)
+    return _build(root, mode)
 
 
-def _build(root) -> Quotation:
+def _build(root, mode: str = modes.DEFAULT) -> Quotation:
     """파싱된 문서 뿌리 -> Quotation. 경로 입력과 바이트 입력의 공통 경로다."""
     if etree.QName(root).localname != "CFXML":
         raise QuotationXmlError("CFXML을 찾을수 없습니다.")
@@ -262,4 +291,5 @@ def _build(root) -> Quotation:
     if not quoted:
         raise QuotationXmlError("견적서 작성을 위한 Item을 찾을 수 없습니다.")
 
-    return Quotation(groups=_build_groups(quoted, _reference_names(all_items)))
+    return Quotation(
+        groups=_build_groups(quoted, _reference_names(all_items), mode))

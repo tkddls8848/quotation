@@ -16,7 +16,7 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Callable
 
-from . import resources, xml_reader
+from . import modes, resources, xml_reader
 from .models import Quotation
 from .writer import ibm_writer
 
@@ -68,14 +68,18 @@ def line_count(quote: Quotation) -> int:
 
 def convert_bytes(xml_bytes: bytes, template_bytes: bytes, *,
                   today: dt.date | None = None,
-                  source_name: str = "quotation.xml") -> ConversionResult:
+                  source_name: str = "quotation.xml",
+                  mode: str = modes.DEFAULT) -> ConversionResult:
     """XML 바이트 -> 견적서 .xlsx 바이트.
+
+    Args:
+        mode: 문서를 읽는 방식 (`quotation.core.modes`).
 
     Raises:
         xml_reader.QuotationXmlError: XML 문제
     """
     started = time.perf_counter()
-    quote = xml_reader.parse_bytes(xml_bytes)
+    quote = xml_reader.parse_bytes(xml_bytes, mode=mode)
     xlsx = ibm_writer.build_bytes(quote, template_bytes, today=today)
     return ConversionResult(
         xlsx=xlsx,
@@ -88,11 +92,13 @@ def convert_bytes(xml_bytes: bytes, template_bytes: bytes, *,
 
 def convert(xml_path: str | Path, *, template: str | Path | None = None,
             today: dt.date | None = None,
-            progress: ProgressFn = _noop) -> Result:
+            progress: ProgressFn = _noop,
+            mode: str = modes.DEFAULT) -> Result:
     """XML -> 견적서 .xlsx. 저장 위치는 XML 과 같은 폴더로 고정이다.
 
     Args:
         template: 쓸 템플릿 경로. 생략하면 저장소의 기준 템플릿을 쓴다.
+        mode: 문서를 읽는 방식 (`quotation.core.modes`).
 
     Raises:
         xml_reader.QuotationXmlError: XML 문제
@@ -103,7 +109,7 @@ def convert(xml_path: str | Path, *, template: str | Path | None = None,
     template = Path(template) if template else resources.default_template_path()
 
     progress(5, "XML화일을 읽고 있습니다.")
-    quote = xml_reader.parse(xml_path)
+    quote = xml_reader.parse(xml_path, mode=mode)
 
     progress(35, "XML화일 분석을 완료하였습니다.")
     out = output_path_for(xml_path)

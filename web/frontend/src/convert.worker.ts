@@ -23,6 +23,8 @@ export type WorkerRequest =
       content: Uint8Array;
       contentType: string;
       deploymentVersion: string;
+      /** UNIX/통합 토글. 판단은 파이썬이 다시 한다. */
+      mode: string;
     };
 
 export type WorkerMessage =
@@ -74,6 +76,7 @@ self.addEventListener('message', (event: MessageEvent<WorkerRequest>) => {
         content: request.content,
         contentType: request.contentType,
         deploymentVersion: request.deploymentVersion,
+        mode: request.mode,
       });
       // 본문은 복사하지 않고 넘긴다.
       post(

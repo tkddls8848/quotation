@@ -165,8 +165,10 @@ def _write_detail_sheet(ws: Worksheet, group: Group, today: dt.date):
     lay = Layout(first_row=FIRST_DATA_ROW, fix_header_bottom=True,
                  blue_includes_label=True, top_black=True)
 
-    _put(ws, "C1", f"({group.sheet_name})", fmt=FMT_TEXT, align=CENTER_WRAP,
-         font=FONT_TITLE)
+    # 시트명은 Excel 금칙 문자를 걷어 낸 이름이다. 제목에는 사람이 붙인
+    # 이름을 그대로 적는다 ('메일/스펨_1식'). UNIX 모드는 둘이 같다.
+    _put(ws, "C1", f"({group.title or group.sheet_name})", fmt=FMT_TEXT,
+         align=CENTER_WRAP, font=FONT_TITLE)
     _put(ws, "C3", today.isoformat(), fmt=FMT_TEXT, align=LEFT, font=FONT_DATE)
 
     row = FIRST_DATA_ROW

@@ -1,6 +1,6 @@
-# 견적서 작성기 (IBM Quotation Tool)
+# 견적서 작성기 (Quotation Tool)
 
-IBM eConfig Export XML을 기존 견적서 양식의 Excel 파일(`.xlsx`)로 변환합니다.
+eConfig Export XML을 기존 견적서 양식의 Excel 파일(`.xlsx`)로 변환합니다.
 2005년 VB6 프로그램 `pConvertXMLtoExcel`을 다시 구현했으며, 지금은 **같은 변환
 코어를 두 가지 방식으로 제공**합니다.
 
@@ -18,6 +18,20 @@ IBM eConfig Export XML을 기존 견적서 양식의 Excel 파일(`.xlsx`)로 �
 - 증설 견적의 제거 부품은 음수 수량과 빨간 글씨로 표시합니다.
 - 기존 양식의 로고와 머리말 도형을 보존합니다.
 
+## 변환 모드
+
+구성 파일을 만든 구성기에 따라 값의 뜻이 달라집니다. 웹 화면 위쪽의
+`변환 모드` 토글에서 고릅니다. 기본값은 `UNIX` 입니다.
+
+| 모드 | 대상 | 무엇이 다른가 |
+|---|---|---|
+| `UNIX` | IBM eServer and TotalStorage — eConfig Export | 지금까지와 같습니다 |
+| `통합` | 레노버 x86 (Lenovo DCSC) | 장비 이름을 구성기에 적어 넣은 이름(`ProductName`)으로 붙이고, 서버 본체 LP 에 이미 들어 있는 SW·서비스 금액을 두 번 세지 않습니다 |
+
+`통합` 모드의 근거와 규칙은
+[doc/spec/SPEC_INTEGRATED.md](doc/spec/SPEC_INTEGRATED.md) 에 있습니다.
+데스크톱 앱은 아직 `UNIX` 모드만 씁니다.
+
 ## 저장소 구조
 
 앱(데스크톱)과 웹 파일은 섞이지 않습니다. 변환 규칙만 공용 코어에 한 벌 둡니다.
@@ -28,7 +42,9 @@ quotation/              공용 코어 — Excel·GUI·경로에 의존하지 않
     xml_reader.py       eConfig XML 파서 (경로·바이트 입력, XXE 차단, 인코딩 처리)
     models.py           견적 데이터 모델
     money.py            금액 파싱 (콤마, N/C, Decimal)
-    naming.py           종목 키 및 시트명 생성
+    naming.py           종목 키 및 시트명 생성 (Excel 금칙 문자·중복 정리 포함)
+    modes.py            변환 모드 (UNIX / 통합)
+    integrated.py       통합 모드 전용 해석 규칙 — 레노버 x86 구성 파일
     convert.py          변환 오케스트레이션 (convert / convert_bytes)
     resources.py        기준 템플릿 위치
     writer/             openpyxl 기반 견적서 작성 및 도형 보존

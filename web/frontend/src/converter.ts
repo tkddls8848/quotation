@@ -32,6 +32,8 @@ interface Pending {
 export interface ConvertOptions {
   signal: AbortSignal;
   onStage?: (stage: Stage) => void;
+  /** 화면의 UNIX/통합 토글. 비우면 파이썬이 UNIX 로 본다. */
+  mode?: string;
 }
 
 /** 브라우저 엔진이 뜬 적이 있는지. 화면이 안내 문구를 고르는 데 쓴다. */
@@ -70,7 +72,7 @@ export class Converter {
     }
 
     options.onStage?.('서버로 변환하는 중…');
-    return convertOnServer(file, options.signal);
+    return convertOnServer(file, options.signal, options.mode);
   }
 
   /** 취소. Pyodide 는 도중에 끊을 수 없으므로 일꾼을 통째로 내린다. */
@@ -108,6 +110,7 @@ export class Converter {
               content,
               contentType: file.type,
               deploymentVersion,
+              mode: options.mode ?? '',
             },
             [content.buffer],
           );

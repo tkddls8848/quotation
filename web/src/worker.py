@@ -33,8 +33,8 @@ async def _read_bytes(entry) -> bytes:
     return bytes(await entry.bytes())
 
 
-async def _uploads(request, request_id: str) -> list[api.Upload]:
-    """multipart/form-data 의 파일 필드를 읽는다.
+async def _uploads(request, request_id: str) -> tuple[list[api.Upload], str]:
+    """multipart/form-data 의 파일 필드와 변환 모드를 읽는다.
 
     **여기 이름은 `workers` SDK 의 파이썬 API 다.** SDK 는 JS Request 를 파이썬
     `Request` 로, FormData 를 `FormData` 로, 파일을 `File` 로 감싸서 넘긴다.
@@ -57,6 +57,9 @@ async def _uploads(request, request_id: str) -> list[api.Upload]:
     try:
         form = await request.form_data()
         entries = form.get_all("file")
+        # 화면의 UNIX/통합 토글. `get_all` 만 쓴다 — SDK 의 FormData 에 어떤
+        # 이름이 있는지는 위 대응표에서 확인된 것만 믿는다.
+        chosen = form.get_all("mode")
     except Exception as exc:  # 깨진 multipart
         # 무엇 때문에 막혔는지는 로그에 남긴다. 예전에는 이 자리에서 삼킨
         # AttributeError 가 사용자 문구 하나로만 보여, 모든 변환이 실패하는데도
@@ -75,7 +78,10 @@ async def _uploads(request, request_id: str) -> list[api.Upload]:
             content=await _read_bytes(entry),
             content_type=getattr(entry, "content_type", "") or "",
         ))
-    return found
+
+    # 모드 필드가 없으면 지금까지의 동작(UNIX)이다. 값 검사는 api 층이 한다.
+    mode = chosen[0] if chosen and isinstance(chosen[0], str) else ""
+    return found, mode
 
 
 def _js_response(result: api.ApiResponse, request_id: str) -> Response:
@@ -151,7 +157,7 @@ class Default(WorkerEntrypoint):
                 origin=request.headers.get("origin"),
                 sec_fetch_site=request.headers.get("sec-fetch-site"),
             )
-            uploads = await _uploads(request, request_id)
+            uploads, mode = await _uploads(request, request_id)
             result = api.convert_response(
                 uploads,
                 template_bytes=template.template_bytes(),
@@ -160,6 +166,7 @@ class Default(WorkerEntrypoint):
                 request_id=request_id,
                 # 견적 날짜는 Worker 의 UTC 가 아니라 Asia/Seoul 기준으로 한 번만 정한다
                 today=clock.seoul_today(),
+                mode=mode,
             )
             return _js_response(result, request_id)
 
