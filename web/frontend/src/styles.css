@@ -1,28 +1,17 @@
 :root {
-  color-scheme: light dark;
-  --bg: #f6f7f9;
-  --surface: #ffffff;
-  --text: #16181d;
-  --muted: #5c6270;
-  --line: #d7dbe2;
-  --accent: #1f5fbf;
-  --accent-text: #ffffff;
-  --danger: #b3261e;
-  --danger-bg: #fdeceb;
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --bg: #14161a;
-    --surface: #1d2026;
-    --text: #eceef2;
-    --muted: #a2a9b8;
-    --line: #333944;
-    --accent: #6ea8fe;
-    --accent-text: #10131a;
-    --danger: #ff8a80;
-    --danger-bg: #3a1f1d;
-  }
+  /* 다크 한 가지만 쓴다. 밝은 화면으로 되돌아가지 않는다. */
+  color-scheme: dark;
+  --bg: #12141a;
+  --surface: #1b1f27;
+  --text: #e7eaf0;
+  --muted: #99a1b3;
+  --line: #2f3542;
+  --accent: #7aa2f7;
+  --accent-text: #10131a;
+  --danger: #ff8f85;
+  --danger-bg: #3a1f1d;
+  --ok: #6fcf97;
+  accent-color: var(--accent);
 }
 
 * {
@@ -280,7 +269,8 @@ button:focus-visible {
   list-style: none;
   margin: 0.75rem 0 0;
   padding: 0;
-  border: 1px solid var(--line, #d5d8dc);
+  background: var(--surface);
+  border: 1px solid var(--line);
   border-radius: 6px;
   max-height: 18rem;
   overflow-y: auto;
@@ -292,7 +282,7 @@ button:focus-visible {
   gap: 0.75rem;
   align-items: center;
   padding: 0.4rem 0.7rem;
-  border-top: 1px solid var(--line, #d5d8dc);
+  border-top: 1px solid var(--line);
   font-size: 0.9rem;
 }
 
@@ -307,27 +297,27 @@ button:focus-visible {
 }
 
 .queue__size {
-  color: #6b7076;
+  color: var(--muted);
   font-variant-numeric: tabular-nums;
 }
 
 .queue__state {
   min-width: 4.5rem;
   text-align: right;
-  color: #6b7076;
+  color: var(--muted);
 }
 
 .queue__item[data-state='working'] .queue__state {
-  color: #1b5fb8;
+  color: var(--accent);
   font-weight: 600;
 }
 
 .queue__item[data-state='done'] .queue__state {
-  color: #1f7a3d;
+  color: var(--ok);
 }
 
 .queue__item[data-state='failed'] .queue__state {
-  color: #b3261e;
+  color: var(--danger);
   font-weight: 600;
 }
 

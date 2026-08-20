@@ -11,6 +11,7 @@ from tkinter import filedialog, messagebox, ttk
 from quotation.core import convert
 from quotation.core.xml_reader import QuotationXmlError
 
+from . import theme
 from .. import config as config_mod
 from .. import paths
 
@@ -21,6 +22,7 @@ XML_FILETYPES = [("XML 화일", "*.xml"), ("모든 화일", "*.*")]
 
 class MainWindow(ttk.Frame):
     def __init__(self, master: tk.Tk, prefill: str | None = None):
+        theme.apply(master)
         super().__init__(master, padding=12)
         self.master = master
         self.cfg = config_mod.load()
@@ -49,7 +51,7 @@ class MainWindow(ttk.Frame):
         self.columnconfigure(1, weight=1)
         row = 0
 
-        header = ttk.Label(self, text=SUBTITLE, foreground="#555")
+        header = ttk.Label(self, text=SUBTITLE, style="Muted.TLabel")
         header.grid(row=row, column=0, columnspan=3, sticky="w", pady=(0, 10))
         row += 1
 
@@ -61,8 +63,8 @@ class MainWindow(ttk.Frame):
         row += 1
 
         ttk.Label(self, text="견적서는 XML 과 같은 폴더에 저장됩니다.",
-                  foreground="#777").grid(row=row, column=1, sticky="w",
-                                          padx=6, pady=(4, 8))
+                  style="Muted.TLabel").grid(row=row, column=1, sticky="w",
+                                             padx=6, pady=(4, 8))
         row += 1
 
         options = ttk.Frame(self)
@@ -75,9 +77,9 @@ class MainWindow(ttk.Frame):
         # 직접 고친다. 그래서 템플릿을 바로 열 수 있게 해 둔다.
         tmpl = ttk.Frame(self)
         tmpl.grid(row=row, column=0, columnspan=3, sticky="ew", pady=(0, 10))
-        ttk.Label(tmpl, text="템플릿", foreground="#777").pack(side="left")
+        ttk.Label(tmpl, text="템플릿", style="Muted.TLabel").pack(side="left")
         ttk.Label(tmpl, textvariable=self.template_label,
-                  foreground="#777").pack(side="left", padx=(6, 10))
+                  style="Muted.TLabel").pack(side="left", padx=(6, 10))
         ttk.Button(tmpl, text="템플릿 열기(견적번호·담당자 수정)",
                    command=self._open_template).pack(side="left")
         row += 1
@@ -212,6 +214,7 @@ def _open(path: Path):
 def run(prefill: str | None = None) -> int:
     root = tk.Tk()
     root.title(TITLE)
+    root.configure(background=theme.BG)
     root.minsize(620, 300)
     root.call("tk", "scaling", 1.3)
     MainWindow(root, prefill)
