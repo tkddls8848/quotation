@@ -4,6 +4,8 @@ Cloudflare 계정 한도보다 작게 잡는다. 실제 샘플 분포를 재고 
 """
 from __future__ import annotations
 
+from quotation.core.xml_reader import MAX_QUOTATION_ITEMS
+
 MiB = 1024 * 1024
 
 #: 업로드 XML 한 개의 최대 크기
@@ -19,9 +21,9 @@ MAX_FILE_COUNT = 1
 #: 때 브라우저가 멎지 않도록 막는다.
 MAX_BATCH_FILES = 50
 
-#: 파싱 전 싸게 걸러 낼 ProductLineItem 등장 횟수 상한.
+#: 파싱 전 싸게 걸러 낼 ProductLineItem + ProductSubLineItem 합계 상한.
 #: DOM 을 만들기 전에 비정상 문서를 떨어뜨려 메모리 폭주를 막는다.
-MAX_LINE_ITEMS = 5_000
+MAX_LINE_ITEMS = MAX_QUOTATION_ITEMS
 
 #: 장비군(=상세 시트) 수. Excel 시트 폭증을 막는다.
 MAX_GROUPS = 200

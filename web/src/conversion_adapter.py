@@ -38,7 +38,9 @@ def normalize_mode(raw: str | None) -> str:
         raise errors.invalid_request("변환 모드가 올바르지 않습니다.") from exc
 
 _SHEET_NAME_RE = re.compile(rb'<sheet\b[^>]*\bname="([^"]*)"')
-_LINE_ITEM_RE = re.compile(rb"<ProductLineItem[\s>]")
+_QUOTATION_ITEM_RE = re.compile(
+    rb"<(?:ProductLineItem|ProductSubLineItem)[\s>]"
+)
 
 
 def _sheet_names(xlsx: bytes) -> list[str]:
@@ -75,9 +77,15 @@ def _guard_document_size(xml_bytes: bytes) -> None:
             f"XML 화일은 {limits.MAX_UPLOAD_BYTES // limits.MiB} MiB 까지 올릴 수 있습니다.")
     if not xml_bytes.strip():
         raise errors.invalid_request("빈 화일입니다.")
-    if len(_LINE_ITEM_RE.findall(xml_bytes)) > limits.MAX_LINE_ITEMS:
+    if len(_QUOTATION_ITEM_RE.findall(xml_bytes)) > limits.MAX_LINE_ITEMS:
         raise errors.invalid_quotation_xml(
             f"구성 품목이 너무 많습니다. (최대 {limits.MAX_LINE_ITEMS:,}건)")
+
+
+def _item_count(quote) -> int:
+    """실제 견적에 포함될 상위·서브 품목의 합계."""
+    return sum(1 + len(item.subs)
+               for group in quote.groups for item in group.items)
 
 
 def _guard_output(xlsx: bytes, group_count: int) -> None:
@@ -122,6 +130,9 @@ def convert_upload(*, xml_bytes: bytes, template_bytes: bytes,
     if len(quote.groups) > limits.MAX_GROUPS:
         raise errors.invalid_quotation_xml(
             f"장비군이 너무 많습니다. (최대 {limits.MAX_GROUPS}개)")
+    if _item_count(quote) > limits.MAX_LINE_ITEMS:
+        raise errors.invalid_quotation_xml(
+            f"구성 품목이 너무 많습니다. (최대 {limits.MAX_LINE_ITEMS:,}건)")
 
     try:
         xlsx = ibm_writer.build_bytes(quote, template_bytes, today=today)

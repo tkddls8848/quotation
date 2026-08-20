@@ -29,6 +29,11 @@ XP_PART_NO = ("./ProductIdentification/PartnerProductIdentification"
               "/ProprietaryProductIdentifier")
 XP_AMOUNT = "./UnitListPrice/FinancialAmount/MonetaryAmount"
 
+#: 상위 라인과 서브라인을 합친 문서 전체 품목 수 상한. 웹의 바이트 사전 검사는
+#: 빠른 1차 방어이고, 이 검사는 UTF-16처럼 원문 정규식으로 세기 어려운 문서와
+#: 데스크톱 경로까지 함께 보호한다.
+MAX_QUOTATION_ITEMS = 5_000
+
 
 class QuotationXmlError(Exception):
     """XML 이 견적서 생성 요건을 만족하지 않을 때. 메시지는 원본 프로그램과 동일하다."""
@@ -287,6 +292,12 @@ def _build(root, mode: str = modes.DEFAULT) -> Quotation:
     elements = cfdata.findall(XP_LINE_ITEM)
     if not elements:
         raise QuotationXmlError("견적서 작성을 위한 Item을 찾을 수 없습니다.")
+    item_count = len(elements) + sum(
+        len(element.findall(XP_SUB_LINE_ITEM)) for element in elements
+    )
+    if item_count > MAX_QUOTATION_ITEMS:
+        raise QuotationXmlError(
+            f"구성 품목이 너무 많습니다. (최대 {MAX_QUOTATION_ITEMS:,}건)")
 
     all_items = [_parse_line(e) for e in elements]
     # 증설 견적은 기존(BASE)·증설후(PROPOSED) 구성을 참조용으로 함께 담는다.

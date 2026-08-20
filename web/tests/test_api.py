@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import datetime as dt
+import re
 import zipfile
 from io import BytesIO
 
@@ -93,6 +94,27 @@ def test_success_is_logged_without_sensitive_fields(fixtures, template_bytes):
     assert "SAMPLE" not in dumped, "제품 정보가 로그에 남았다"
 
 
+def test_xml_text_is_never_written_as_an_excel_formula(fixtures, template_bytes):
+    body = (fixtures / "new_quote.xml").read_bytes()
+    body = re.sub(
+        rb"<ProductDescription>.*?</ProductDescription>",
+        b"<ProductDescription>=1+1</ProductDescription>",
+        body,
+        count=1,
+    )
+    upload = api.Upload(filename="formula.xml", content=body,
+                        content_type="text/xml")
+
+    res = _convert([upload], template_bytes)
+
+    assert res.status == 200
+    wb = load_workbook(BytesIO(res.body), data_only=False)
+    detail = wb[wb.sheetnames[1]]
+    for cell in (wb["TOTAL"]["B8"], wb["TOTAL"]["D8"], detail["D8"]):
+        assert cell.value == "=1+1"
+        assert cell.data_type == "s"
+
+
 # --- 입력 오류 ----------------------------------------------------------------
 
 def _error(res: api.ApiResponse) -> dict:
@@ -162,6 +184,29 @@ def test_too_many_line_items_is_rejected_before_parsing(template_bytes):
             + b"<ProductLineItem></ProductLineItem>" * (limits.MAX_LINE_ITEMS + 1)
             + b"</CFData></CFXML>")
     res = _convert([api.Upload(filename="a.xml", content=body,
+                               content_type="text/xml")], template_bytes)
+    assert res.status == 422
+    assert "품목이 너무 많습니다" in _error(res)["message"]
+
+
+def test_too_many_sub_line_items_is_rejected_before_parsing(template_bytes):
+    sub = b"<ProductSubLineItem><Quantity>1</Quantity></ProductSubLineItem>"
+    body = (b"<CFXML><CFData><ProductLineItem>" +
+            sub * limits.MAX_LINE_ITEMS +
+            b"</ProductLineItem></CFData></CFXML>")
+    res = _convert([api.Upload(filename="a.xml", content=body,
+                               content_type="text/xml")], template_bytes)
+    assert res.status == 422
+    assert "품목이 너무 많습니다" in _error(res)["message"]
+
+
+def test_too_many_utf16_items_is_rejected_after_parsing(template_bytes):
+    """바이트 정규식이 볼 수 없는 UTF-16 문서도 코어 제한에서 막혀야 한다."""
+    sub = "<ProductSubLineItem><Quantity>1</Quantity></ProductSubLineItem>"
+    text = ("<CFXML><CFData><ProductLineItem>" +
+            sub * limits.MAX_LINE_ITEMS +
+            "</ProductLineItem></CFData></CFXML>")
+    res = _convert([api.Upload(filename="a.xml", content=text.encode("utf-16"),
                                content_type="text/xml")], template_bytes)
     assert res.status == 422
     assert "품목이 너무 많습니다" in _error(res)["message"]

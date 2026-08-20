@@ -71,6 +71,18 @@ def _put(ws: Worksheet, coord: str, value, *, fmt: str | None = None,
     return cell
 
 
+def _put_xml_text(ws: Worksheet, coord: str, value: str, **kwargs):
+    """XML에서 온 문자열을 Excel 수식이 아닌 일반 텍스트로 기록한다.
+
+    openpyxl은 ``=``로 시작하는 문자열을 자동으로 수식으로 분류한다. 품번,
+    설명, 장비 이름은 신뢰할 수 없는 입력이므로 값의 생김새와 관계없이 문자열
+    셀로 고정한다. 내부에서 만드는 합계 수식은 계속 ``_put``을 쓴다.
+    """
+    cell = _put(ws, coord, value, **kwargs)
+    cell.data_type = "s"
+    return cell
+
+
 def _num(value: Decimal):
     """Decimal -> Excel 수치. 정수는 int 로 써야 골든과 일치한다."""
     if value == value.to_integral_value():
@@ -118,8 +130,9 @@ def _write_total_sheet(ws: Worksheet, quote: Quotation, today: dt.date):
         for kind, items in group.sections():
             sec_start = row
             for item in items:
-                _put(ws, f"C{row}", item.part_number, fmt=FMT_TEXT, font=FONT_DATA)
-                _put(ws, f"D{row}", item.description, font=FONT_DATA)
+                _put_xml_text(ws, f"C{row}", item.part_number,
+                              fmt=FMT_TEXT, font=FONT_DATA)
+                _put_xml_text(ws, f"D{row}", item.description, font=FONT_DATA)
                 _put(ws, f"E{row}", item.quantity, font=FONT_DATA)
                 if kind != "Hardware":
                     lay.blue_rows.append(row)
@@ -147,8 +160,8 @@ def _write_total_sheet(ws: Worksheet, quote: Quotation, today: dt.date):
         lay.cf_rows.append(row)
         lay.cyan_rows.append(row)
 
-        _put(ws, f"B{group_start}", group.item_key, align=CENTER_WRAP,
-             font=FONT_DATA_BOLD)
+        _put_xml_text(ws, f"B{group_start}", group.item_key,
+                      align=CENTER_WRAP, font=FONT_DATA_BOLD)
         _merge(merges, "B", group_start, row)
         lay.bands.append((group_start, row))
         row += 1
@@ -231,16 +244,17 @@ def _write_item_block(ws: Worksheet, item: LineItem, row: int, is_hw: bool,
                       lay: Layout) -> int:
     """ProductLineItem 1건과 그 서브라인을 기록한다."""
     base = row
-    _put(ws, f"C{row}", item.part_number, fmt=FMT_TEXT, font=FONT_DATA)
-    _put(ws, f"D{row}", item.description, font=FONT_DATA)
+    _put_xml_text(ws, f"C{row}", item.part_number, fmt=FMT_TEXT, font=FONT_DATA)
+    _put_xml_text(ws, f"D{row}", item.description, font=FONT_DATA)
     _put(ws, f"E{row}", item.quantity, font=FONT_DATA)
     _amount_cell(ws, f"F{row}", item.unit_price, FMT_DETAIL_NUM)
     _write_g(ws, row, item.unit_price)
     row += 1
 
     for sub in item.subs:
-        _put(ws, f"C{row}", sub.part_number, fmt=FMT_TEXT, font=FONT_DATA)
-        _put(ws, f"D{row}", sub.description, font=FONT_DATA)
+        _put_xml_text(ws, f"C{row}", sub.part_number,
+                      fmt=FMT_TEXT, font=FONT_DATA)
+        _put_xml_text(ws, f"D{row}", sub.description, font=FONT_DATA)
         _put(ws, f"E{row}", _sub_quantity(sub, base, item, is_hw),
              font=FONT_DATA)
         _amount_cell(ws, f"F{row}", sub.unit_price, FMT_DETAIL_NUM)
