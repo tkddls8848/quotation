@@ -126,6 +126,15 @@ jobs:
         # lxml·openpyxl 을 Pyodide 대상으로 받아 web/python_modules 에 넣는다.
         # 무료 계정 배포에는 쓰이지 않지만, `--env server` 로 올릴 길이 계속
         # 열려 있는지 여기서 확인한다.
+        #
+        # `pywrangler sync` 는 --env 를 모른다(사용 가능한 옵션이 아니다) — 이
+        # 저장소의 최상위 wrangler.jsonc 는 무료 계정 전제로 Worker 스크립트가
+        # 없어 `python_workers` 플래그도 없으므로, 최상위만 보는 이 명령은
+        # `--env server` 설정과 무관하게 항상 실패한다(workers-py 1.16.6,
+        # 2026-08-14 무렵부터). 아래 "Paid 서버 환경 검사" 가 `wrangler deploy
+        # --dry-run --env server` 로 실제로 필요한 것(그 env 설정이 유효한지)을
+        # 이미 검증하므로, 여기서는 실패해도 배포를 막지 않는다.
+        continue-on-error: true
         run: python3 -m pywrangler sync
         working-directory: web
       - name: 해석된 판본과 번들 크기
