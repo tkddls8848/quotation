@@ -20,6 +20,7 @@ import api
 import clock
 import errors
 import template
+from quotation.core import modes
 
 API_PREFIX = "/api/v1"
 
@@ -140,7 +141,8 @@ class Default(WorkerEntrypoint):
                 api.status_response(
                     request_id,
                     deployment_version=deployment_version,
-                    template_version=template.template_version()),
+                    template_versions={m: template.template_version(m)
+                                      for m in modes.MODES}),
                 request_id)
 
         if path == f"{API_PREFIX}/convert":
@@ -153,10 +155,12 @@ class Default(WorkerEntrypoint):
                 sec_fetch_site=request.headers.get("sec-fetch-site"),
             )
             uploads = await _uploads(request, request_id)
+            # 어느 템플릿을 쓸지는 문서 내용(IBM/레노버)으로 갈리므로 값이 아니라
+            # 함수를 준다 — `api.convert_response` 가 모드를 알아낸 뒤에 부른다.
             result = api.convert_response(
                 uploads,
-                template_bytes=template.template_bytes(),
-                template_version=template.template_version(),
+                template_bytes=template.template_bytes,
+                template_version=template.template_version,
                 deployment_version=deployment_version,
                 request_id=request_id,
                 # 견적 날짜는 Worker 의 UTC 가 아니라 Asia/Seoul 기준으로 한 번만 정한다

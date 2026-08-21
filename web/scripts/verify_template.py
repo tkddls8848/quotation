@@ -1,16 +1,18 @@
 """템플릿 검증과 교체 (결정 decisions/0001).
 
 필수 시트·도형 관계를 보고, 공개 fixture 로 실제 변환까지 해 본 뒤 해시를 찍는다.
+IBM 문서용·레노버 x86 문서용 템플릿이 따로 있으므로 --mode 로 어느 쪽인지 밝힌다.
 
     # 검증만 (지금 저장소의 원본이 성한지)
-    python web/scripts/verify_template.py quotation/resources/견적서_template.xlsx
+    python web/scripts/verify_template.py quotation/resources/견적서_template_IBM.xlsx --mode unix
 
     # 쓰고 계신 양식을 저장소 원본으로 삼기 (검증을 통과해야만 바꾼다)
-    python web/scripts/verify_template.py "<EXE 옆>/견적서_template.xlsx" --adopt
+    python web/scripts/verify_template.py "<EXE 옆>/견적서_template_Lenovo.xlsx" --mode integrated --adopt
 
-`--adopt` 는 검증에 합격한 경우에만 `quotation/resources/견적서_template.xlsx`
-를 덮고, 파생물(Worker 번들·브라우저 엔진)까지 다시 만든다. 데스크톱과 웹이
-같은 양식을 쓰게 하는 유일한 방법이며, 되돌리려면 그 커밋을 되돌린다.
+`--adopt` 는 검증에 합격한 경우에만 그 모드의 저장소 원본
+(`quotation/resources/견적서_template_{IBM,Lenovo}.xlsx`)을 덮고, 파생물(Worker
+번들·브라우저 엔진)까지 다시 만든다. 데스크톱과 웹이 같은 양식을 쓰게 하는
+유일한 방법이며, 되돌리려면 그 커밋을 되돌린다.
 
 종료 코드: 0 = 합격, 1 = 불합격
 """
@@ -28,6 +30,7 @@ sys.path[:0] = [str(ROOT), str(ROOT / "web" / "src")]
 
 import conversion_adapter  # noqa: E402
 import errors  # noqa: E402
+from quotation.core.resources import TEMPLATE_NAMES  # noqa: E402
 
 FIXTURES = ROOT / "tests" / "fixtures" / "public"
 
@@ -75,23 +78,25 @@ def verify(path: Path) -> int:
     return 0
 
 
-TEMPLATE_ORIGINAL = ROOT / "quotation" / "resources" / "견적서_template.xlsx"
+def template_original(mode: str) -> Path:
+    return ROOT / "quotation" / "resources" / TEMPLATE_NAMES[mode]
 
 
-def adopt(source: Path) -> int:
-    """검증을 통과한 템플릿을 저장소 원본으로 삼고 파생물을 다시 만든다."""
+def adopt(source: Path, mode: str) -> int:
+    """검증을 통과한 템플릿을 그 모드의 저장소 원본으로 삼고 파생물을 다시 만든다."""
     import subprocess
 
+    original = template_original(mode)
     incoming = source.read_bytes()
-    current = TEMPLATE_ORIGINAL.read_bytes() if TEMPLATE_ORIGINAL.is_file() else b""
+    current = original.read_bytes() if original.is_file() else b""
     if incoming == current:
-        print(f"\n이미 같은 양식입니다. 바꿀 것이 없습니다 ({TEMPLATE_ORIGINAL}).")
+        print(f"\n이미 같은 양식입니다. 바꿀 것이 없습니다 ({original}).")
         return 0
 
-    print(f"\n저장소 원본 교체: {TEMPLATE_ORIGINAL}")
+    print(f"\n저장소 원본 교체: {original}")
     print(f"  이전 sha256: {hashlib.sha256(current).hexdigest() if current else '(없음)'}")
     print(f"  이후 sha256: {hashlib.sha256(incoming).hexdigest()}")
-    TEMPLATE_ORIGINAL.write_bytes(incoming)
+    original.write_bytes(incoming)
 
     # 파생물을 다시 만들지 않으면 Worker 번들과 브라우저 엔진이 옛 양식을 쥔다.
     for script in ("sync_core.py", "build_browser_engine.py"):
@@ -105,14 +110,16 @@ def adopt(source: Path) -> int:
 
     print("\n교체 완료. 이어서 확인하십시오:")
     print("  python -m pytest -q")
-    print("  git add quotation/resources/견적서_template.xlsx && git commit")
-    print("\n양식 원본은 이 파일 하나뿐입니다. 따로 맞춰 둘 곳은 없습니다.")
+    print(f"  git add {original.relative_to(ROOT).as_posix()} && git commit")
+    print("\n양식 원본은 모드마다 이 파일 하나씩입니다. 따로 맞춰 둘 곳은 없습니다.")
     return 0
 
 
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("template", type=Path, help="검증할 .xlsx 템플릿")
+    parser.add_argument("--mode", required=True, choices=sorted(TEMPLATE_NAMES),
+                        help="이 템플릿이 어느 문서용인지 (unix=IBM, integrated=레노버 x86)")
     parser.add_argument("--adopt", action="store_true",
                         help="합격하면 저장소 원본으로 삼고 파생물을 다시 만든다")
     args = parser.parse_args()
@@ -122,7 +129,7 @@ def main() -> int:
     code = verify(args.template)
     if code != 0 or not args.adopt:
         return code
-    return adopt(args.template.resolve())
+    return adopt(args.template.resolve(), args.mode)
 
 
 if __name__ == "__main__":

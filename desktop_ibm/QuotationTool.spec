@@ -4,7 +4,11 @@ from pathlib import Path
 
 HERE = Path(SPECPATH)          # desktop_ibm/
 REPO = HERE.parent             # 저장소 루트 (공용 코어 quotation/ 이 있다)
-TEMPLATE = REPO / "quotation" / "resources" / "견적서_template.xlsx"
+RESOURCES = REPO / "quotation" / "resources"
+# IBM 문서용·레노버 x86 문서용 두 템플릿 다 번들에 넣는다
+# (quotation.core.resources.TEMPLATE_NAMES 와 같은 값).
+TEMPLATES = [RESOURCES / "견적서_template_IBM.xlsx",
+            RESOURCES / "견적서_template_Lenovo.xlsx"]
 
 a = Analysis(
     [str(HERE / "launcher.py")],
@@ -12,7 +16,7 @@ a = Analysis(
     pathex=[str(HERE), str(REPO)],
     binaries=[],
     # 템플릿을 번들에 넣는다. paths.resource_dir() 가 sys._MEIPASS/resources 를 본다.
-    datas=[(str(TEMPLATE), "resources")],
+    datas=[(str(t), "resources") for t in TEMPLATES],
     hiddenimports=["quotation_desktop.ui.main_window"],
     hookspath=[],
     runtime_hooks=[],

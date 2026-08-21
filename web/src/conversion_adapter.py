@@ -10,12 +10,21 @@ import datetime as dt
 import re
 import zipfile
 from io import BytesIO
+from typing import Callable, Union
 
 import errors
 import limits
 from quotation.core import convert as core_convert
 from quotation.core.writer import ibm_writer
 from quotation.core.xml_reader import QuotationXmlError, parse_bytes
+
+#: 고정 바이트/문자열을 주거나, 알아낸 모드로 고르는 함수를 줄 수 있다.
+_BytesOrResolver = Union[bytes, Callable[[str], bytes]]
+_StrOrResolver = Union[str, Callable[[str], str]]
+
+
+def _resolve(value, mode: str):
+    return value(mode) if callable(value) else value
 
 #: 템플릿과 산출물에 반드시 있어야 하는 시트
 REQUIRED_SHEETS = ("TOTAL", "template")
@@ -84,13 +93,16 @@ def _guard_output(xlsx: bytes, group_count: int) -> None:
         raise errors.conversion_failed()
 
 
-def convert_upload(*, xml_bytes: bytes, template_bytes: bytes,
+def convert_upload(*, xml_bytes: bytes, template_bytes: _BytesOrResolver,
+                   template_version: _StrOrResolver | None = None,
                    today: dt.date,
                    source_name: str) -> core_convert.ConversionResult:
     """업로드된 XML 바이트 -> 견적서 바이트.
 
     IBM 문서인지 레노버 x86 문서인지는 고를 필요가 없다. 문서 내용으로 알아낸다
-    (`quotation.core.modes.detect`).
+    (`quotation.core.modes.detect`). `template_bytes` 를 고정 값이 아니라
+    `mode -> bytes` 함수로 주면, 알아낸 모드에 맞는 템플릿을 그 뒤에 고른다 —
+    두 문서가 서로 다른 템플릿을 쓸 때 이 자리에서 갈린다.
 
     Raises:
         errors.ApiError: 입력·템플릿·내부 오류를 API 오류로 분류해 던진다.
@@ -100,13 +112,15 @@ def convert_upload(*, xml_bytes: bytes, template_bytes: bytes,
     started = time.perf_counter()
 
     _guard_document_size(xml_bytes)
-    validate_template(template_bytes)
 
     try:
         quote = parse_bytes(xml_bytes)
     except QuotationXmlError as exc:
         # 원본 프로그램과 같은 문구를 그대로 사용자에게 보여 준다.
         raise errors.invalid_quotation_xml(str(exc)) from exc
+
+    resolved_bytes = _resolve(template_bytes, quote.mode)
+    validate_template(resolved_bytes)
 
     if len(quote.groups) > limits.MAX_GROUPS:
         raise errors.invalid_quotation_xml(
@@ -116,7 +130,7 @@ def convert_upload(*, xml_bytes: bytes, template_bytes: bytes,
             f"구성 품목이 너무 많습니다. (최대 {limits.MAX_LINE_ITEMS:,}건)")
 
     try:
-        xlsx = ibm_writer.build_bytes(quote, template_bytes, today=today)
+        xlsx = ibm_writer.build_bytes(quote, resolved_bytes, today=today)
     except errors.ApiError:
         raise
     except Exception as exc:  # 예상하지 못한 실패는 내부 오류로 접는다
@@ -131,4 +145,5 @@ def convert_upload(*, xml_bytes: bytes, template_bytes: bytes,
         line_count=core_convert.line_count(quote),
         elapsed_ms=int((time.perf_counter() - started) * 1000),
         mode=quote.mode,
+        template_version=_resolve(template_version, quote.mode) or "",
     )

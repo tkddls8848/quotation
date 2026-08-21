@@ -6,9 +6,12 @@ $desktop_ibm = Split-Path -Parent $PSScriptRoot
 $dist = Join-Path $desktop_ibm "dist"
 $gui = Join-Path $dist "QuotationTool.exe"
 $cli = Join-Path $dist "QuotationTool-cli.exe"
-$templateName = (-join @([char]0xACAC, [char]0xC801, [char]0xC11C)) +
-    "_template.xlsx"
-$distTemplate = Join-Path $dist $templateName
+$templateBase = -join @([char]0xACAC, [char]0xC801, [char]0xC11C)  # 견적서
+# IBM 문서용·레노버 x86 문서용 두 템플릿 다 첫 실행 때 만들어져야 한다.
+$distTemplates = @(
+    (Join-Path $dist "${templateBase}_template_IBM.xlsx")
+    (Join-Path $dist "${templateBase}_template_Lenovo.xlsx")
+)
 
 $pass = 0
 $fail = 0
@@ -28,8 +31,10 @@ Check "GUI EXE" (Test-Path -LiteralPath $gui)
 Check "GUI EXE size" ((Get-Item -LiteralPath $gui).Length -gt 5MB)
 Check "CLI EXE removed" (-not (Test-Path -LiteralPath $cli))
 
-if (Test-Path -LiteralPath $distTemplate) {
-    Remove-Item -LiteralPath $distTemplate -Force
+foreach ($t in $distTemplates) {
+    if (Test-Path -LiteralPath $t) {
+        Remove-Item -LiteralPath $t -Force
+    }
 }
 
 "`n=== 2. GUI startup"
@@ -44,9 +49,10 @@ Check "GUI process stays running" $running
 $seeded = $false
 for ($i = 0; $i -lt 30 -and -not $seeded; $i++) {
     Start-Sleep -Milliseconds 500
-    $seeded = Test-Path -LiteralPath $distTemplate
+    $seeded = ($distTemplates | ForEach-Object { Test-Path -LiteralPath $_ }) `
+        -notcontains $false
 }
-Check "Template seeding" $seeded
+Check "Template seeding (IBM + Lenovo)" $seeded
 Stop-Process -Name QuotationTool -Force -ErrorAction SilentlyContinue
 
 "`n=== Result: pass $pass / fail $fail"

@@ -19,7 +19,7 @@ const DEFAULT_MESSAGE = '변환에 실패했습니다. 잠시 후 다시 시도�
 
 type WorkerMessage =
   | { kind: 'stage'; stage: string }
-  | { kind: 'ready'; templateVersion: string }
+  | { kind: 'ready' }
   | { kind: 'failed'; id?: number; reason: string }
   | { kind: 'done'; id: number; status: number; headers: Record<string, string>; body: Uint8Array };
 
@@ -44,7 +44,6 @@ export class Converter {
   private onStage: ((stage: Stage) => void) | null = null;
 
   state: EngineState = 'unknown';
-  templateVersion: string | null = null;
 
   /** 사용자가 파일을 고르는 동안 엔진을 미리 띄워 둔다. */
   warmup(): void {
@@ -147,7 +146,6 @@ export class Converter {
     }
     if (message.kind === 'ready') {
       this.state = 'ready';
-      this.templateVersion = message.templateVersion;
       return;
     }
     if (message.kind === 'failed') {

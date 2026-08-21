@@ -6,7 +6,10 @@
     convert()         경로 입력 -> 파일 저장     (데스크톱)
 
 코어는 사용자 설정과 실행 경로 정책을 모른다. 템플릿을 어디서 가져올지는
-호출자(데스크톱은 EXE 옆 편집본, Worker 는 R2 객체)가 정한다.
+호출자(데스크톱은 EXE 옆 편집본, 웹은 빌드 시점에 번들에 담긴 것)가 정한다.
+IBM 문서인지 레노버 x86 문서인지는 파싱 후에야 알 수 있으므로(`modes.detect`),
+템플릿을 고정 값이 아니라 `mode -> 템플릿` 함수로 줄 수도 있다 — 문서를 읽어
+모드를 알아낸 **다음** 그 함수를 불러 템플릿을 고른다.
 """
 from __future__ import annotations
 
@@ -14,7 +17,7 @@ import datetime as dt
 import time
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Callable
+from typing import Callable, Union
 
 from . import resources, xml_reader
 from .models import Quotation
@@ -23,7 +26,16 @@ from .writer import ibm_writer
 #: (진행률 0~100, 상태 메시지)
 ProgressFn = Callable[[int, str], None]
 
+#: 고정 경로/바이트를 주거나, 알아낸 모드로 고르는 함수를 줄 수 있다.
+TemplatePath = Union[str, Path, Callable[[str], Union[str, Path]]]
+TemplateBytes = Union[bytes, Callable[[str], bytes]]
+
 OUTPUT_SUFFIX = ".xlsx"
+
+
+def _resolve(value, mode: str):
+    """고정 값이면 그대로, 함수면 알아낸 모드로 불러 쓴다."""
+    return value(mode) if callable(value) else value
 
 
 @dataclass(frozen=True)
@@ -46,6 +58,8 @@ class ConversionResult:
     elapsed_ms: int
     #: 문서에서 알아낸 읽기 방식 (`modes.UNIX` 또는 `modes.INTEGRATED`). 진단 로그용.
     mode: str = ""
+    #: 실제로 쓴 템플릿의 판본. 호출자가 안 줬으면 빈 문자열.
+    template_version: str = ""
 
 
 def _noop(percent: int, message: str) -> None:
@@ -68,13 +82,15 @@ def line_count(quote: Quotation) -> int:
     return sum(len(g.items) for g in quote.groups)
 
 
-def convert_bytes(xml_bytes: bytes, template_bytes: bytes, *,
+def convert_bytes(xml_bytes: bytes, template_bytes: TemplateBytes | None = None, *,
                   today: dt.date | None = None,
                   source_name: str = "quotation.xml",
                   mode: str = "") -> ConversionResult:
     """XML 바이트 -> 견적서 .xlsx 바이트.
 
     Args:
+        template_bytes: 쓸 템플릿 바이트, 또는 `mode -> bytes` 함수. 생략하면
+            저장소의 기준 템플릿을 문서의 읽기 방식(IBM/레노버)에 맞춰 쓴다.
         mode: 문서를 읽는 방식을 강제로 지정한다 (`quotation.core.modes`).
             비워 두면 문서 내용(IBM/레노버)으로 알아낸다 — 보통은 이쪽을 쓴다.
 
@@ -83,7 +99,9 @@ def convert_bytes(xml_bytes: bytes, template_bytes: bytes, *,
     """
     started = time.perf_counter()
     quote = xml_reader.parse_bytes(xml_bytes, mode=mode)
-    xlsx = ibm_writer.build_bytes(quote, template_bytes, today=today)
+    resolved = (_resolve(template_bytes, quote.mode) if template_bytes is not None
+               else resources.default_template_bytes(quote.mode))
+    xlsx = ibm_writer.build_bytes(quote, resolved, today=today)
     return ConversionResult(
         xlsx=xlsx,
         filename=output_name_for(source_name),
@@ -94,14 +112,15 @@ def convert_bytes(xml_bytes: bytes, template_bytes: bytes, *,
     )
 
 
-def convert(xml_path: str | Path, *, template: str | Path | None = None,
+def convert(xml_path: str | Path, *, template: TemplatePath | None = None,
             today: dt.date | None = None,
             progress: ProgressFn = _noop,
             mode: str = "") -> Result:
     """XML -> 견적서 .xlsx. 저장 위치는 XML 과 같은 폴더로 고정이다.
 
     Args:
-        template: 쓸 템플릿 경로. 생략하면 저장소의 기준 템플릿을 쓴다.
+        template: 쓸 템플릿 경로, 또는 `mode -> 경로` 함수. 생략하면 저장소의
+            기준 템플릿을 문서의 읽기 방식(IBM/레노버)에 맞춰 쓴다.
         mode: 문서를 읽는 방식을 강제로 지정한다 (`quotation.core.modes`).
             비워 두면 문서 내용(IBM/레노버)으로 알아낸다 — 보통은 이쪽을 쓴다.
 
@@ -111,16 +130,18 @@ def convert(xml_path: str | Path, *, template: str | Path | None = None,
     """
     started = dt.datetime.now()
     xml_path = Path(xml_path)
-    template = Path(template) if template else resources.default_template_path()
 
     progress(5, "XML화일을 읽고 있습니다.")
     quote = xml_reader.parse(xml_path, mode=mode)
+
+    resolved_template = Path(_resolve(template, quote.mode)) if template is not None \
+        else resources.default_template_path(quote.mode)
 
     progress(35, "XML화일 분석을 완료하였습니다.")
     out = output_path_for(xml_path)
 
     progress(45, "Excel화일을 생성하고 있습니다.")
-    ibm_writer.write(quote, template, out, today=today)
+    ibm_writer.write(quote, resolved_template, out, today=today)
 
     progress(100, "견적서작성을 완료하였습니다.")
     elapsed = (dt.datetime.now() - started).total_seconds()

@@ -11,6 +11,7 @@ import json
 import re
 import uuid
 from dataclasses import dataclass, field
+from typing import Callable, Mapping
 from urllib.parse import quote as urlquote
 from urllib.parse import urlsplit
 
@@ -128,10 +129,15 @@ def config_response(request_id: str) -> ApiResponse:
 
 
 def status_response(request_id: str, *, deployment_version: str,
-                    template_version: str) -> ApiResponse:
-    """`GET /api/v1/status` — 배포 버전과 활성 템플릿 버전만."""
+                    template_versions: Mapping[str, str]) -> ApiResponse:
+    """`GET /api/v1/status` — 배포 버전과 모드별 활성 템플릿 버전.
+
+    Args:
+        template_versions: `{"unix": "sha256-…", "integrated": "sha256-…"}` —
+            IBM 문서와 레노버 x86 문서는 템플릿이 서로 달라 판본도 둘이다.
+    """
     return json_response(200, {"deployment_version": deployment_version,
-                               "template_version": template_version},
+                               "template_versions": dict(template_versions)},
                          request_id=request_id,
                          log={"outcome": "ok", "status": 200})
 
@@ -157,18 +163,23 @@ def pick_upload(uploads: list[Upload]) -> Upload:
                   content_type=upload.content_type)
 
 
-def convert_response(uploads: list[Upload], *, template_bytes: bytes,
-                     template_version: str, deployment_version: str,
+def convert_response(uploads: list[Upload], *,
+                     template_bytes: bytes | Callable[[str], bytes],
+                     template_version: str | Callable[[str], str] | None = None,
+                     deployment_version: str,
                      request_id: str, today: dt.date) -> ApiResponse:
     """`POST /api/v1/convert` — 업로드 한 건을 견적서로 바꿔 바로 내려 준다.
 
     입력과 결과는 저장하지 않는다. 요청이 끝나면 함께 사라진다.
 
     IBM 문서인지 레노버 x86 문서인지는 화면이 고르지 않는다. 업로드된 XML
-    내용으로 알아낸다 (`quotation.core.modes.detect`).
+    내용으로 알아낸다 (`quotation.core.modes.detect`). `template_bytes`(그리고
+    `template_version`)를 `mode -> …` 함수로 주면, 알아낸 모드에 맞는 템플릿을
+    골라 쓴다 — 실제로 쓴 판본은 응답이 나온 **뒤에** 알 수 있으므로 요청 시점의
+    `template_version` 을 그대로 헤더·로그에 싣지 않고 `result.template_version`
+    을 쓴다.
     """
-    base_log = {"deployment_version": deployment_version,
-                "template_version": template_version}
+    base_log = {"deployment_version": deployment_version}
     try:
         upload = pick_upload(uploads)
         base_log["input_size_bucket"] = size_bucket(len(upload.content))
@@ -176,6 +187,7 @@ def convert_response(uploads: list[Upload], *, template_bytes: bytes,
         result = conversion_adapter.convert_upload(
             xml_bytes=upload.content,
             template_bytes=template_bytes,
+            template_version=template_version,
             today=today,
             source_name=upload.filename,
         )
@@ -187,12 +199,13 @@ def convert_response(uploads: list[Upload], *, template_bytes: bytes,
         "Content-Disposition": content_disposition(result.filename),
         "Content-Length": str(len(result.xlsx)),
         "X-Request-Id": request_id,
-        "X-Template-Version": template_version,
+        "X-Template-Version": result.template_version,
     })
     return ApiResponse(
         status=200, headers=headers, body=result.xlsx,
         log={**base_log, "outcome": "ok", "status": 200,
              "mode": result.mode,
+             "template_version": result.template_version,
              "line_count": result.line_count,
              "group_count": result.group_count,
              "output_size_bucket": size_bucket(len(result.xlsx)),

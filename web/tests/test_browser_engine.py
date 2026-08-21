@@ -19,10 +19,12 @@ import pytest
 
 import build_browser_engine as engine
 
+from quotation.core.resources import TEMPLATE_NAMES
+
 ROOT = Path(__file__).resolve().parents[2]
 WEB_SRC = ROOT / "web" / "src"
 CORE = ROOT / "quotation"
-TEMPLATE = CORE / "resources" / "견적서_template.xlsx"
+TEMPLATES = {mode: CORE / "resources" / name for mode, name in TEMPLATE_NAMES.items()}
 
 pytestmark = pytest.mark.skipif(
     not (WEB_SRC / "template_data.py").is_file(),
@@ -67,11 +69,13 @@ def test_worker_only_module_stays_out(members):
 
 
 def test_template_travels_as_the_repository_original(members):
-    """양식은 저장소의 그 파일 하나뿐이다 (양식 뒤틀림 방지의 출발점)."""
-    digest = hashlib.sha256(TEMPLATE.read_bytes()).hexdigest()
+    """양식은 저장소의 그 파일들뿐이다 (양식 뒤틀림 방지의 출발점)."""
     text = members["template_data.py"].decode("utf-8")
-    assert f'TEMPLATE_SHA256 = "{digest}"' in text
-    assert f'TEMPLATE_VERSION = "sha256-{digest[:12]}"' in text
+    for mode, source in TEMPLATES.items():
+        digest = hashlib.sha256(source.read_bytes()).hexdigest()
+        assert f'"{mode}":' in text
+        assert f'"sha256": "{digest}"' in text
+        assert f'"version": "sha256-{digest[:12]}"' in text
 
 
 def test_packing_is_reproducible(members):

@@ -14,16 +14,18 @@ from quotation_desktop import paths
 
 # --- 템플릿 ------------------------------------------------------------------
 
-def test_desktop_uses_the_one_shared_template():
-    """양식은 하나뿐이다. 데스크톱이 웹과 같은 원본을 쓰는지 확인한다."""
+@pytest.mark.parametrize("mode", ["unix", "integrated"])
+def test_desktop_uses_the_shared_templates(mode):
+    """양식 원본은 공용 코어 하나뿐이다. 데스크톱이 웹과 같은 원본을 쓰는지 확인한다."""
     from quotation.core import resources
 
-    bundled = paths.resource_dir() / paths.TEMPLATE_NAME
+    bundled = paths.resource_dir() / paths.TEMPLATE_NAMES[mode]
     assert bundled.is_file()
-    assert bundled.resolve() == resources.default_template_path().resolve()
+    assert bundled.resolve() == resources.default_template_path(mode).resolve()
 
 
-def test_template_lives_outside_the_exe(tmp_path, monkeypatch):
+@pytest.mark.parametrize("mode", ["unix", "integrated"])
+def test_template_lives_outside_the_exe(mode, tmp_path, monkeypatch):
     """템플릿은 EXE 옆의 고칠 수 있는 파일이어야 한다.
 
     없으면 번들 사본으로 한 번 만들어 준다. 안에 묻어 두면 견적서 번호와
@@ -31,14 +33,14 @@ def test_template_lives_outside_the_exe(tmp_path, monkeypatch):
     """
     monkeypatch.setattr(paths, "app_dir", lambda: tmp_path)
 
-    target = tmp_path / paths.TEMPLATE_NAME
+    target = tmp_path / paths.TEMPLATE_NAMES[mode]
     assert not target.exists()
-    assert paths.template_path() == target
+    assert paths.template_path(mode) == target
     assert target.exists(), "번들 사본으로 자동 생성되어야 한다"
 
     # 이미 있으면 덮어쓰지 않는다 (사용자 편집 보존)
     target.write_bytes(b"edited")
-    assert paths.template_path().read_bytes() == b"edited"
+    assert paths.template_path(mode).read_bytes() == b"edited"
 
 
 # --- 설정 --------------------------------------------------------------------

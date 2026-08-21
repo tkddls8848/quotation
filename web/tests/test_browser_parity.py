@@ -97,15 +97,21 @@ def browser_results(tmp_path_factory, fixtures) -> dict[str, dict]:
     return results
 
 
-def _cpython(fixtures, name: str, today: dt.date,
-             template_bytes: bytes) -> api.ApiResponse:
-    """서버(그리고 데스크톱)와 같은 경로. 브라우저가 부르는 함수와 같은 함수다."""
+def _cpython(fixtures, name: str, today: dt.date) -> api.ApiResponse:
+    """서버(그리고 데스크톱)와 같은 경로. 브라우저가 부르는 함수와 같은 함수다.
+
+    템플릿은 고정 바이트가 아니라 `template.template_bytes` 함수를 그대로
+    준다 — IBM 문서와 레노버 문서가 템플릿이 서로 달라서, 브라우저와 똑같이
+    알아낸 모드로 골라야 바이트가 맞아떨어진다.
+    """
+    import template
+
     return api.convert_response(
         [api.Upload(filename=name,
                     content=(fixtures / name).read_bytes(),
                     content_type="text/xml")],
-        template_bytes=template_bytes,
-        template_version="parity",
+        template_bytes=template.template_bytes,
+        template_version=template.template_version,
         deployment_version="parity",
         request_id="parity",
         today=today)
@@ -114,13 +120,11 @@ def _cpython(fixtures, name: str, today: dt.date,
 # --- 바이트 대조 ---------------------------------------------------------------
 
 @pytest.mark.parametrize("name", CASES)
-def test_browser_xlsx_is_byte_identical(name, browser_results, fixtures,
-                                        template_bytes):
+def test_browser_xlsx_is_byte_identical(name, browser_results, fixtures):
     result = browser_results[name]
     assert result["status"] == 200, result.get("body_utf8")
 
-    expected = _cpython(fixtures, name, dt.date.fromisoformat(result["today"]),
-                        template_bytes)
+    expected = _cpython(fixtures, name, dt.date.fromisoformat(result["today"]))
     assert expected.status == 200
 
     problems = differences(expected.body, result["xlsx"])
@@ -139,13 +143,12 @@ def test_browser_keeps_the_template_drawings(browser_results):
 
 @pytest.mark.parametrize("name", CASES)
 def test_browser_xlsx_matches_cell_by_cell(name, browser_results, fixtures,
-                                           template_bytes, tmp_path):
+                                           tmp_path):
     """골든 회귀와 같은 비교기로 한 번 더 본다. 값·수식·서식·병합·열너비."""
     import compare
 
     result = browser_results[name]
-    expected = _cpython(fixtures, name, dt.date.fromisoformat(result["today"]),
-                        template_bytes)
+    expected = _cpython(fixtures, name, dt.date.fromisoformat(result["today"]))
 
     want = tmp_path / "cpython.xlsx"
     got = tmp_path / "browser.xlsx"
@@ -160,18 +163,19 @@ def test_browser_xlsx_matches_cell_by_cell(name, browser_results, fixtures,
 
 @pytest.mark.parametrize("name", CASES)
 def test_browser_returns_the_same_headers_and_log(name, browser_results,
-                                                  fixtures, template_bytes):
+                                                  fixtures):
     """상태 코드·다운로드 이름·로그 항목이 서버 응답과 같아야 한다."""
     result = browser_results[name]
-    expected = _cpython(fixtures, name, dt.date.fromisoformat(result["today"]),
-                        template_bytes)
+    expected = _cpython(fixtures, name, dt.date.fromisoformat(result["today"]))
 
     assert result["status"] == expected.status
     assert result["headers"]["Content-Disposition"] == \
         expected.headers["Content-Disposition"]
     assert result["headers"]["Content-Type"] == expected.headers["Content-Type"]
-    for field in ("outcome", "status", "mode", "line_count", "group_count",
-                  "input_size_bucket", "output_size_bucket"):
+    assert result["headers"]["X-Template-Version"] == \
+        expected.headers["X-Template-Version"]
+    for field in ("outcome", "status", "mode", "template_version", "line_count",
+                  "group_count", "input_size_bucket", "output_size_bucket"):
         assert result["log"][field] == expected.log[field], field
 
 

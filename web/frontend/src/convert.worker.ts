@@ -27,7 +27,7 @@ export type WorkerRequest =
 
 export type WorkerMessage =
   | { kind: 'stage'; stage: string }
-  | { kind: 'ready'; templateVersion: string }
+  | { kind: 'ready' }
   | { kind: 'failed'; id?: number; reason: string }
   | {
       kind: 'done';
@@ -49,7 +49,7 @@ function boot(): Promise<Engine> {
     baseUrl: BASE_URL,
     onStage: (stage) => post({ kind: 'stage', stage }),
   }).then((ready) => {
-    post({ kind: 'ready', templateVersion: ready.templateVersion });
+    post({ kind: 'ready' });
     return ready;
   });
   return engine;

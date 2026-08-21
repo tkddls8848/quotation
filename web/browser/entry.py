@@ -20,7 +20,6 @@ from __future__ import annotations
 
 import api
 import clock
-import errors
 import template
 
 
@@ -53,17 +52,15 @@ def convert(filename: str, content, content_type: str = "",
     """
     request_id = request_id or api.new_request_id()
 
-    try:
-        template_bytes = template.template_bytes()
-    except errors.ApiError as err:
-        return _as_dict(api.error_response(err, request_id))
-
     upload = api.Upload(filename=filename, content=bytes(content),
                         content_type=content_type or "")
+    # 어느 템플릿을 쓸지는 문서 내용(IBM/레노버)으로 갈리므로 값이 아니라
+    # 함수를 준다 — `api.convert_response` 가 모드를 알아낸 뒤에 부른다.
+    # 번들에 그 모드의 템플릿이 없으면 TEMPLATE_UNAVAILABLE 로 응답한다.
     response = api.convert_response(
         [upload],
-        template_bytes=template_bytes,
-        template_version=template.template_version(),
+        template_bytes=template.template_bytes,
+        template_version=template.template_version,
         deployment_version=deployment_version,
         request_id=request_id,
         # 견적 날짜는 브라우저의 지역 시간이 아니라 Asia/Seoul 기준이다.
@@ -71,11 +68,6 @@ def convert(filename: str, content, content_type: str = "",
         today=clock.seoul_today(),
     )
     return _as_dict(response)
-
-
-def template_version() -> str:
-    """화면 아래에 표시할 활성 템플릿 판본."""
-    return template.template_version()
 
 
 def today() -> str:

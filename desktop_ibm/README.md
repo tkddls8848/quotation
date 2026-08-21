@@ -43,14 +43,19 @@ desktop_ibm/
 자체는 `.gitkeep` 으로 남기고 내용물은 추적하지 않습니다.
 
 `desktop_ibm\dist\QuotationTool.exe` 하나만 배포하면 됩니다. 처음 실행할 때 EXE 옆에
-`견적서_template.xlsx` 를 만들어 놓고, 이후로는 그 파일을 그대로 씁니다. 원본은
-`quotation/resources/견적서_template.xlsx` 이며 spec 이 번들에 넣습니다.
+`견적서_template_IBM.xlsx` 와 `견적서_template_Lenovo.xlsx` 를 만들어 놓고,
+이후로는 그 파일들을 그대로 씁니다. IBM 문서를 변환할지 레노버 x86 문서를
+변환할지는 XML 내용으로 알아내며(`quotation.core.modes.detect`), 그에 맞는
+파일이 자동으로 골라집니다. 원본은
+`quotation/resources/견적서_template_{IBM,Lenovo}.xlsx` 이며 spec 이 번들에
+넣습니다.
 
 ## 템플릿과 설정 위치
 
 | 위치 | 내용 |
 |---|---|
-| EXE 옆 `견적서_template.xlsx` | 자동 생성되는 사용자 편집용 템플릿 |
+| EXE 옆 `견적서_template_IBM.xlsx` | 자동 생성되는 IBM 문서용 편집 템플릿 |
+| EXE 옆 `견적서_template_Lenovo.xlsx` | 자동 생성되는 레노버 x86 문서용 편집 템플릿 |
 | `%LOCALAPPDATA%\QuotationTool\config.json` | 최근 XML 폴더와 결과 자동 열기 설정 |
 
 개발 실행에서는 EXE 옆이 `desktop_ibm/` 폴더입니다. 이 사본은 추적하지 않습니다.

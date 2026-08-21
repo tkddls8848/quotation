@@ -4,7 +4,8 @@ export interface EngineManifest {
   pyodide_version: string;
   packages: Record<string, { file: string; sha256: string }>;
   core: { file: string; sha256: string; modules: string[] };
-  template: { template_version: string; template_sha256: string; template_size: number };
+  /** 모드별(IBM/통합) 템플릿 판본. 실제로 쓰인 것은 변환 응답의 X-Template-Version 이 알려 준다. */
+  template: Record<string, { name: string; sha256: string; version: string; size: number }>;
 }
 
 export interface EngineUpload {
@@ -24,7 +25,6 @@ export interface EngineResult {
 
 export interface Engine {
   manifest: EngineManifest;
-  templateVersion: string;
   today(): string;
   convert(upload: EngineUpload): EngineResult;
 }

@@ -10,8 +10,9 @@ import shutil
 import sys
 from pathlib import Path
 
+from quotation.core.resources import TEMPLATE_NAMES
+
 APP_NAME = "QuotationTool"
-TEMPLATE_NAME = "견적서_template.xlsx"
 
 
 def resource_dir() -> Path:
@@ -32,11 +33,17 @@ def app_dir() -> Path:
     return Path(__file__).resolve().parents[1]
 
 
-def template_path() -> Path:
-    """EXE 옆에 사용자 편집용 템플릿을 한 번 생성하고 그 경로를 반환한다."""
-    external = app_dir() / TEMPLATE_NAME
+def template_path(mode: str) -> Path:
+    """EXE 옆에 사용자 편집용 템플릿을 한 번 생성하고 그 경로를 반환한다.
+
+    Args:
+        mode: `quotation.core.modes.UNIX` 또는 `.INTEGRATED`. IBM 문서와
+            레노버 x86 문서는 서로 다른 템플릿을 쓴다.
+    """
+    name = TEMPLATE_NAMES[mode]
+    external = app_dir() / name
     if not external.exists():
-        shutil.copyfile(resource_dir() / TEMPLATE_NAME, external)
+        shutil.copyfile(resource_dir() / name, external)
     return external
 
 

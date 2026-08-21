@@ -52,8 +52,9 @@ def test_window_builds(root):
     win = MainWindow(root)
     assert win.convert_btn.cget("text") == "변환"
     assert "선택" in win.status.get()
-    # 견적번호·담당자를 고칠 수 있도록 템플릿 경로를 보여 준다
-    assert win.template_label.get().endswith(".xlsx")
+    # 견적번호·담당자를 고칠 수 있도록 템플릿 경로를 보여 준다 (IBM·Lenovo 둘 다)
+    assert len(win.template_paths) == 2
+    assert all(str(p).endswith(".xlsx") for p in win.template_paths.values())
     assert win.open_result.get() is True
 
 
@@ -86,8 +87,11 @@ def test_success_opens_the_quote_without_a_popup(root, monkeypatch, tmp_path):
 def test_convert_uses_the_user_editable_template(root, monkeypatch, tmp_path):
     """변환은 EXE 옆 편집본을 쓴다. 코어의 기준 템플릿을 쓰면 안 된다.
 
-    견적서 번호와 담당자 도형을 고칠 수 있는 유일한 통로다.
+    견적서 번호와 담당자 도형을 고칠 수 있는 유일한 통로다. IBM 문서인지
+    Lenovo 문서인지는 코어가 파싱한 뒤에야 알므로, 경로를 미리 고르지 않고
+    `mode -> 경로` 함수(`paths.template_path`)를 그대로 건넨다.
     """
+    from quotation.core import modes
     from quotation_desktop import paths
     from quotation_desktop.ui import main_window
 
@@ -100,7 +104,9 @@ def test_convert_uses_the_user_editable_template(root, monkeypatch, tmp_path):
     win = main_window.MainWindow(root)
     win._worker(FIXTURES / "new_quote.xml")
 
-    assert seen["template"] == tmp_path / paths.TEMPLATE_NAME
+    assert seen["template"] is paths.template_path
+    assert (seen["template"](modes.UNIX)
+           == tmp_path / paths.TEMPLATE_NAMES[modes.UNIX])
 
 
 def test_convert_without_file_warns(root, monkeypatch):

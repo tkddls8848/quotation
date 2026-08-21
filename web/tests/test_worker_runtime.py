@@ -230,7 +230,7 @@ def test_non_multipart_post_is_rejected(worker):
 
 def test_status_and_config_answer(worker):
     entry = _entry(worker)
-    for path, key in (("/api/v1/status", "template_version"),
+    for path, key in (("/api/v1/status", "template_versions"),
                       ("/api/v1/config", "max_upload_bytes")):
         response = _run(entry.fetch(
             FakeRequest(f"https://quotation.example{path}")))

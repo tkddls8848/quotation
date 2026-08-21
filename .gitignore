@@ -20,8 +20,9 @@ out/
 samples/
 
 # 데스크톱 실행 시 자동 생성되는 외부 템플릿
-# (원본은 quotation/resources/견적서_template.xlsx 하나뿐이다)
-desktop_ibm/견적서_template.xlsx
+# (원본은 quotation/resources/견적서_template_{IBM,Lenovo}.xlsx 뿐이다)
+desktop_ibm/견적서_template_IBM.xlsx
+desktop_ibm/견적서_template_Lenovo.xlsx
 
 # QuotationTool.spec 은 직접 작성한 빌드 정의이므로 추적한다.
 # PyInstaller 가 자동 생성하는 spec 만 제외한다.

@@ -267,25 +267,16 @@ function showTemplateVersion(version: string | null): void {
 }
 
 /**
- * 화면을 여는 데 필요한 것은 전부 이미 갖고 있다. 남은 것은 표시뿐이며
- * 그것도 정적 자산 한 개(`/py/engine.json`)를 읽는 것으로 끝난다.
+ * 화면을 여는 데 필요한 것은 전부 이미 갖고 있다.
+ *
+ * 템플릿 판본은 여기서 미리 보여 주지 않는다 — IBM 문서와 Lenovo 문서가 템플릿이
+ * 서로 달라서, 무엇을 변환할지 모르는 시점에는 "그" 판본이라는 게 없다. 실제로
+ * 쓴 판본은 변환이 끝난 뒤(`showTemplateVersion(result.templateVersion)`) 알 수 있다.
  */
-async function boot(): Promise<void> {
+function boot(): void {
   maxSize.textContent = String(Math.floor(config.max_upload_bytes / MiB));
   maxBatch.textContent = String(config.max_batch_files);
   el('deployment-version').textContent = __DEPLOYMENT_VERSION__;
-
-  try {
-    const response = await fetch('/py/engine.json');
-    if (response.ok) {
-      const manifest = (await response.json()) as {
-        template?: { template_version?: string };
-      };
-      showTemplateVersion(manifest.template?.template_version ?? null);
-    }
-  } catch {
-    // 운영 지원용 표시일 뿐이라 실패해도 화면은 그대로 쓴다.
-  }
 }
 
-void boot();
+boot();

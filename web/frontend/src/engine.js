@@ -84,7 +84,6 @@ export async function createEngine(options) {
 
   return {
     manifest,
-    templateVersion: manifest.template.template_version,
 
     /** 이번 변환이 쓸 견적 날짜 (Asia/Seoul). 동일성 검증이 읽는다. */
     today() {

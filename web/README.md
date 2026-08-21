@@ -374,12 +374,15 @@ CI 의 배포 잡은 업로드 전에 `wrangler whoami` 를 돌려 토큰이 무
 
 ## 템플릿 운영
 
-템플릿은 저장소에 한 벌만 둔다. 데스크톱 앱과 웹이 같은 파일을 쓴다.
+템플릿은 저장소에 IBM 용·레노버 x86 용 두 벌을 둔다. 어느 것을 쓸지는 화면이
+고르지 않고 XML 내용(`ProductName` 유무)으로 알아낸다
+(`quotation.core.modes.detect`). 데스크톱 앱과 웹이 같은 파일을 쓴다.
 
 ```text
-quotation/resources/견적서_template.xlsx   ← 유일한 원본
-   ├─ 데스크톱: EXE 옆으로 복사되어 사용자가 직접 편집
-   └─ 웹: sync_core.py 가 web/src/template_data.py 로 만들고
+quotation/resources/견적서_template_IBM.xlsx      ← IBM 문서용 원본
+quotation/resources/견적서_template_Lenovo.xlsx   ← 레노버 x86 문서용 원본
+   ├─ 데스크톱: 둘 다 EXE 옆으로 복사되어 사용자가 직접 편집
+   └─ 웹: sync_core.py 가 둘 다 web/src/template_data.py 로 만들고
           build_browser_engine.py 가 그것을 quotation-core.zip 에 담는다
 ```
 
@@ -402,43 +405,45 @@ Excel 에서 열어도 다르다면 그때 서로 다른 템플릿을 의심한�
 
 | 어긋남 | 왜 | 바로잡는 법 |
 |---|---|---|
-| **데스크톱이 낡았다** | `paths.template_path()` 는 EXE 옆에 사본이 **없을 때만** 복사한다. 한 번 만들어진 사본은 새 EXE 를 깔아도 갱신되지 않는다. 저장소 양식이 그 뒤에 바뀌었다면 데스크톱만 옛 양식으로 남는다 | EXE 옆 `견적서_template.xlsx` 를 다른 이름으로 옮기고 앱을 다시 실행한다. 현재 양식이 새로 복사된다 |
+| **데스크톱이 낡았다** | `paths.template_path(mode)` 는 EXE 옆에 사본이 **없을 때만** 복사한다. 한 번 만들어진 사본은 새 EXE 를 깔아도 갱신되지 않는다. 저장소 양식이 그 뒤에 바뀌었다면 데스크톱만 옛 양식으로 남는다 | EXE 옆 `견적서_template_IBM.xlsx`(또는 `_Lenovo.xlsx`)를 다른 이름으로 옮기고 앱을 다시 실행한다. 현재 양식이 새로 복사된다 |
 | **저장소가 낡았다** | 사용자가 EXE 옆 사본을 고쳤는데 아무도 저장소 원본으로 되돌려 놓지 않았다 | 아래 `--adopt` 로 그 파일을 저장소 원본으로 삼는다 |
 
-어느 쪽인지는 해시로 가른다. 두 값을 견주면 끝난다.
+어느 쪽인지는 해시로 가른다. 두 값을 견주면 끝난다. `--mode` 는 IBM 문서면
+`unix`, 레노버 x86 문서면 `integrated` 다.
 
 ```bash
-python web/scripts/verify_template.py "<EXE 옆>/견적서_template.xlsx"   # 데스크톱 쪽
-python web/scripts/verify_template.py quotation/resources/견적서_template.xlsx
+python web/scripts/verify_template.py "<EXE 옆>/견적서_template_IBM.xlsx" --mode unix   # 데스크톱 쪽
+python web/scripts/verify_template.py quotation/resources/견적서_template_IBM.xlsx --mode unix
 ```
 
 칸별로 어디가 다른지까지 보려면 골든 비교기를 그대로 쓴다.
 
 ```bash
-python tools/compare.py quotation/resources/견적서_template.xlsx "<EXE 옆>/견적서_template.xlsx"
+python tools/compare.py quotation/resources/견적서_template_IBM.xlsx "<EXE 옆>/견적서_template_IBM.xlsx"
 ```
 
 저장소가 낡은 경우, 쓰고 계신 양식을 저장소에 반영하는 절차:
 
 ```bash
-# 검증에 합격해야만 원본을 덮고, 파생물(Worker 번들·브라우저 엔진)까지 다시 만든다
-python web/scripts/verify_template.py "<EXE 옆>/견적서_template.xlsx" --adopt
+# 검증에 합격해야만 그 모드의 원본을 덮고, 파생물(Worker 번들·브라우저 엔진)까지 다시 만든다
+python web/scripts/verify_template.py "<EXE 옆>/견적서_template_IBM.xlsx" --mode unix --adopt
 
 # 골든 회귀 테스트
 python -m pytest -q
 
 # 커밋하면 배포와 함께 반영된다
-git add quotation/resources/견적서_template.xlsx && git commit
+git add quotation/resources/견적서_template_IBM.xlsx && git commit
 ```
 
-저장소에서 직접 고칠 때도 같다.
+저장소에서 직접 고칠 때도 같다. 레노버 x86 양식이면 파일 이름과 `--mode` 를
+`_Lenovo.xlsx` / `integrated` 로 바꾼다.
 
 ```bash
-# 1) Excel 에서 quotation/resources/견적서_template.xlsx 를 고친다
+# 1) Excel 에서 quotation/resources/견적서_template_IBM.xlsx 를 고친다
 #    (견적번호는 TOTAL!B2, 담당자·회사는 상단 머리말 도형)
 
 # 2) 검증 — 필수 시트, 도형, 공개 fixture 로 실제 변환까지 해 본다
-python web/scripts/verify_template.py quotation/resources/견적서_template.xlsx
+python web/scripts/verify_template.py quotation/resources/견적서_template_IBM.xlsx --mode unix
 
 # 3) 골든 회귀 테스트
 python -m pytest -q
@@ -446,10 +451,13 @@ python -m pytest -q
 # 4) 커밋하면 배포와 함께 반영된다
 ```
 
-어느 양식으로 만든 견적서인지는 내용 해시로 구분한다. 화면 아래의 `템플릿
-sha256-…` 과 `/py/engine.json` 이 그 값이며, 데스크톱 쪽 파일의 값은
-`python web/scripts/verify_template.py <그 파일>` 이 찍어 준다. 두 값이 다르면
-서로 다른 양식을 쓰고 있는 것이다.
+어느 양식으로 만든 견적서인지는 내용 해시로 구분한다. 변환을 한 번 하면
+화면 아래에 그때 **실제로 쓴** 템플릿의 `sha256-…` 이 뜬다(IBM/레노버 중
+어느 쪽을 썼는지에 따라 값이 갈린다). 배포 시점의 두 판본은
+`/py/engine.json` 의 `template.unix.version` / `template.integrated.version`
+에 있고, 데스크톱 쪽 파일의 값은
+`python web/scripts/verify_template.py <그 파일> --mode <unix|integrated>` 가
+찍어 준다. 두 값이 다르면 서로 다른 양식을 쓰고 있는 것이다.
 
 되돌리려면 그 커밋을 되돌린다. 템플릿 판본은 내용 해시(`sha256-…`)로 계산되어
 화면 아래와 `/py/engine.json`, 응답의 `X-Template-Version` 에 실린다. 어떤

@@ -211,15 +211,18 @@ def deps_members() -> list[tuple[str, bytes]]:
 # --- 빌드 ---------------------------------------------------------------------
 
 def _template_facts() -> dict:
-    """번들에 담긴 템플릿의 판본. sync_core.py 가 만든 모듈에서 읽는다."""
-    text = (SRC / "template_data.py").read_text(encoding="utf-8")
-    facts = {}
-    for line in text.splitlines():
-        for key in ("TEMPLATE_VERSION", "TEMPLATE_SHA256", "TEMPLATE_SIZE"):
-            if line.startswith(f"{key} ="):
-                value = line.split("=", 1)[1].strip().strip('"')
-                facts[key.lower()] = int(value) if key.endswith("SIZE") else value
-    return facts
+    """모드별 템플릿 판본. sync_core.py 가 만든 모듈에서 읽는다.
+
+    실제 바이트(`b64`)는 크므로 manifest 에는 담지 않는다.
+    """
+    import importlib.util
+
+    spec = importlib.util.spec_from_file_location(
+        "template_data", SRC / "template_data.py")
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return {mode: {k: v for k, v in entry.items() if k != "b64"}
+           for mode, entry in module.TEMPLATES.items()}
 
 
 def stale() -> list[str]:
@@ -304,7 +307,8 @@ def main() -> int:
 
     total = sum(p.stat().st_size for p in OUT.iterdir() if p.is_file())
     print(f"=== 완료: {OUT} · {len(members)}개 모듈 · 합계 {total / 1024 / 1024:.1f} MiB")
-    print(f"    템플릿 {manifest['template'].get('template_version', '?')}")
+    for mode, facts in manifest["template"].items():
+        print(f"    템플릿[{mode}] {facts.get('version', '?')}")
     return 0
 
 

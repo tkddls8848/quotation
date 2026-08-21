@@ -8,7 +8,7 @@ import tkinter as tk
 from pathlib import Path
 from tkinter import filedialog, messagebox, ttk
 
-from quotation.core import convert
+from quotation.core import convert, modes
 from quotation.core.xml_reader import QuotationXmlError
 
 from . import theme
@@ -16,8 +16,11 @@ from .. import config as config_mod
 from .. import paths
 
 TITLE = "견적서 작성기"
-SUBTITLE = "IBM eServer and TotalStorage — eConfig Export"
+SUBTITLE = "IBM eServer and TotalStorage, Lenovo x86 (ThinkSystem) — 자동 구분"
 XML_FILETYPES = [("XML 화일", "*.xml"), ("모든 화일", "*.*")]
+#: 템플릿 열기 줄에 보여 줄 이름. `quotation.core.modes.LABELS` 는 진단용이라
+#: 화면 문구는 여기서 따로 정한다.
+TEMPLATE_ROW_LABELS = {modes.UNIX: "IBM", modes.INTEGRATED: "Lenovo x86"}
 
 
 class MainWindow(ttk.Frame):
@@ -32,7 +35,9 @@ class MainWindow(ttk.Frame):
         self.xml_path = tk.StringVar()
         self.open_result = tk.BooleanVar(value=self.cfg.open_result_when_done)
         self.status = tk.StringVar(value="변환할 XML 화일을 선택하십시오.")
-        self.template_label = tk.StringVar(value=str(paths.template_path()))
+        # 어느 XML 을 고를지는 아직 모르므로(IBM/Lenovo 는 파싱 후에 갈린다),
+        # 편집용 사본은 두 모드 다 미리 만들어 둔다.
+        self.template_paths = {mode: paths.template_path(mode) for mode in modes.MODES}
 
         self._build()
         self.grid(sticky="nsew")
@@ -74,14 +79,20 @@ class MainWindow(ttk.Frame):
         row += 1
 
         # 견적서 번호(NO : Trialinfo-YY-)와 머리말의 '담당 : ...' 은 템플릿에서
-        # 직접 고친다. 그래서 템플릿을 바로 열 수 있게 해 둔다.
+        # 직접 고친다. IBM 문서와 Lenovo x86 문서는 템플릿이 서로 달라서 두
+        # 벌 다 바로 열 수 있게 해 둔다.
         tmpl = ttk.Frame(self)
         tmpl.grid(row=row, column=0, columnspan=3, sticky="ew", pady=(0, 10))
-        ttk.Label(tmpl, text="템플릿", style="Muted.TLabel").pack(side="left")
-        ttk.Label(tmpl, textvariable=self.template_label,
-                  style="Muted.TLabel").pack(side="left", padx=(6, 10))
-        ttk.Button(tmpl, text="템플릿 열기(견적번호·담당자 수정)",
-                   command=self._open_template).pack(side="left")
+        for mode in modes.MODES:
+            line = ttk.Frame(tmpl)
+            line.pack(fill="x", pady=(0, 2))
+            ttk.Label(line, text=f"{TEMPLATE_ROW_LABELS[mode]} 템플릿",
+                      style="Muted.TLabel", width=14).pack(side="left")
+            ttk.Label(line, text=str(self.template_paths[mode]),
+                      style="Muted.TLabel").pack(side="left", padx=(6, 10))
+            ttk.Button(line, text="열기(견적번호·담당자 수정)",
+                       command=lambda m=mode: self._open_template(m)
+                       ).pack(side="left")
         row += 1
 
         self.progress = ttk.Progressbar(self, mode="determinate", maximum=100)
@@ -113,12 +124,12 @@ class MainWindow(ttk.Frame):
             self.xml_path.set(chosen)
             self.status.set("<변환> 버튼을 누르면 견적서 변환작업을 시작합니다.")
 
-    def _open_template(self):
+    def _open_template(self, mode: str):
         """템플릿을 기본 프로그램(Excel)으로 연다.
 
         견적서 번호와 머리말의 담당자 이름은 여기서 고친다.
         """
-        _open(paths.template_path())
+        _open(self.template_paths[mode])
 
     # --- 변환 ----------------------------------------------------------------
 
@@ -145,8 +156,10 @@ class MainWindow(ttk.Frame):
     def _worker(self, xml: Path):
         try:
             # 템플릿은 EXE 옆의 사용자 편집본을 쓴다. 코어는 경로 정책을 모른다.
+            # IBM 문서인지 Lenovo x86 문서인지는 코어가 파싱한 뒤에야 알므로,
+            # 경로를 미리 고르지 않고 `mode -> 경로` 함수를 그대로 건넨다.
             result = convert.convert(
-                xml, template=paths.template_path(),
+                xml, template=paths.template_path,
                 progress=lambda p, m: self._events.put(("progress", p, m)))
             self._events.put(("done", result))
         except QuotationXmlError as exc:

@@ -23,18 +23,21 @@ def _convert(tmp_path: Path, source: Path, **kwargs) -> convert.Result:
 # --- 리소스 ------------------------------------------------------------------
 
 def test_default_template_ships_with_the_core_package():
-    assert resources.default_template_path().is_file()
-    assert resources.default_template_bytes()[:2] == b"PK", "xlsx(zip) 여야 한다"
+    for mode in resources.TEMPLATE_NAMES:
+        assert resources.default_template_path(mode).is_file()
+        assert resources.default_template_bytes(mode)[:2] == b"PK", \
+            "xlsx(zip) 여야 한다"
 
 
-def test_there_is_exactly_one_template():
-    """양식은 하나뿐이다. 데스크톱과 웹이 같은 파일을 쓴다.
+def test_there_are_exactly_the_two_supported_templates():
+    """양식은 IBM 용·레노버 x86 용 둘뿐이다. 데스크톱과 웹이 같은 파일을 쓴다.
 
     다른 양식(과거의 삼성 SDS B2B 등)은 지원하지 않는다. 양식이 늘어나면
     두 실행 경로의 산출물이 갈리므로 여기서 막는다.
     """
     books = sorted(p.name for p in resources.RESOURCE_DIR.glob("*.xlsx"))
-    assert books == [resources.TEMPLATE_NAME], f"양식이 하나가 아니다: {books}"
+    assert books == sorted(resources.TEMPLATE_NAMES.values()), \
+        f"지원하는 양식과 다르다: {books}"
 
 
 # --- 출력 위치와 이름 ----------------------------------------------------------
