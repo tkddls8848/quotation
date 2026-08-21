@@ -95,7 +95,7 @@ def _reference_names(items: list[LineItem]) -> list[str]:
 
 
 def _build_groups(items: list[LineItem], reference_names: list[str],
-                  mode: str = modes.DEFAULT,
+                  mode: str = modes.UNIX,
                   summary: dcsc_summary.Summary | None = None,
                   ) -> tuple[Group, ...]:
     """ProprietaryGroupIdentifier 로 묶는다. 문서 등장 순서를 유지한다.
@@ -224,11 +224,13 @@ def _utf8_equivalent(raw: bytes) -> bytes | None:
         lambda m: f'{m.group(1)}UTF-8{m.group(3)}', text, count=1).encode("utf-8")
 
 
-def parse(source: str | Path, *, mode: str = modes.DEFAULT) -> Quotation:
+def parse(source: str | Path, *, mode: str = "") -> Quotation:
     """eConfig XML 파일 -> Quotation. (데스크톱 경로 입력)
 
     Args:
-        mode: 문서를 읽는 방식. `modes.UNIX` 또는 `modes.INTEGRATED`.
+        mode: 문서를 읽는 방식을 강제로 지정한다 (`modes.UNIX` 또는
+            `modes.INTEGRATED`). 비워 두면 문서 내용으로 알아낸다
+            (`modes.detect`) — 보통은 이쪽을 쓴다.
 
     Raises:
         QuotationXmlError: 로드 실패 또는 필수 노드 누락.
@@ -260,12 +262,16 @@ def _retry_as_utf8(raw: bytes, original: "etree.XMLSyntaxError"):
         f"XML을 로드하는중 장애 발생. 장애코드: {original}") from original
 
 
-def parse_bytes(data: bytes, *, mode: str = modes.DEFAULT) -> Quotation:
+def parse_bytes(data: bytes, *, mode: str = "") -> Quotation:
     """eConfig XML 바이트 -> Quotation. (웹 업로드 입력)
 
     파일시스템을 건드리지 않는다. 인코딩은 XML 선언을 따르므로 UTF-8 과
     EUC-KR 문서를 모두 그대로 받는다. 문자열이 아니라 **바이트** 를 넘겨야
     선언된 인코딩이 존중된다.
+
+    Args:
+        mode: 문서를 읽는 방식을 강제로 지정한다. 비워 두면 문서 내용으로
+            알아낸다 (`modes.detect`) — 보통은 이쪽을 쓴다.
 
     Raises:
         QuotationXmlError: 로드 실패 또는 필수 노드 누락.
@@ -280,7 +286,7 @@ def parse_bytes(data: bytes, *, mode: str = modes.DEFAULT) -> Quotation:
     return _build(root, mode)
 
 
-def _build(root, mode: str = modes.DEFAULT) -> Quotation:
+def _build(root, mode: str = "") -> Quotation:
     """파싱된 문서 뿌리 -> Quotation. 경로 입력과 바이트 입력의 공통 경로다."""
     if etree.QName(root).localname != "CFXML":
         raise QuotationXmlError("CFXML을 찾을수 없습니다.")
@@ -306,9 +312,14 @@ def _build(root, mode: str = modes.DEFAULT) -> Quotation:
     if not quoted:
         raise QuotationXmlError("견적서 작성을 위한 Item을 찾을 수 없습니다.")
 
+    # IBM 문서인지 레노버 x86 문서인지는 사람이 고르지 않는다. 본체 라인에
+    # ProductName 이 있으면 통합, 없으면 UNIX 다 (`modes.detect`).
+    resolved = modes.resolve(mode, quoted)
+
     # 요약표는 문서 하나에 한 벌이고 장비군에 한 번씩 짝지어 쓴다. 통합 모드가
     # 아니면 읽지 않는다 — UNIX 경로는 한 줄도 달라지지 않는다.
-    summary = dcsc_summary.parse(root) if mode == modes.INTEGRATED else None
+    summary = dcsc_summary.parse(root) if resolved == modes.INTEGRATED else None
 
     return Quotation(
-        groups=_build_groups(quoted, _reference_names(all_items), mode, summary))
+        mode=resolved,
+        groups=_build_groups(quoted, _reference_names(all_items), resolved, summary))

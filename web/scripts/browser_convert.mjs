@@ -7,11 +7,7 @@
  *
  *   node web/scripts/browser_convert.mjs <엔진폴더> <출력폴더> <xml…>
  *
- * 입력은 경로 하나이거나 `경로::모드` 다. 모드를 주면 화면의 UNIX/통합 토글을
- * 그 값으로 놓고 부른 것과 같다.
- *
  * 출력: <출력폴더>/<이름>.xlsx 와 <이름>.json (상태·헤더·로그).
- * 모드를 준 입력은 이름 뒤에 `.<모드>` 가 붙는다.
  */
 import { createEngine } from '../frontend/src/engine.js';
 
@@ -37,7 +33,7 @@ function commonjsShim(engineDir) {
 
 const [engineArg, outArg, ...inputs] = process.argv.slice(2);
 if (!engineArg || !outArg || inputs.length === 0) {
-  console.error('사용법: node browser_convert.mjs <엔진폴더> <출력폴더> <xml[::모드]…>');
+  console.error('사용법: node browser_convert.mjs <엔진폴더> <출력폴더> <xml…>');
   process.exit(2);
 }
 
@@ -53,19 +49,16 @@ const engine = await createEngine({
   importModule: (url) => import(pathToFileURL(url).href),
 });
 
-for (const spec of inputs) {
-  const [input, mode = ''] = spec.split('::');
+for (const input of inputs) {
   const filename = basename(input);
   const result = engine.convert({
     filename,
     content: new Uint8Array(readFileSync(input)),
     contentType: 'text/xml',
     deploymentVersion: 'parity',
-    mode,
   });
 
-  const base = filename.slice(0, filename.length - extname(filename).length);
-  const stem = mode ? `${base}.${mode}` : base;
+  const stem = filename.slice(0, filename.length - extname(filename).length);
   if (result.status === 200) {
     writeFileSync(join(outDir, `${stem}.xlsx`), Buffer.from(result.body));
   }

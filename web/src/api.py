@@ -159,21 +159,17 @@ def pick_upload(uploads: list[Upload]) -> Upload:
 
 def convert_response(uploads: list[Upload], *, template_bytes: bytes,
                      template_version: str, deployment_version: str,
-                     request_id: str, today: dt.date,
-                     mode: str = conversion_adapter.DEFAULT_MODE) -> ApiResponse:
+                     request_id: str, today: dt.date) -> ApiResponse:
     """`POST /api/v1/convert` — 업로드 한 건을 견적서로 바꿔 바로 내려 준다.
 
     입력과 결과는 저장하지 않는다. 요청이 끝나면 함께 사라진다.
 
-    Args:
-        mode: 화면의 UNIX/통합 토글이 고른 문서 해석 방식. 모드는 견적 내용이
-            아니라 설정이므로 로그에 남긴다 (계획서 §13).
+    IBM 문서인지 레노버 x86 문서인지는 화면이 고르지 않는다. 업로드된 XML
+    내용으로 알아낸다 (`quotation.core.modes.detect`).
     """
     base_log = {"deployment_version": deployment_version,
                 "template_version": template_version}
     try:
-        chosen = conversion_adapter.normalize_mode(mode)
-        base_log["mode"] = chosen
         upload = pick_upload(uploads)
         base_log["input_size_bucket"] = size_bucket(len(upload.content))
 
@@ -182,7 +178,6 @@ def convert_response(uploads: list[Upload], *, template_bytes: bytes,
             template_bytes=template_bytes,
             today=today,
             source_name=upload.filename,
-            mode=chosen,
         )
     except errors.ApiError as err:
         return error_response(err, request_id, base_log)
@@ -197,6 +192,7 @@ def convert_response(uploads: list[Upload], *, template_bytes: bytes,
     return ApiResponse(
         status=200, headers=headers, body=result.xlsx,
         log={**base_log, "outcome": "ok", "status": 200,
+             "mode": result.mode,
              "line_count": result.line_count,
              "group_count": result.group_count,
              "output_size_bucket": size_bucket(len(result.xlsx)),

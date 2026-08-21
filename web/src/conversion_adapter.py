@@ -14,28 +14,11 @@ from io import BytesIO
 import errors
 import limits
 from quotation.core import convert as core_convert
-from quotation.core import modes
 from quotation.core.writer import ibm_writer
 from quotation.core.xml_reader import QuotationXmlError, parse_bytes
 
 #: 템플릿과 산출물에 반드시 있어야 하는 시트
 REQUIRED_SHEETS = ("TOTAL", "template")
-
-#: 변환 모드. 화면의 토글과 같은 값이며 목록의 유일한 원본이다.
-MODES = modes.MODES
-DEFAULT_MODE = modes.DEFAULT
-
-
-def normalize_mode(raw: str | None) -> str:
-    """요청이 준 모드 값을 정규화한다.
-
-    Raises:
-        errors.ApiError: INVALID_REQUEST — 모르는 모드.
-    """
-    try:
-        return modes.normalize(raw)
-    except ValueError as exc:
-        raise errors.invalid_request("변환 모드가 올바르지 않습니다.") from exc
 
 _SHEET_NAME_RE = re.compile(rb'<sheet\b[^>]*\bname="([^"]*)"')
 _QUOTATION_ITEM_RE = re.compile(
@@ -103,12 +86,11 @@ def _guard_output(xlsx: bytes, group_count: int) -> None:
 
 def convert_upload(*, xml_bytes: bytes, template_bytes: bytes,
                    today: dt.date,
-                   source_name: str,
-                   mode: str = DEFAULT_MODE) -> core_convert.ConversionResult:
+                   source_name: str) -> core_convert.ConversionResult:
     """업로드된 XML 바이트 -> 견적서 바이트.
 
-    Args:
-        mode: 문서를 읽는 방식. 화면의 UNIX/통합 토글이 정한다.
+    IBM 문서인지 레노버 x86 문서인지는 고를 필요가 없다. 문서 내용으로 알아낸다
+    (`quotation.core.modes.detect`).
 
     Raises:
         errors.ApiError: 입력·템플릿·내부 오류를 API 오류로 분류해 던진다.
@@ -117,12 +99,11 @@ def convert_upload(*, xml_bytes: bytes, template_bytes: bytes,
 
     started = time.perf_counter()
 
-    mode = normalize_mode(mode)
     _guard_document_size(xml_bytes)
     validate_template(template_bytes)
 
     try:
-        quote = parse_bytes(xml_bytes, mode=mode)
+        quote = parse_bytes(xml_bytes)
     except QuotationXmlError as exc:
         # 원본 프로그램과 같은 문구를 그대로 사용자에게 보여 준다.
         raise errors.invalid_quotation_xml(str(exc)) from exc
@@ -149,4 +130,5 @@ def convert_upload(*, xml_bytes: bytes, template_bytes: bytes,
         group_count=len(quote.groups),
         line_count=core_convert.line_count(quote),
         elapsed_ms=int((time.perf_counter() - started) * 1000),
+        mode=quote.mode,
     )

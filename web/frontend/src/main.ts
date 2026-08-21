@@ -37,9 +37,6 @@ const errorId = el<HTMLElement>('error-id');
 const maxSize = el<HTMLElement>('max-size');
 const maxBatch = el<HTMLElement>('max-batch');
 const queue = el<HTMLUListElement>('queue');
-const modeInputs = Array.from(
-  form.querySelectorAll<HTMLInputElement>('input[name="mode"]'),
-);
 
 const config: AppConfig = APP_CONFIG;
 const converter = new Converter();
@@ -68,14 +65,7 @@ function setBusy(busy: boolean): void {
   submit.disabled = busy || chosen.length === 0;
   cancel.hidden = !busy;
   dropzone.setAttribute('aria-disabled', String(busy));
-  // 변환 도중에 모드를 바꾸면 같은 묶음의 결과가 갈린다.
-  for (const input of modeInputs) input.disabled = busy;
   document.body.classList.toggle('is-busy', busy);
-}
-
-/** 고른 변환 모드. 아무것도 안 잡히면 파이썬 기본값(UNIX)에 맡긴다. */
-function currentMode(): string {
-  return modeInputs.find((input) => input.checked)?.value ?? '';
 }
 
 function humanSize(bytes: number): string {
@@ -196,13 +186,12 @@ fileInput.addEventListener('change', pickFromInput);
 // --- 변환 --------------------------------------------------------------------
 
 /** 한 건 변환하고 바로 내려 준다. 실패는 던지지 않고 이유를 돌려준다. */
-async function convertOne(file: File, index: number, controller: AbortController,
-                          mode: string): Promise<string | null> {
+async function convertOne(file: File, index: number,
+                          controller: AbortController): Promise<string | null> {
   setRowState(index, 'working', '변환 중');
   try {
     const result = await converter.convert(file, {
       signal: controller.signal,
-      mode,
       onStage: (stage) =>
         setStatus(chosen.length === 1 ? stage : `(${index + 1}/${chosen.length}) ${stage}`),
     });
@@ -227,8 +216,6 @@ form.addEventListener('submit', async (event) => {
 
   const controller = new AbortController();
   const files = chosen;
-  // 묶음 전체가 같은 모드로 돈다. 도중에 바뀌어도 흔들리지 않는다.
-  const mode = currentMode();
   running = controller;
   setBusy(true);
   clearError();
@@ -242,7 +229,7 @@ form.addEventListener('submit', async (event) => {
       if (controller.signal.aborted) break;
       setStatus(progressLabel(index, files.length, file.name));
 
-      const reason = await convertOne(file, index, controller, mode);
+      const reason = await convertOne(file, index, controller);
       if (reason === null) {
         tally.done += 1;
       } else {

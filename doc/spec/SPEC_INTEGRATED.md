@@ -1,7 +1,8 @@
 # 통합 모드 명세 — 레노버 x86 구성 파일
 
 - 대상: Lenovo DCSC(Data Center Solution Configurator)가 내려 주는 CFXML
-- 적용: 화면의 `변환 모드` 토글에서 **통합** 을 고른 경우에만
+- 적용: 문서에 `ProductName` 이 있어 **통합** 으로 판정된 경우에만
+  (`modes.detect`). 사람이 고르지 않는다
 - 구현: [`quotation/core/integrated.py`](../../quotation/core/integrated.py),
   [`quotation/core/dcsc_summary.py`](../../quotation/core/dcsc_summary.py),
   [`quotation/core/modes.py`](../../quotation/core/modes.py)
@@ -183,36 +184,35 @@ base64 로 적은 gzip XML 이다.
 
 ## 4. 화면과 배선
 
-화면의 `변환 모드` 토글이 모드를 정하고, 그 값이 파이썬까지 그대로 간다.
-판단(모르는 값 거절)은 언제나 파이썬이 한다.
+화면에는 고르는 곳이 없다. 업로드된 XML 자체가 어느 쪽인지 알려 준다 —
+본체 라인에 `ProductName` 이 있으면 통합, 없으면 UNIX (`modes.detect`,
+`quotation/core/modes.py`). 판단은 언제나 파이썬이, 문서를 읽는 시점에 한다.
 
 ```text
-index.html  <input name="mode" value="unix|integrated">
-  main.ts       currentMode()
-    converter.ts    ConvertOptions.mode
-      convert.worker.ts  WorkerRequest.mode
-        engine.js          entry.convert(…, mode)
-          entry.py           api.convert_response(…, mode=…)
-            api.py             conversion_adapter.normalize_mode()
-              conversion_adapter.py  xml_reader.parse_bytes(…, mode=…)
-                xml_reader.py          dcsc_summary.parse
-                                       integrated.group_key / fold_prices
+index.html  (mode 관련 입력 없음)
+  main.ts       (mode 인수 없음)
+    converter.ts    (mode 인수 없음)
+      convert.worker.ts  (mode 필드 없음)
+        engine.js          entry.convert(filename, content, …)
+          entry.py           api.convert_response(…)
+            api.py             conversion_adapter.convert_upload(…)
+              conversion_adapter.py  xml_reader.parse_bytes(xml_bytes)
+                xml_reader.py          modes.resolve(mode="", quoted)
+                                          -> modes.detect(quoted)
+                                        dcsc_summary.parse
+                                        integrated.group_key / fold_prices
 ```
 
-서버 경로(`web/src/worker.py`, Workers Paid 전용)는 multipart 의 `mode` 필드를
-`form.get_all("mode")` 로 읽는다. `get_all` 은 SDK 대응이 확인된 이름이다
-([사고 0001](../incidents/0001-worker-rejected-everything.md)).
+`xml_reader.parse`/`parse_bytes`(그리고 `convert.convert`/`convert_bytes`)는
+여전히 `mode=` 를 받는다 — 자동 판정을 강제로 덮어쓸 때 쓰는 내부 통로이고,
+테스트에서만 쓴다. 비워 두면(기본값) 문서로 알아낸다.
 
-- 모드 필드가 없거나 비어 있으면 **UNIX** 다. 모드를 모르는 예전 클라이언트도
-  지금까지와 같이 돈다.
-- 모르는 값은 `INVALID_REQUEST`(400)로 거절한다.
-- 모드는 견적 내용이 아니라 설정이므로 구조화 로그에 `mode` 로 남긴다
-  (계획 §13).
+- 문서에 `ProductName` 이 하나라도 있으면 **통합**, 없으면 **UNIX** 다.
+- 판정 결과는 견적 내용이 아니라 진단 정보이므로 구조화 로그에 `mode` 로
+  남긴다 (계획 §13) — `Quotation.mode` 에 실어 웹 계층까지 그대로 간다.
 
 ## 5. 아직 하지 않은 것
 
-- **데스크톱 앱에는 토글이 없다.** 코어는 `mode=` 를 받으므로 화면만 붙이면
-  된다.
 - 여러 XML 을 한 견적서로 합치지 않는다. 지금처럼 XML 하나에 `.xlsx` 하나다.
 - 요약표에 금액이 없는 구성(구형 파일, 가격 미제공)은 갈라 적지 못한다. 본체
   LP 한 줄로만 센다.

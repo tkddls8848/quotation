@@ -45,10 +45,7 @@ def integrated(source):
 
 # --- 모드 값 ------------------------------------------------------------------
 
-def test_default_mode_is_unix():
-    assert modes.DEFAULT == modes.UNIX
-    assert modes.normalize(None) == modes.UNIX
-    assert modes.normalize("") == modes.UNIX
+def test_normalize_accepts_known_modes_case_and_space_insensitively():
     assert modes.normalize(" INTEGRATED ") == modes.INTEGRATED
 
 
@@ -57,8 +54,18 @@ def test_unknown_mode_is_rejected():
         modes.normalize("lenovo")
 
 
-def test_parse_defaults_to_unix(source, unix):
-    assert xml_reader.parse_bytes(source).groups == unix.groups
+def test_detect_reads_product_name(source):
+    """레노버 문서(ProductName 있음)는 통합, IBM 문서(없음)는 UNIX 로 갈린다."""
+    lenovo = xml_reader.parse_bytes(source, mode=modes.UNIX)  # 파싱만, 판정은 안 씀
+    items = [item for group in lenovo.groups for item in group.items]
+    assert modes.detect(items) == modes.INTEGRATED
+
+
+def test_parse_without_a_mode_detects_from_the_document(source, integrated):
+    """모드를 안 주면 문서 내용(ProductName 유무)으로 알아낸다."""
+    auto = xml_reader.parse_bytes(source)
+    assert auto.mode == modes.INTEGRATED
+    assert auto.groups == integrated.groups
 
 
 # --- 시트명 -------------------------------------------------------------------

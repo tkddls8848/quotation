@@ -111,3 +111,6 @@ class Quotation:
     """XML 한 건 = 견적서 한 부."""
 
     groups: tuple[Group, ...]
+    #: 문서에서 알아낸 읽기 방식 (`modes.UNIX` 또는 `modes.INTEGRATED`).
+    #: 견적 내용에는 쓰지 않고, 진단 로그에만 남긴다.
+    mode: str = ""

@@ -91,24 +91,15 @@ export async function createEngine(options) {
       return entry.today();
     },
 
-    /** 고를 수 있는 변환 모드. 목록의 원본은 파이썬에 있다. */
-    modes() {
-      const proxy = entry.modes();
-      try {
-        return proxy.toJs();
-      } finally {
-        proxy.destroy();
-      }
-    },
-
     /**
      * XML 한 건을 견적서로 바꾼다. 서버의 `POST /api/v1/convert` 와 같은 응답을
      * 돌려준다 — 같은 상태 코드, 같은 헤더, 같은 본문, 같은 오류 메시지.
      *
-     * `mode` 는 화면의 UNIX/통합 토글이 정한다. 비우면 UNIX 다.
+     * IBM 문서인지 레노버 x86 문서인지는 고를 필요가 없다. XML 내용으로
+     * 파이썬이 알아낸다.
      *
      * @param {{filename: string, content: Uint8Array, contentType?: string,
-     *          deploymentVersion?: string, mode?: string}} upload
+     *          deploymentVersion?: string}} upload
      */
     convert(upload) {
       const result = entry.convert(
@@ -116,7 +107,6 @@ export async function createEngine(options) {
         pyodide.toPy(upload.content),
         upload.contentType ?? '',
         upload.deploymentVersion ?? 'browser',
-        upload.mode ?? '',
       );
       try {
         return {

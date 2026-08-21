@@ -20,7 +20,6 @@ from __future__ import annotations
 
 import api
 import clock
-import conversion_adapter
 import errors
 import template
 
@@ -37,15 +36,16 @@ def _as_dict(response: "api.ApiResponse") -> dict:
 
 def convert(filename: str, content, content_type: str = "",
             deployment_version: str = "browser",
-            mode: str = "",
             request_id: str | None = None) -> dict:
     """업로드 한 건을 견적서로 바꾼다. 서버의 `POST /api/v1/convert` 와 같다.
+
+    IBM 문서인지 레노버 x86 문서인지는 화면이 고르지 않는다. XML 내용으로
+    알아낸다 (`quotation.core.modes.detect`).
 
     Args:
         filename: 사용자가 고른 파일 이름.
         content: XML 바이트 (JS `Uint8Array` 가 넘어온다).
         content_type: 브라우저가 붙인 MIME.
-        mode: 화면의 UNIX/통합 토글 값. 비어 있으면 UNIX 다.
 
     Returns:
         status / headers / body / log. 실패해도 예외를 던지지 않고 서버와 같은
@@ -69,14 +69,8 @@ def convert(filename: str, content, content_type: str = "",
         # 견적 날짜는 브라우저의 지역 시간이 아니라 Asia/Seoul 기준이다.
         # 서버 경로와 같은 함수를 쓴다.
         today=clock.seoul_today(),
-        mode=mode,
     )
     return _as_dict(response)
-
-
-def modes() -> list:
-    """화면이 고를 수 있는 변환 모드 목록. 파이썬이 유일한 원본이다."""
-    return list(conversion_adapter.MODES)
 
 
 def template_version() -> str:

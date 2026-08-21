@@ -6,7 +6,7 @@ eConfig Export XML을 기존 견적서 양식의 Excel 파일(`.xlsx`)로 변환
 
 | 실행 방식 | 위치 | 상태 |
 |---|---|---|
-| 데스크톱 앱 (Windows 단일 EXE) | [`desktop_ibm/`](desktop_ibm/) | 운영 중 — IBM 제품 전용 |
+| 데스크톱 앱 (Windows 단일 EXE) | [`desktop_ibm/`](desktop_ibm/) | 운영 중 — IBM·레노버 x86 모두 지원 |
 | 웹 앱 (Cloudflare Workers) | [`web/`](web/) | 운영 중 — [문서](doc/) |
 
 웹 앱은 **브라우저 안에서** 변환합니다. Cloudflare Workers 무료 계정의 CPU
@@ -18,19 +18,20 @@ eConfig Export XML을 기존 견적서 양식의 Excel 파일(`.xlsx`)로 변환
 - 증설 견적의 제거 부품은 음수 수량과 빨간 글씨로 표시합니다.
 - 기존 양식의 로고와 머리말 도형을 보존합니다.
 
-## 변환 모드
+## IBM·레노버 판별
 
-구성 파일을 만든 구성기에 따라 값의 뜻이 달라집니다. 웹 화면 위쪽의
-`변환 모드` 토글에서 고릅니다. 기본값은 `IBM 제품` 입니다.
+구성 파일을 만든 구성기에 따라 값의 뜻이 달라집니다. 사람이 고르지 않고
+문서 내용으로 알아냅니다 — 레노버 구성기만 장비 본체 라인에 사람이 적어 넣은
+이름(`ProductName`)을 남기기 때문입니다 (`quotation/core/modes.py`).
 
-| 모드 | 대상 | 무엇이 다른가 |
+| 문서 | 판별 근거 | 무엇이 다른가 |
 |---|---|---|
-| `IBM 제품` | IBM eServer and TotalStorage — eConfig Export | 지금까지와 같습니다 |
-| `통합` | 레노버 x86 (Lenovo DCSC) | 장비 이름을 구성기에 적어 넣은 이름(`ProductName`)으로 붙이고, 서버 본체 LP 에 이미 들어 있는 SW·서비스 금액을 두 번 세지 않습니다. 구성 파일에 담긴 DCSC 요약표를 읽어 H/W·S/W 금액을 갈라 적습니다 |
+| IBM eServer and TotalStorage — eConfig Export | `ProductName` 없음 | 지금까지와 같습니다 |
+| 레노버 x86 (Lenovo DCSC) | `ProductName` 있음 | 장비 이름을 구성기에 적어 넣은 이름으로 붙이고, 서버 본체 LP 에 이미 들어 있는 SW·서비스 금액을 두 번 세지 않습니다. 구성 파일에 담긴 DCSC 요약표를 읽어 H/W·S/W 금액을 갈라 적습니다 |
 
-`통합` 모드의 근거와 규칙은
+레노버 x86 판독 규칙의 근거는
 [doc/spec/SPEC_INTEGRATED.md](doc/spec/SPEC_INTEGRATED.md) 에 있습니다.
-데스크톱 앱은 아직 `IBM 제품` 모드만 씁니다.
+데스크톱 앱과 웹 앱 모두 같은 판별을 쓰므로 두 문서를 가리지 않고 받습니다.
 
 ## 저장소 구조
 
@@ -43,7 +44,7 @@ quotation/              공용 코어 — Excel·GUI·경로에 의존하지 않
     models.py           견적 데이터 모델
     money.py            금액 파싱 (콤마, N/C, Decimal)
     naming.py           종목 키 및 시트명 생성 (Excel 금칙 문자·중복 정리 포함)
-    modes.py            변환 모드 (UNIX / 통합)
+    modes.py            IBM/레노버 x86 문서 판별 (UNIX / 통합)
     integrated.py       통합 모드 전용 해석 규칙 — 레노버 x86 구성 파일
     dcsc_summary.py     레노버 DCSC 요약표 읽기 (품목별 실금액)
     convert.py          변환 오케스트레이션 (convert / convert_bytes)

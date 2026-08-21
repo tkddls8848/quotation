@@ -16,7 +16,7 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Callable
 
-from . import modes, resources, xml_reader
+from . import resources, xml_reader
 from .models import Quotation
 from .writer import ibm_writer
 
@@ -44,6 +44,8 @@ class ConversionResult:
     group_count: int
     line_count: int
     elapsed_ms: int
+    #: 문서에서 알아낸 읽기 방식 (`modes.UNIX` 또는 `modes.INTEGRATED`). 진단 로그용.
+    mode: str = ""
 
 
 def _noop(percent: int, message: str) -> None:
@@ -69,11 +71,12 @@ def line_count(quote: Quotation) -> int:
 def convert_bytes(xml_bytes: bytes, template_bytes: bytes, *,
                   today: dt.date | None = None,
                   source_name: str = "quotation.xml",
-                  mode: str = modes.DEFAULT) -> ConversionResult:
+                  mode: str = "") -> ConversionResult:
     """XML 바이트 -> 견적서 .xlsx 바이트.
 
     Args:
-        mode: 문서를 읽는 방식 (`quotation.core.modes`).
+        mode: 문서를 읽는 방식을 강제로 지정한다 (`quotation.core.modes`).
+            비워 두면 문서 내용(IBM/레노버)으로 알아낸다 — 보통은 이쪽을 쓴다.
 
     Raises:
         xml_reader.QuotationXmlError: XML 문제
@@ -87,18 +90,20 @@ def convert_bytes(xml_bytes: bytes, template_bytes: bytes, *,
         group_count=len(quote.groups),
         line_count=line_count(quote),
         elapsed_ms=int((time.perf_counter() - started) * 1000),
+        mode=quote.mode,
     )
 
 
 def convert(xml_path: str | Path, *, template: str | Path | None = None,
             today: dt.date | None = None,
             progress: ProgressFn = _noop,
-            mode: str = modes.DEFAULT) -> Result:
+            mode: str = "") -> Result:
     """XML -> 견적서 .xlsx. 저장 위치는 XML 과 같은 폴더로 고정이다.
 
     Args:
         template: 쓸 템플릿 경로. 생략하면 저장소의 기준 템플릿을 쓴다.
-        mode: 문서를 읽는 방식 (`quotation.core.modes`).
+        mode: 문서를 읽는 방식을 강제로 지정한다 (`quotation.core.modes`).
+            비워 두면 문서 내용(IBM/레노버)으로 알아낸다 — 보통은 이쪽을 쓴다.
 
     Raises:
         xml_reader.QuotationXmlError: XML 문제

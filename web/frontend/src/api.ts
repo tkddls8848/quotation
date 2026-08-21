@@ -81,12 +81,9 @@ async function readError(response: Response): Promise<ConvertError> {
 export async function convertOnServer(
   file: File,
   signal: AbortSignal,
-  mode?: string,
 ): Promise<Converted> {
   const form = new FormData();
   form.append('file', file, file.name);
-  // 브라우저 경로와 같은 값을 보낸다. 비면 서버가 UNIX 로 본다.
-  if (mode) form.append('mode', mode);
 
   const response = await fetch('/api/v1/convert', {
     method: 'POST',

@@ -43,16 +43,18 @@ ROOT = Path(__file__).resolve().parents[2]
 ENGINE_DIR = ROOT / "web" / "frontend" / "public" / "py"
 DRIVER = ROOT / "web" / "scripts" / "browser_convert.mjs"
 
-#: (파일, 변환 모드). 모드가 빈 문자열이면 화면 기본값(UNIX)이다.
+#: 대조할 파일. 어느 쪽 문서(IBM/레노버)든 사람이 고르지 않고 내용으로
+#: 갈린다(`quotation.core.modes.detect`) — 브라우저와 CPython 이 같은 판단을
+#: 내려야 한다.
 CASES = (
-    ("new_quote.xml", ""),
-    ("upgrade_quote.xml", ""),
-    ("no_charge.xml", ""),
-    ("euckr_quote.xml", ""),
-    # 통합 모드도 브라우저와 CPython 이 같은 바이트를 내야 한다.
-    ("integrated_quote.xml", "integrated"),
+    "new_quote.xml",
+    "upgrade_quote.xml",
+    "no_charge.xml",
+    "euckr_quote.xml",
+    # 통합(레노버) 문서도 브라우저와 CPython 이 같은 바이트를 내야 한다.
+    "integrated_quote.xml",
     # 요약표를 푸는 길(base64+gzip)도 브라우저에서 같아야 한다.
-    ("integrated_summary_quote.xml", "integrated"),
+    "integrated_summary_quote.xml",
 )
 
 #: 실패도 서버와 같아야 한다. (이름, 내용, 기대 상태)
@@ -77,8 +79,7 @@ def browser_results(tmp_path_factory, fixtures) -> dict[str, dict]:
     for name, content, _ in ERROR_CASES:
         (bad / name).write_bytes(content)
 
-    inputs = [f"{fixtures / name}::{mode}" if mode else str(fixtures / name)
-              for name, mode in CASES]
+    inputs = [str(fixtures / name) for name in CASES]
     inputs += [str(bad / name) for name, _, _ in ERROR_CASES]
 
     proc = subprocess.run(
@@ -87,17 +88,17 @@ def browser_results(tmp_path_factory, fixtures) -> dict[str, dict]:
     assert proc.returncode == 0, f"브라우저 엔진 실행 실패:\n{proc.stderr[-4000:]}"
 
     results = {}
-    for name, mode in [*CASES, *((n, "") for n, _, _ in ERROR_CASES)]:
-        stem = f"{Path(name).stem}.{mode}" if mode else Path(name).stem
+    for name in [*CASES, *(n for n, _, _ in ERROR_CASES)]:
+        stem = Path(name).stem
         meta = json.loads((out / f"{stem}.json").read_text(encoding="utf-8"))
         xlsx = out / f"{stem}.xlsx"
         meta["xlsx"] = xlsx.read_bytes() if xlsx.is_file() else b""
-        results[(name, mode)] = meta
+        results[name] = meta
     return results
 
 
-def _cpython(fixtures, name: str, today: dt.date, template_bytes: bytes,
-             mode: str = "") -> api.ApiResponse:
+def _cpython(fixtures, name: str, today: dt.date,
+             template_bytes: bytes) -> api.ApiResponse:
     """서버(그리고 데스크톱)와 같은 경로. 브라우저가 부르는 함수와 같은 함수다."""
     return api.convert_response(
         [api.Upload(filename=name,
@@ -107,20 +108,19 @@ def _cpython(fixtures, name: str, today: dt.date, template_bytes: bytes,
         template_version="parity",
         deployment_version="parity",
         request_id="parity",
-        today=today,
-        mode=mode)
+        today=today)
 
 
 # --- 바이트 대조 ---------------------------------------------------------------
 
-@pytest.mark.parametrize("name,mode", CASES)
-def test_browser_xlsx_is_byte_identical(name, mode, browser_results, fixtures,
+@pytest.mark.parametrize("name", CASES)
+def test_browser_xlsx_is_byte_identical(name, browser_results, fixtures,
                                         template_bytes):
-    result = browser_results[(name, mode)]
+    result = browser_results[name]
     assert result["status"] == 200, result.get("body_utf8")
 
     expected = _cpython(fixtures, name, dt.date.fromisoformat(result["today"]),
-                        template_bytes, mode)
+                        template_bytes)
     assert expected.status == 200
 
     problems = differences(expected.body, result["xlsx"])
@@ -129,7 +129,7 @@ def test_browser_xlsx_is_byte_identical(name, mode, browser_results, fixtures,
 
 def test_browser_keeps_the_template_drawings(browser_results):
     """로고와 머리말 도형이 그대로 실려 나오는지 (양식 뒤틀림 방지)."""
-    with zipfile.ZipFile(BytesIO(browser_results[("new_quote.xml", "")]["xlsx"])) as z:
+    with zipfile.ZipFile(BytesIO(browser_results["new_quote.xml"]["xlsx"])) as z:
         names = z.namelist()
     assert [n for n in names if n.startswith("xl/media/")]
     assert [n for n in names if n.startswith("xl/drawings/")]
@@ -137,15 +137,15 @@ def test_browser_keeps_the_template_drawings(browser_results):
 
 # --- 셀 단위 대조 --------------------------------------------------------------
 
-@pytest.mark.parametrize("name,mode", CASES)
-def test_browser_xlsx_matches_cell_by_cell(name, mode, browser_results, fixtures,
+@pytest.mark.parametrize("name", CASES)
+def test_browser_xlsx_matches_cell_by_cell(name, browser_results, fixtures,
                                            template_bytes, tmp_path):
     """골든 회귀와 같은 비교기로 한 번 더 본다. 값·수식·서식·병합·열너비."""
     import compare
 
-    result = browser_results[(name, mode)]
+    result = browser_results[name]
     expected = _cpython(fixtures, name, dt.date.fromisoformat(result["today"]),
-                        template_bytes, mode)
+                        template_bytes)
 
     want = tmp_path / "cpython.xlsx"
     got = tmp_path / "browser.xlsx"
@@ -158,13 +158,13 @@ def test_browser_xlsx_matches_cell_by_cell(name, mode, browser_results, fixtures
 
 # --- 계약 대조 -----------------------------------------------------------------
 
-@pytest.mark.parametrize("name,mode", CASES)
-def test_browser_returns_the_same_headers_and_log(name, mode, browser_results,
+@pytest.mark.parametrize("name", CASES)
+def test_browser_returns_the_same_headers_and_log(name, browser_results,
                                                   fixtures, template_bytes):
     """상태 코드·다운로드 이름·로그 항목이 서버 응답과 같아야 한다."""
-    result = browser_results[(name, mode)]
+    result = browser_results[name]
     expected = _cpython(fixtures, name, dt.date.fromisoformat(result["today"]),
-                        template_bytes, mode)
+                        template_bytes)
 
     assert result["status"] == expected.status
     assert result["headers"]["Content-Disposition"] == \
@@ -180,7 +180,7 @@ def test_browser_rejects_what_the_server_rejects(name, content, status,
                                                  browser_results,
                                                  template_bytes):
     """거절도 같아야 한다. 같은 상태 코드, 같은 오류 코드, 같은 문구."""
-    result = browser_results[(name, "")]
+    result = browser_results[name]
     assert result["status"] == status
 
     expected = api.convert_response(

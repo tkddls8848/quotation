@@ -16,33 +16,12 @@
         <p class="lede">
           eConfig Export XML 을 견적서 Excel 화일로 바꿉니다. 여러 개를 한 번에
           고를 수 있고, XML 하나마다 <code>.xlsx</code> 하나를 같은 이름으로
-          내려받습니다.
+          내려받습니다. IBM 제품과 Lenovo 제품(x86, ThinkSystem) XML 을
+          가리지 않고 알아서 구분해 변환합니다.
         </p>
       </header>
 
       <form id="form" novalidate>
-        <fieldset class="mode">
-          <legend class="mode__legend">변환 모드</legend>
-          <div class="mode__choices" role="radiogroup">
-            <label class="mode__choice">
-              <input type="radio" name="mode" value="unix" checked />
-              <span class="mode__name">IBM 제품</span>
-              <span class="mode__help">
-                IBM eServer and TotalStorage — 지금까지와 같습니다.
-              </span>
-            </label>
-            <label class="mode__choice">
-              <input type="radio" name="mode" value="integrated" />
-              <span class="mode__name">통합</span>
-              <span class="mode__help">
-                레노버 x86 (ThinkSystem) 구성. 장비 이름을 구성기에 적어 넣은
-                이름으로 붙이고, 구성 파일에 담긴 DCSC 요약표를 읽어 H/W·S/W
-                금액을 갈라 적습니다.
-              </span>
-            </label>
-          </div>
-        </fieldset>
-
         <div
           id="dropzone"
           class="dropzone"
