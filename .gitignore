@@ -42,3 +42,10 @@ web/.engine-cache/
 # pywrangler 가 Pyodide 의존성을 받아 두는 자리 (pylock.toml 로 재현한다)
 web/python_modules/
 web/.venv-workers/
+target/
+
+# --- 실데이터 -----------------------------------------------------------------
+# 견적 구성 XML 과 그것으로 만든 산출물은 거래 조건이다. 저장소는 공개되어
+# 있으므로 담지 않는다. 검증에 쓰는 자료는 tests/fixtures/public 의 익명화본이다.
+/*.xml
+artifacts/
