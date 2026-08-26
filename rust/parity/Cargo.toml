@@ -1,0 +1,10 @@
+[package]
+name = "quotation-parity"
+version = "0.1.0"
+edition.workspace = true
+rust-version.workspace = true
+publish = false
+
+[dependencies]
+quotation-core = { path = "../core" }
+serde_json = "1.0.145"

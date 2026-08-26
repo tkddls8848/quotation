@@ -1,0 +1,10 @@
+[package]
+name = "quotation-phase0-roundtrip"
+version = "0.1.0"
+edition.workspace = true
+rust-version.workspace = true
+
+[dependencies]
+anyhow = "1.0.104"
+umya-spreadsheet = "3.1.0"
+zip = { version = "2.4.2", default-features = false, features = ["deflate"] }

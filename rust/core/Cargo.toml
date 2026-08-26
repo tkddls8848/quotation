@@ -1,0 +1,8 @@
+[package]
+name = "quotation-core"
+version = "0.1.0"
+edition.workspace = true
+rust-version.workspace = true
+
+[dependencies]
+rust_decimal = { version = "1.38.0", default-features = false, features = ["std"] }
