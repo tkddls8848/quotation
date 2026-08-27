@@ -11,5 +11,6 @@ pub mod modes;
 pub mod money;
 pub mod naming;
 pub mod text;
+pub mod writer;
 pub mod xml_reader;
 pub mod xmldom;

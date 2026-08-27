@@ -150,7 +150,8 @@ fn predefined(reference: &BytesRef<'_>) -> Option<char> {
     if let Ok(Some(character)) = reference.resolve_char_ref() {
         return Some(character);
     }
-    match reference.as_ref() {
+    let name: &[u8] = reference.as_ref();
+    match name {
         b"amp" => Some('&'),
         b"lt" => Some('<'),
         b"gt" => Some('>'),

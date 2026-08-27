@@ -110,6 +110,7 @@ jobs:
           python tools/rust_parity_pure_rules.py
           python tools/rust_parity_xml_reader.py
           python tools/rust_parity_quotation.py
+          python tools/rust_parity_workbook.py
       - name: WASM 전송 크기
         # 관문 2 — gzip 1 MiB 를 넘으면 브라우저 자산 교체의 전제가 무너진다.
         run: |

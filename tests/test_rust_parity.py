@@ -19,6 +19,7 @@ ROOT = Path(__file__).resolve().parents[1]
 PURE_RULES = ROOT / "tools" / "rust_parity_pure_rules.py"
 XML_READER = ROOT / "tools" / "rust_parity_xml_reader.py"
 QUOTATION = ROOT / "tools" / "rust_parity_quotation.py"
+WORKBOOK = ROOT / "tools" / "rust_parity_workbook.py"
 
 pytestmark = pytest.mark.skipif(
     shutil.which("cargo") is None,
@@ -49,3 +50,8 @@ def test_xml_reader_matches_python_core():
 def test_quotation_matches_python_core():
     """그룹 구성 · 시트명 · 구간 · 금액을 대조한다 (Phase 3)."""
     assert "모두 같습니다" in _run(QUOTATION)
+
+
+def test_workbook_matches_python_core():
+    """만들어진 견적서를 셀 단위로 대조한다 (Phase 4)."""
+    assert "모두 같습니다" in _run(WORKBOOK)
