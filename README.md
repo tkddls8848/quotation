@@ -68,9 +68,11 @@ web/                    웹 전용 — 데스크톱에서 쓰지 않는다
   tests/                API·경계 테스트 + 브라우저/CPython 동일성 검증
   wrangler.jsonc        기본=정적 자산(무료), env.server=Python Worker(Paid)
 
-rust/                   Rust 코어 이식 (진행 중, doc/plan/rust-wasm-core-plan.md)
-  core/                 옮긴 변환 규칙 — 지금은 money·naming·modes
-  parity/               파이썬 구현과 대조하는 탐침 (견적서를 만들지 않는다)
+rust/                   Rust 코어 이식 (doc/plan/rust-wasm-core-plan.md)
+  core/                 옮긴 변환 규칙 전부 — XML 읽기부터 견적서 작성까지
+  wasm/                 브라우저 진입점 (wasm-bindgen)
+  python/               데스크톱·CI 용 확장 모듈 (PyO3, quotation_rust)
+  parity/               파이썬 구현과 대조하는 탐침
   roundtrip/            Phase 0 관문 — 첫 페이지 도형 보존 확인용
 
 tests/                  공용 코어 테스트 + 익명화 fixture(tests/fixtures/public)
@@ -78,8 +80,9 @@ tools/                  공용 개발 도구 (골든 비교, 템플릿 변환, R
 doc/                    성격별로 나눈 문서 — 명세·안내·계획·결정·사고·실측
 ```
 
-`rust/` 는 아직 견적서를 만들지 않습니다. 변환은 전부 `quotation/` 이 하고,
-Rust 쪽은 같은 입력에 같은 답을 내는지 대조받는 중입니다.
+`rust/` 는 이미 같은 견적서를 만들지만 **아직 배포 경로에 연결되어 있지
+않습니다.** 데스크톱과 웹은 지금도 `quotation/` 을 씁니다. 배선을 바꾸기 전에
+정할 것이 하나 남아 있습니다 — [일정 §5](doc/plan/rust-wasm-core-schedule.md).
 
 `quotation/`, `tests/`, `tools/` 는 **데스크톱과 웹이 함께 쓰는 공용 자산**
 입니다. 어느 한쪽에 딸린 것이 아니므로 `desktop_ibm/` 이나 `web/` 아래로 옮기지
@@ -148,8 +151,21 @@ python -m venv .venv
 .\.venv\Scripts\python.exe -m pytest -q
 
 # Rust 이식본 대조만 따로 (Rust 도구 필요, 없으면 위 전체 테스트에서 건너뜀)
-.\.venv\Scripts\python.exe tools\rust_parity_pure_rules.py
 cargo test
+.\.venv\Scripts\python.exe tools\rust_parity_pure_rules.py   # 순수 규칙
+.\.venv\Scripts\python.exe tools\rust_parity_xml_reader.py   # 파싱
+.\.venv\Scripts\python.exe tools\rust_parity_quotation.py    # 견적 내용
+.\.venv\Scripts\python.exe tools\rust_parity_workbook.py     # 견적서 파일
+
+# 확장 모듈(데스크톱·CI 경로) 빌드와 설치
+.\.venv\Scripts\python.exe -m pip install maturin
+.\.venv\Scripts\python.exe -m maturin build --release -m rust\python\Cargo.toml --out target\wheels
+.\.venv\Scripts\python.exe -m pip install --force-reinstall target\wheels\quotation_rust-0.1.0-cp311-abi3-win_amd64.whl
+
+# 브라우저 자산(WASM) 빌드와 실측
+cargo install wasm-pack
+wasm-pack build rust\wasm --release --target web --out-dir pkg
+node tools\wasm_startup_bench.mjs
 
 # samples\ 의 .xls 골든을 .cache\ 로 변환할 때만 실행 (Excel 필요)
 .\tools\xls2xlsx.ps1

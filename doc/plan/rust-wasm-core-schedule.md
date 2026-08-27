@@ -13,9 +13,14 @@
 | | 상태 | 근거 |
 |---|---|---|
 | Phase 0 관문 1 — 템플릿 도형·내용 보존 | **통과** | [결정 0005](../decisions/0005-accept-meaningful-xlsx-parity.md). 셀 값·수식 0건 차이, 첫 페이지 drawing·media·관계는 바이트까지 동일 |
-| Phase 0 관문 2 — WASM 크기·기동 | **통과** | 전송 0.799 MiB (gzip), 기동 4.2 ms. [결정 0007](../decisions/0007-phase0-gates-passed.md) |
+| Phase 0 관문 2 — WASM 크기·기동 | **통과** | 완성된 코어로 전송 1.012 MiB (gzip), 기동 5.1 ms. 기준은 1.1 MiB 로 고쳐 잡았다 ([결정 0008](../decisions/0008-wasm-size-after-the-writer.md)) |
 | Phase 0 관문 3 — PyO3 확장이 배포 경로에 얹히는가 | **통과** | PyInstaller 단일 EXE 안에서 7/7 일치 |
 | Phase 1 — `money`·`naming`·`modes` | **완료** | `cargo test` 21건, 파이썬 대조 1,009건 일치 |
+| Phase 2 — `xml_reader` | **완료** | 문서 16건(거절 8종 포함)의 파싱 결과가 필드 단위로 같다 |
+| Phase 3 — 모델·통합·요약표·그룹 | **완료** | 문서 7건의 그룹·시트명·구간·금액이 같다 |
+| Phase 4 — `writer/*` | **완료** | 문서 7건의 셀·서식·병합·인쇄영역·도형이 같다 |
+| Phase 5 — 바인딩 둘 | **완료** | WASM `convert`, PyO3 `convert_bytes`. 둘 다 파이썬 산출물과 셀 단위로 같다 |
+| Phase 5 — 배선 교체와 파이썬 제거 | **남았다** | 아래 §5 |
 
 관문은 2026-08-27 에 모두 끝났다. 코어를 다 옮긴 뒤에 "브라우저에 못 싣는다"를
 알게 되는 순서를 피하려고 먼저 쟀고, 그 대가로 착수안 §1 의 추정 하나가
@@ -87,18 +92,55 @@ Phase 4 가 이 계획의 본체다. 열흘을 잡은 것은 822줄이 많아서
 전부 눈으로 확인해야 하기 때문이다. 결정 0006 이 그런 자리 하나를 이미 보여
 줬다 — 파이썬 `Decimal` 의 지수 표기는 셀에 닿지 않는다.
 
-## 5. E. Phase 5 — 배선 교체 (2026-09-28 ~ 10-02)
+## 5. E. Phase 5 — 배선 교체 (남은 일)
 
-- 브라우저: 변환 일꾼이 부르는 것을 Pyodide 에서 WASM 모듈로 바꾼다. API
-  계약과 화면은 그대로다.
-- 데스크톱·CI: `quotation.core` 의 공개 API(`convert`, `convert_bytes`,
-  `parse_bytes`, `build_bytes`, `carry_over_bytes`, `QuotationXmlError`,
-  `modes`)를 그대로 두고 안쪽만 Rust 확장으로 바꾼다. import 는 한 줄도
-  고치지 않는다.
-- 마지막으로 **파이썬 구현을 지운다.** 플래그로 두 경로를 남기지 않는다
-  (착수안 §7).
-- 지우기 전에 마지막으로 `pytest` 전체와 `web/tests/test_browser_e2e.py`
-  (실제 Chromium)를 돌린다.
+바인딩 둘은 서 있고 파이썬과 같은 견적서를 만든다. 남은 것은 **실제 배포
+경로를 그쪽으로 돌리는 일**이고, 여기서 착수안이 답하지 않은 것이 하나 드러났다.
+
+### 드러난 것 — 브라우저에서 도는 것은 코어만이 아니다
+
+착수안 §8 은 "변환 일꾼이 부르는 것이 Pyodide 에서 WASM 모듈로 바뀔 뿐"이라고
+적었다. 실제로는 브라우저의 Pyodide 안에서 **API 층까지** 돈다.
+
+```text
+convert.worker.ts → engine.js → (Pyodide) entry.py → api.py → quotation.core
+                                                      ├ limits.py    크기·품목 상한
+                                                      ├ errors.py    사용자 문구
+                                                      ├ conversion_adapter.py
+                                                      └ clock/template
+```
+
+`api.py` 는 **서버(Workers Paid) 경로와 같은 파일**이다. 그래서 브라우저를
+WASM 으로 바꾸면 그 API 층이 갈 곳을 정해야 한다. 코어를 두 벌로 가르지 않기
+위해 시작한 계획이 API 층을 두 벌로 가르게 되는 것은 앞뒤가 맞지 않는다.
+
+### 갈래 (사람이 정할 것)
+
+| | A. 무료 경로만 남긴다 | B. API 층을 Rust 로 옮긴다 | C. 지금 멈춘다 |
+|---|---|---|---|
+| 브라우저 | WASM (코어+API) | WASM (코어+API) | 지금 그대로 Pyodide |
+| 서버(Paid) | 없앤다 | 파이썬 유지 (두 벌) | 지금 그대로 |
+| 구현 벌수 | 한 벌 | API 층만 두 벌 | 한 벌 |
+| 사용자가 얻는 것 | 14.4 MiB → 1.0 MiB, 2.5 s → 5 ms | 같음 | 없음 |
+| 잃는 것 | Paid 로 되돌아갈 길 (코어는 남으니 다시 열 수 있다) | 저장소 규칙 한 조각 | 이번 작업의 값 |
+
+지금 운영 계정은 무료이고 서버 경로는 쓰이지 않는다
+([결정 0002](../decisions/0002-convert-in-browser.md)). 그래도 **없애는 것은
+되돌리기 어려운 선택**이라 여기서 사람이 정한다.
+
+### 어느 쪽이든 남는 일
+
+1. `web/scripts/build_browser_engine.py` 를 대신할 자산 포장 (Pyodide 14.4 MiB
+   대신 WASM 1.0 MiB).
+2. `engine.js` 의 계약(`status`/`headers`/`body`/`log`)을 그대로 유지.
+3. `web/tests/test_browser_parity.py` · `test_browser_e2e.py` 가 **실제
+   Chromium** 에서 같은 바이트를 내는지 확인. 이 검증이 통과하기 전에는
+   배포하지 않는다.
+4. 데스크톱: `quotation.core` 안쪽을 확장 모듈로 바꾸고 EXE 를 다시 빌드해
+   `desktop_ibm/tools/acceptance.ps1` 통과 확인.
+5. 마지막으로 파이썬 구현을 지운다. 지우기 전에 골든 회귀(`tests/`)가 Rust
+   경로에서 통과하는지 본다 — 이 회귀는 원본 프로그램이 만든 견적서와 셀 단위로
+   대조하는 것이라, 대조 하네스와 달리 파이썬을 지운 뒤에도 값이 있다.
 
 ## 6. 매 단계 공통 규칙
 
