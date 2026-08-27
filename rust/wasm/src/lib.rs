@@ -1,62 +1,43 @@
-//! 관문 2 측정용 브라우저 진입점.
+//! 브라우저 진입점. 변환 일꾼이 부르는 것은 이 함수 하나다.
 //!
-//! 아직 견적서를 만들지 않는다. 최종 코어가 지고 갈 **의존성 무게를 그대로**
-//! 태워서 전송 크기와 기동 시간을 재는 것이 목적이다. 그래서 zip 열기,
-//! XML 파싱, 셀 쓰기, zip 저장을 모두 한 번씩 지나간다.
+//! 파이썬 쪽 `web/browser/entry.py` 와 같은 자리다. 파일시스템도, 네트워크도
+//! 쓰지 않는다 — 업로드한 XML 은 브라우저 밖으로 나가지 않는다
+//! ([결정 0002](../../../doc/decisions/0002-convert-in-browser.md)).
 
-use quick_xml::{Reader, events::Event};
-use quotation_core::{money, naming};
-use std::io::Cursor;
+use quotation_core::writer::{self, Date};
+use quotation_core::xml_reader;
 use wasm_bindgen::prelude::*;
 
-/// 템플릿을 열어 XML 에서 읽은 값을 한 셀에 적고 다시 저장한다.
+/// eConfig XML 바이트 -> 견적서 `.xlsx` 바이트.
+///
+/// 날짜는 부르는 쪽이 준다. 브라우저의 시계를 코어가 읽지 않으므로 같은
+/// 입력이 언제나 같은 파일을 낸다.
 #[wasm_bindgen]
-pub fn probe(template: &[u8], xml: &[u8]) -> Result<Vec<u8>, JsError> {
-    let (items, total) = scan(xml)?;
-    let mut book = umya_spreadsheet::reader::xlsx::read_reader(Cursor::new(template), true)
-        .map_err(|error| JsError::new(&error.to_string()))?;
-    let sheet = book
-        .sheet_mut(0)
-        .map_err(|error| JsError::new(&error.to_string()))?;
-    sheet.cell_mut("C3").set_value_string(items);
-    sheet.cell_mut("C4").set_value_string(total);
-    let mut out = Cursor::new(Vec::new());
-    umya_spreadsheet::writer::xlsx::write_writer(&book, &mut out)
-        .map_err(|error| JsError::new(&error.to_string()))?;
-    Ok(out.into_inner())
+pub fn convert(
+    xml: &[u8],
+    template: &[u8],
+    year: i32,
+    month: u32,
+    day: u32,
+) -> Result<Vec<u8>, JsError> {
+    let quotation =
+        xml_reader::parse_bytes(xml, None).map_err(|error| JsError::new(&error.to_string()))?;
+    writer::build_bytes(&quotation, template, Date { year, month, day })
+        .map_err(|error| JsError::new(&error.to_string()))
 }
 
-/// XML 을 한 번 훑어 종목 키와 금액 합을 만든다. 규칙은 코어의 것을 쓴다.
-fn scan(xml: &[u8]) -> Result<(String, String), JsError> {
-    let mut reader = Reader::from_reader(xml);
-    reader.config_mut().trim_text(true);
-    let mut buffer = Vec::new();
-    let mut field = String::new();
-    let mut keys: Vec<String> = Vec::new();
-    let mut total = money::Decimal::ZERO;
-    loop {
-        match reader.read_event_into(&mut buffer) {
-            Ok(Event::Start(tag)) => {
-                field = String::from_utf8_lossy(tag.name().as_ref()).into_owned();
-            }
-            Ok(Event::Text(text)) => {
-                let body = text.decode().map_err(|e| JsError::new(&e.to_string()))?;
-                match field.as_str() {
-                    "ProductDescription" => keys.push(naming::item_key(&body)),
-                    "MonetaryAmount" => {
-                        if let Ok(amount) = money::parse_amount(Some(&body)) {
-                            total += money::to_decimal(&amount);
-                        }
-                    }
-                    _ => {}
-                }
-            }
-            Ok(Event::Eof) => break,
-            Ok(_) => {}
-            Err(error) => return Err(JsError::new(&error.to_string())),
-        }
-        buffer.clear();
-    }
-    let names = naming::unique_sheet_names(keys.iter().map(|key| naming::safe_sheet_name(key)));
-    Ok((names.len().to_string(), total.to_string()))
+/// 문서를 읽는 방식을 강제로 지정해 변환한다 (진단·시험용).
+#[wasm_bindgen]
+pub fn convert_with_mode(
+    xml: &[u8],
+    template: &[u8],
+    year: i32,
+    month: u32,
+    day: u32,
+    mode: &str,
+) -> Result<Vec<u8>, JsError> {
+    let quotation = xml_reader::parse_bytes(xml, Some(mode))
+        .map_err(|error| JsError::new(&error.to_string()))?;
+    writer::build_bytes(&quotation, template, Date { year, month, day })
+        .map_err(|error| JsError::new(&error.to_string()))
 }

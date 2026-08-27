@@ -10,9 +10,6 @@ crate-type = ["cdylib", "rlib"]
 
 [dependencies]
 quotation-core = { path = "../core" }
-umya-spreadsheet = "3.1.0"
-quick-xml = "0.38.4"
-zip = { version = "2.4.2", default-features = false, features = ["deflate"] }
 wasm-bindgen = "0.2.106"
 
 

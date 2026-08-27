@@ -4,12 +4,15 @@
 //! CI 는 이 확장으로 같은 Rust 코어를 부른다. 파이썬 쪽 공개 API
 //! (`quotation.core.convert` 등)는 그대로 두고 안쪽만 바뀐다.
 //!
-//! 지금 여기 있는 것은 Phase 1 에서 옮긴 순수 규칙뿐이다. 뒤 단계가 진행되면
-//! 파싱과 작성이 이 자리에 더해진다.
+//! `convert_bytes` 가 XML 한 건을 견적서 파일로 바꾼다. 나머지 함수는 규칙을
+//! 하나씩 대조하기 위한 것이고, 파이썬 쪽 대조 하네스가 쓴다.
 
-use pyo3::exceptions::PyValueError;
+use pyo3::exceptions::{PyRuntimeError, PyValueError};
 use pyo3::prelude::*;
+use pyo3::types::PyBytes;
 
+use quotation_core::writer::{self, Date};
+use quotation_core::xml_reader;
 use quotation_core::{modes, money, naming};
 
 /// 금액 텍스트를 읽어 `("priced", "88971.5")` 꼴로 돌려준다.
@@ -70,8 +73,32 @@ fn resolve_mode(raw: Option<&str>, product_names: Vec<String>) -> PyResult<Strin
         .map_err(|error| PyValueError::new_err(error.to_string()))
 }
 
+/// eConfig XML 바이트 -> 견적서 `.xlsx` 바이트.
+///
+/// 파이썬 `quotation.core.convert.convert_bytes` 와 같은 일을 한다. 날짜는
+/// 부르는 쪽이 준다 — 달력을 코어에 들이지 않으려는 것이고, 같은 입력이 같은
+/// 파일을 내게 하는 값이기도 하다.
+#[pyfunction]
+#[pyo3(signature = (xml, template, year, month, day, mode=None))]
+fn convert_bytes<'py>(
+    python: Python<'py>,
+    xml: &[u8],
+    template: &[u8],
+    year: i32,
+    month: u32,
+    day: u32,
+    mode: Option<&str>,
+) -> PyResult<Bound<'py, PyBytes>> {
+    let quotation = xml_reader::parse_bytes(xml, mode)
+        .map_err(|error| PyValueError::new_err(error.to_string()))?;
+    let book = writer::build_bytes(&quotation, template, Date { year, month, day })
+        .map_err(|error| PyRuntimeError::new_err(error.to_string()))?;
+    Ok(PyBytes::new(python, &book))
+}
+
 #[pymodule]
 fn quotation_rust(module: &Bound<'_, PyModule>) -> PyResult<()> {
+    module.add_function(wrap_pyfunction!(convert_bytes, module)?)?;
     module.add_function(wrap_pyfunction!(parse_amount, module)?)?;
     module.add_function(wrap_pyfunction!(item_key, module)?)?;
     module.add_function(wrap_pyfunction!(sheet_name, module)?)?;

@@ -10,7 +10,12 @@
 (openpyxl / umya-spreadsheet)의 직렬화 차이는 진단으로만 남기고 중단 사유로
 삼지 않는다.
 
-    python tools/rust_parity_workbook.py
+    python tools/rust_parity_workbook.py            # 두 경로 모두
+    python tools/rust_parity_workbook.py --probe    # cargo 탐침만
+    python tools/rust_parity_workbook.py --pyo3     # 확장 모듈만
+
+두 경로는 같은 코어를 서로 다른 배포 형태로 부른다. `probe` 는 브라우저 WASM 과
+같은 코드이고, `pyo3` 는 데스크톱·CI 가 쓸 확장 모듈이다.
 """
 from __future__ import annotations
 
@@ -51,6 +56,15 @@ def documents() -> dict[str, bytes]:
 def python_workbook(data: bytes, template: bytes) -> bytes:
     quotation = xml_reader.parse_bytes(data)
     return ibm_writer.build_bytes(quotation, template, today=TODAY)
+
+
+def pyo3_workbook(data: bytes, template_path: Path, out: Path) -> bytes:
+    """확장 모듈로 만든 견적서 (데스크톱·CI 가 쓸 경로)."""
+    import quotation_rust
+
+    del out
+    return bytes(quotation_rust.convert_bytes(
+        data, template_path.read_bytes(), TODAY.year, TODAY.month, TODAY.day))
 
 
 def rust_workbook(data: bytes, template_path: Path, out: Path) -> bytes:
@@ -217,10 +231,17 @@ def io_bytes(data: bytes):
     return io.BytesIO(data)
 
 
+#: 같은 코어를 부르는 두 배포 형태.
+BACKENDS = {
+    "probe": ("cargo 탐침", rust_workbook),
+    "pyo3": ("확장 모듈 quotation_rust", pyo3_workbook),
+}
+
+
 def compare(name: str, data: bytes, template_bytes: bytes, template_path: Path,
-            out: Path) -> list[str]:
+            out: Path, produce) -> list[str]:
     python_bytes = python_workbook(data, template_bytes)
-    rust_bytes = rust_workbook(data, template_path, out)
+    rust_bytes = produce(data, template_path, out)
 
     left = openpyxl.load_workbook(io_bytes(python_bytes))
     right = openpyxl.load_workbook(io_bytes(rust_bytes))
@@ -239,29 +260,39 @@ def compare(name: str, data: bytes, template_bytes: bytes, template_path: Path,
     return problems
 
 
-def main() -> int:
+def main(argv: list[str]) -> int:
     sys.stdout.reconfigure(encoding="utf-8")
     template_path = resources.default_template_path()
     template_bytes = template_path.read_bytes()
+    chosen = [name for name in BACKENDS if f"--{name}" in argv] or list(BACKENDS)
 
-    problems: list[str] = []
     found = documents()
+    print(f"대조한 문서 {len(found)}건 — 셀 값·수식·서식·병합·인쇄영역·도형")
+    failed = 0
     with tempfile.TemporaryDirectory() as folder:
         out = Path(folder) / "rust.xlsx"
-        for name, data in found.items():
-            problems.extend(compare(name, data, template_bytes, template_path, out))
-
-    print(f"대조한 문서 {len(found)}건 — 셀 값·수식·서식·병합·인쇄영역·도형")
-    if not problems:
-        print("파이썬과 Rust 의 견적서가 모두 같습니다.")
-        return 0
-    print(f"다른 곳 {len(problems)}건:")
-    for line in problems[:40]:
-        print(f"  {line}")
-    if len(problems) > 40:
-        print(f"  ... 그리고 {len(problems) - 40}건 더")
-    return 1
+        for backend in chosen:
+            label, produce = BACKENDS[backend]
+            problems: list[str] = []
+            try:
+                for name, data in found.items():
+                    problems.extend(
+                        compare(name, data, template_bytes, template_path, out, produce))
+            except ImportError as error:
+                print(f"[{backend}] {label}: 부를 수 없습니다 ({error})")
+                failed = 1
+                continue
+            if not problems:
+                print(f"[{backend}] {label}: 파이썬과 견적서가 모두 같습니다.")
+                continue
+            failed = 1
+            print(f"[{backend}] {label}: 다른 곳 {len(problems)}건")
+            for line in problems[:40]:
+                print(f"  {line}")
+            if len(problems) > 40:
+                print(f"  ... 그리고 {len(problems) - 40}건 더")
+    return failed
 
 
 if __name__ == "__main__":
-    raise SystemExit(main())
+    raise SystemExit(main(sys.argv[1:]))

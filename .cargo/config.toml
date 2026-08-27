@@ -1,3 +1,5 @@
 # getrandom 0.4 는 브라우저 백엔드를 cfg 로 고른다 (기능 플래그만으로는 서지 않는다).
 [target.wasm32-unknown-unknown]
-rustflags = ['--cfg', 'getrandom_backend="wasm_js"']
+# 패닉 되감기는 브라우저에서 쓸 일이 없다. 끄면 전송 크기가 줄어든다.
+# (PyO3 확장은 패닉을 되잡아야 하므로 이 설정은 wasm32 에만 건다.)
+rustflags = ['--cfg', 'getrandom_backend="wasm_js"', '-C', 'panic=abort']
