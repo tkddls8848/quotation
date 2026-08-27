@@ -16,7 +16,8 @@ from pathlib import Path
 import pytest
 
 ROOT = Path(__file__).resolve().parents[1]
-HARNESS = ROOT / "tools" / "rust_parity_pure_rules.py"
+PURE_RULES = ROOT / "tools" / "rust_parity_pure_rules.py"
+XML_READER = ROOT / "tools" / "rust_parity_xml_reader.py"
 
 pytestmark = pytest.mark.skipif(
     shutil.which("cargo") is None,
@@ -24,12 +25,21 @@ pytestmark = pytest.mark.skipif(
 )
 
 
-def test_pure_rules_match_python_core():
-    """money · naming · modes 를 같은 입력으로 대조한다."""
+def _run(harness: Path) -> str:
     result = subprocess.run(
-        [sys.executable, str(HARNESS)],
+        [sys.executable, str(harness)],
         cwd=ROOT, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, check=False,
     )
     report = result.stdout.decode("utf-8", "replace")
     assert result.returncode == 0, report
-    assert "모두 같습니다" in report
+    return report
+
+
+def test_pure_rules_match_python_core():
+    """money · naming · modes 를 같은 입력으로 대조한다 (Phase 1)."""
+    assert "모두 같습니다" in _run(PURE_RULES)
+
+
+def test_xml_reader_matches_python_core():
+    """같은 문서를 읽어 낸 라인이 필드 단위로 같은지 본다 (Phase 2)."""
+    assert "모두 같습니다" in _run(XML_READER)

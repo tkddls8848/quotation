@@ -27,12 +27,13 @@ pub use rust_decimal::Decimal;
 use crate::text;
 
 /// 파이썬 `money.Amount` (`Decimal | NoCharge | None`).
-#[derive(Clone, Debug, PartialEq, Eq)]
+#[derive(Clone, Debug, PartialEq, Eq, Default)]
 pub enum Amount {
     Priced(Decimal),
     /// 무상(N/C) 표식. 합계에서는 0 으로 접힌다.
     NoCharge,
     /// 값이 없다. 셀을 비운다.
+    #[default]
     Missing,
 }
 

@@ -5,4 +5,5 @@ edition.workspace = true
 rust-version.workspace = true
 
 [dependencies]
+quick-xml = { version = "0.38.4", features = ["encoding"] }
 rust_decimal = { version = "1.38.0", default-features = false, features = ["std"] }

@@ -920,6 +920,7 @@ version = "0.38.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "b66c2058c55a409d601666cffe35f04333cf1013010882cec174a7467cd4e21c"
 dependencies = [
+ "encoding_rs",
  "memchr",
 ]
 
@@ -937,6 +938,7 @@ dependencies = [
 name = "quotation-core"
 version = "0.1.0"
 dependencies = [
+ "quick-xml 0.38.4",
  "rust_decimal",
 ]
 

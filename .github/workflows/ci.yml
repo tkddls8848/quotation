@@ -106,7 +106,9 @@ jobs:
       - name: 파이썬 구현과 대조
         # 같은 입력을 파이썬·cargo 탐침·확장 모듈에 넣어 출력을 비교한다.
         # 규칙이 갈리면 여기서 멈춘다.
-        run: python tools/rust_parity_pure_rules.py
+        run: |
+          python tools/rust_parity_pure_rules.py
+          python tools/rust_parity_xml_reader.py
       - name: WASM 전송 크기
         # 관문 2 — gzip 1 MiB 를 넘으면 브라우저 자산 교체의 전제가 무너진다.
         run: |
