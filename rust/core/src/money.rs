@@ -63,7 +63,7 @@ pub fn parse_amount(raw: Option<&str>) -> Result<Amount, AmountError> {
         return Ok(Amount::NoCharge);
     }
     let digits = text.replace(',', "");
-    parse_decimal(&digits)
+    parse_plain(&digits)
         .map(Amount::Priced)
         .ok_or_else(|| AmountError {
             raw: raw.to_owned(),
@@ -71,7 +71,9 @@ pub fn parse_amount(raw: Option<&str>) -> Result<Amount, AmountError> {
 }
 
 /// 자릿수 표기와 지수 표기를 모두 읽는다. 반올림은 하지 않는다.
-fn parse_decimal(digits: &str) -> Option<Decimal> {
+///
+/// 파이썬 `Decimal(raw)` 자리. 콤마는 걷어 내지 않는다.
+pub fn parse_plain(digits: &str) -> Option<Decimal> {
     if let Ok(value) = Decimal::from_str_exact(digits) {
         return Some(value);
     }

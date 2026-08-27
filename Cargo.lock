@@ -938,6 +938,8 @@ dependencies = [
 name = "quotation-core"
 version = "0.1.0"
 dependencies = [
+ "base64",
+ "flate2",
  "quick-xml 0.38.4",
  "rust_decimal",
 ]
