@@ -77,6 +77,51 @@ jobs:
         if: always()
         run: du -sh web/frontend/public/py && ls -la web/frontend/public/py
 
+  rust:
+    name: Rust 코어 · 파이썬 대조 · WASM 크기
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: wasm32-unknown-unknown
+      - uses: Swatinem/rust-cache@v2
+      - name: 의존성 설치
+        run: python -m pip install -r requirements.txt maturin
+      - name: 서식과 린트
+        run: |
+          cargo fmt --all -- --check
+          cargo clippy --workspace --all-targets -- -D warnings
+      - name: Rust 테스트
+        run: cargo test --workspace
+      - name: 확장 모듈 빌드와 설치
+        # 관문 3 — 데스크톱과 CI 가 쓸 배포 형태가 리눅스에서도 서는지 본다.
+        run: |
+          maturin build --release -m rust/python/Cargo.toml --out target/wheels
+          python -m pip install --force-reinstall target/wheels/*.whl
+      - name: 파이썬 구현과 대조
+        # 같은 입력을 파이썬·cargo 탐침·확장 모듈에 넣어 출력을 비교한다.
+        # 규칙이 갈리면 여기서 멈춘다.
+        run: python tools/rust_parity_pure_rules.py
+      - name: WASM 전송 크기
+        # 관문 2 — gzip 1 MiB 를 넘으면 브라우저 자산 교체의 전제가 무너진다.
+        run: |
+          cargo install wasm-pack --locked
+          wasm-pack build rust/wasm --release --target web --out-dir pkg
+          python - <<'PY'
+          import gzip, pathlib, sys
+          pkg = pathlib.Path("rust/wasm/pkg")
+          total = sum(len(gzip.compress(f.read_bytes(), 9))
+                      for f in pkg.iterdir() if f.suffix in (".wasm", ".js"))
+          limit = 1024 * 1024
+          print(f"전송 자산 gzip {total:,} B = {total / 1048576:.3f} MiB (한도 {limit:,} B)")
+          sys.exit(0 if total <= limit else 1)
+          PY
+
   frontend:
     name: 웹 UI lint · 테스트 · 빌드
     runs-on: ubuntu-latest

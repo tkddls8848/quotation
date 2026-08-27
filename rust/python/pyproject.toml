@@ -1,0 +1,13 @@
+[build-system]
+requires = ["maturin>=1.15,<2.0"]
+build-backend = "maturin"
+
+[project]
+name = "quotation-rust"
+version = "0.1.0"
+description = "견적 변환 규칙의 Rust 코어를 파이썬에서 부르는 확장 모듈"
+requires-python = ">=3.11"
+classifiers = ["Programming Language :: Rust"]
+
+[tool.maturin]
+module-name = "quotation_rust"

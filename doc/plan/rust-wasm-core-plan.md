@@ -2,9 +2,9 @@
 
 - 성격: **계획**. 착수 시점의 설계 의도와 범위를 적는다. 뒤집히면 이 문서를
   고쳐 덮지 않고 [`doc/decisions/`](../decisions/) 에 결정 기록을 남긴다.
-- 상태: **Phase 1 진행 중.** 순수 규칙(`money`·`naming`·`modes`)을 옮겼고
-  파이썬 구현과 1,009건의 같은 입력으로 대조해 모두 같은 값을 얻었다
-  (`tools/rust_parity_pure_rules.py`, `tests/test_rust_parity.py`).
+- 상태: **Phase 2 진행 중.** Phase 0 관문 셋을 모두 통과했고
+  ([결정 0007](../decisions/0007-phase0-gates-passed.md)), Phase 1 순수 규칙은
+  파이썬과 1,009건이 같다 (`tools/rust_parity_pure_rules.py`).
   Phase 0 재개 경위: 이전의 폐기 판단은 템플릿을 한 셀만 바꾼 저장본을
   구성 XML 변환 결과와 혼동한 잘못된 근거였다. [결정 0004](../decisions/0004-resume-rust-wasm-phase0.md)가
   [결정 0003](../decisions/0003-reject-rust-wasm-core-after-phase0.md)를 철회한다.

@@ -22,7 +22,7 @@
 
 use std::str::FromStr;
 
-use rust_decimal::Decimal;
+pub use rust_decimal::Decimal;
 
 use crate::text;
 

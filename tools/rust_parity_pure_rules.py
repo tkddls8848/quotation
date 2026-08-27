@@ -2,9 +2,15 @@
 
 계획 §Phase 1 의 동등성 판정 — `money` · `naming` · `modes` 에 **같은 입력을
 넣어 출력 문자열을 비교**한다. 파이썬 `quotation.core` 가 기준이고, Rust 쪽은
-`rust/parity` 탐침이 답한다. 한 건이라도 다르면 0 이 아닌 값으로 끝난다.
+둘 중 하나가 답한다. 한 건이라도 다르면 0 이 아닌 값으로 끝난다.
 
-    python tools/rust_parity_pure_rules.py
+    python tools/rust_parity_pure_rules.py            # 두 경로 모두
+    python tools/rust_parity_pure_rules.py --probe    # cargo 탐침만
+    python tools/rust_parity_pure_rules.py --pyo3     # 확장 모듈만
+
+두 경로는 같은 크레이트를 서로 다른 배포 형태로 부른다. `probe` 는 `cargo` 로
+빌드한 실행 파일이고 (브라우저 WASM 과 같은 코드), `pyo3` 는 데스크톱·CI 가 쓸
+확장 모듈이다 (`quotation_rust`). 둘 다 파이썬과 같은 답을 내야 한다.
 
 입력 자료는 지어내지 않는다. 골든 fixture 6종과 저장소에 있는 실제 구성
 XML 에서 ProductDescription · ProductName · MonetaryAmount 를 그대로 뽑아
@@ -207,6 +213,45 @@ def build_cases() -> list[dict]:
     return cases
 
 
+def pyo3_answers(cases: list[dict]) -> list[dict]:
+    """같은 호출을 확장 모듈 `quotation_rust` 로 답한다."""
+    import quotation_rust as rust
+
+    def amount(raw):
+        kind, value = rust.parse_amount(raw)
+        return f"priced:{value}" if kind == "priced" else kind
+
+    def decimal(raw):
+        kind, value = rust.parse_amount(raw)
+        return value if kind == "priced" else "0"
+
+    def cell(raw):
+        kind, value = rust.parse_amount(raw)
+        return {"priced": value, "nocharge": "N/C", "missing": ""}[kind]
+
+    rules = {
+        "money.parse_amount": amount,
+        "money.to_decimal": decimal,
+        "money.is_priced": lambda raw: rust.parse_amount(raw)[0] == "priced",
+        "money.cell_text": cell,
+        "naming.item_key": rust.item_key,
+        "naming.sheet_name": rust.sheet_name,
+        "naming.product_key": rust.product_key,
+        "naming.safe_sheet_name": rust.safe_sheet_name,
+        "naming.unique_sheet_names": rust.unique_sheet_names,
+        "modes.detect": rust.detect_mode,
+        "modes.normalize": rust.normalize_mode,
+        "modes.resolve": rust.resolve_mode,
+    }
+    answers = []
+    for case in cases:
+        try:
+            answers.append({"ok": True, "value": rules[case["fn"]](*case["args"])})
+        except ValueError:
+            answers.append({"ok": False})
+    return answers
+
+
 def python_answer(case: dict) -> dict:
     rule = PYTHON_RULES[case["fn"]]
     try:
@@ -236,33 +281,50 @@ def rust_answers(cases: list[dict]) -> list[dict]:
     return answers
 
 
-def compare(cases: list[dict]) -> list[tuple[dict, dict, dict]]:
+#: 같은 크레이트를 부르는 두 배포 형태.
+BACKENDS = {
+    "probe": ("cargo 탐침", rust_answers),
+    "pyo3": ("확장 모듈 quotation_rust", pyo3_answers),
+}
+
+
+def compare(cases: list[dict], answers) -> list[tuple[dict, dict, dict]]:
     """다른 결과만 돌려준다."""
     expected = [python_answer(case) for case in cases]
-    actual = rust_answers(cases)
+    actual = answers(cases)
     return [(case, want, got)
             for case, want, got in zip(cases, expected, actual)
             if want != got]
 
 
-def main() -> int:
+def main(argv: list[str]) -> int:
     sys.stdout.reconfigure(encoding="utf-8")
+    chosen = [name for name in BACKENDS if f"--{name}" in argv] or list(BACKENDS)
     cases = build_cases()
-    mismatches = compare(cases)
     print(f"대조한 호출 {len(cases)}건 — 규칙 {len(PYTHON_RULES)}종, "
           f"입력 자료 {len(XML_SOURCES)}개 XML")
-    if not mismatches:
-        print("파이썬과 Rust 의 출력이 모두 같습니다.")
-        return 0
-    print(f"다른 결과 {len(mismatches)}건:")
-    for case, want, got in mismatches[:20]:
-        print(f"  {case['fn']}{case['args']!r}")
-        print(f"    파이썬: {want!r}")
-        print(f"    Rust  : {got!r}")
-    if len(mismatches) > 20:
-        print(f"  ... 그리고 {len(mismatches) - 20}건 더")
-    return 1
+    failed = 0
+    for name in chosen:
+        label, answers = BACKENDS[name]
+        try:
+            mismatches = compare(cases, answers)
+        except ImportError as error:
+            print(f"[{name}] {label}: 부를 수 없습니다 ({error})")
+            failed = 1
+            continue
+        if not mismatches:
+            print(f"[{name}] {label}: 파이썬과 출력이 모두 같습니다.")
+            continue
+        failed = 1
+        print(f"[{name}] {label}: 다른 결과 {len(mismatches)}건")
+        for case, want, got in mismatches[:20]:
+            print(f"  {case['fn']}{case['args']!r}")
+            print(f"    파이썬: {want!r}")
+            print(f"    Rust  : {got!r}")
+        if len(mismatches) > 20:
+            print(f"  ... 그리고 {len(mismatches) - 20}건 더")
+    return failed
 
 
 if __name__ == "__main__":
-    raise SystemExit(main())
+    raise SystemExit(main(sys.argv[1:]))

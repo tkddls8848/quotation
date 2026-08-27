@@ -1,8 +1,14 @@
 [workspace]
 resolver = "2"
-members = ["rust/core", "rust/parity", "rust/roundtrip"]
+members = ["rust/core", "rust/parity", "rust/python", "rust/roundtrip", "rust/wasm"]
 
 [workspace.package]
 edition = "2024"
 rust-version = "1.85"
 
+# WASM 전송 크기를 줄이는 설정. 워크스페이스 뿌리에 있어야 적용된다.
+[profile.release]
+opt-level = "z"
+lto = true
+codegen-units = 1
+strip = true

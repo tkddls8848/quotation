@@ -49,3 +49,8 @@ target/
 # 있으므로 담지 않는다. 검증에 쓰는 자료는 tests/fixtures/public 의 익명화본이다.
 /*.xml
 artifacts/
+
+# --- Rust ---------------------------------------------------------------------
+# wasm-pack 산출물과 maturin 휠. Cargo.lock 과 소스로 재현한다.
+rust/wasm/pkg/
+rust/wasm/pkg-node/

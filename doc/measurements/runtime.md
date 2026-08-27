@@ -50,6 +50,46 @@
 | lxml 적재 | 약 0.6 초 |
 | 변환 1건 | 대표 입력 약 0.3 초 (CPython 0.1 초의 3배) |
 
+## Rust→WASM 실측 (2026-08-27, Phase 0 관문 2)
+
+`rust/wasm` 을 `wasm-pack --release --target web` 로 빌드해 잰 값이다. 최종
+코어가 지고 갈 의존성(zip, quick-xml, umya-spreadsheet, 이식한 순수 규칙)을
+그대로 태웠으므로 빈 껍데기 측정이 아니다.
+
+| 항목 | Pyodide (지금) | Rust→WASM | 판정 기준 |
+|---|---:|---:|---|
+| 전송 자산 (gzip) | 14.4 MiB | **0.799 MiB** | 1 MiB 이하 — 통과 |
+| 기동 (compile + instantiate) | 약 2,500 ms | **4.2 ms** | 200 ms 이하 — 통과 |
+| 변환 1건 | 약 300 ms | **78 ms** | 기준 없음 |
+
+- 전송 크기는 `quotation_wasm_bg.wasm` 2,239,156 B + 글루 JS 7,136 B 를 각각
+  gzip 한 합이다.
+- 기동·변환은 node 23 에서 10회 중앙값이다
+  (`node tools/wasm_startup_bench.mjs`). 변환 쪽은 아직 견적서를 만들지 않고
+  zip 열기 → XML 훑기 → 셀 쓰기 → zip 저장을 한 번씩 지나가는 값이다.
+
+### 크기와 속도는 맞바꾼다
+
+| `[profile.release] opt-level` | 전송 (gzip) | 변환 1건 |
+|---|---:|---:|
+| `"z"` (지금) | 0.799 MiB | 78 ms |
+| `3` | 1.001 MiB | 54 ms |
+
+`3` 은 1 MiB 기준을 넘긴다. 그래서 `"z"` 를 쓴다. **계획 §1 이 추정한 변환
+5~15 ms 는 나오지 않는다** — 시간의 대부분은 코드 생성 품질이 아니라
+템플릿 zip 을 열고 스타일을 파싱했다가 다시 압축해 내보내는 데 들어간다.
+얻는 것은 전송 18배, 기동 600배이고 변환 자체는 4배쯤이다.
+
+## PyO3 확장 (2026-08-27, Phase 0 관문 3)
+
+| 항목 | 실측 |
+|---|---|
+| 휠 | `quotation_rust-0.1.0-cp311-abi3-win_amd64.whl` (maturin 1.15, abi3-py311) |
+| 단일 EXE | PyInstaller 6.11.1 `--onefile` 에 실려 동작. 확장은 `_MEI*/quotation_rust/` 로 풀린다 |
+| 확인 방법 | `desktop_ibm/tools/pyo3_bundle_probe.py` 를 EXE 로 빌드해 실행. 7개 항목 전부 파이썬 값과 같음 |
+
+abi3 휠이라 파이썬 3.11 이상이면 판본마다 다시 빌드하지 않는다.
+
 ## 요금제 제약 (배포 실측)
 
 `limits.cpu_ms` 는 **Workers Paid 전용**이라 Free 계정에서는 그 항목이 있는
