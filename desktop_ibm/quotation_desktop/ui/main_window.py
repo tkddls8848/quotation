@@ -26,7 +26,7 @@ TEMPLATE_ROW_LABELS = {modes.UNIX: "IBM", modes.INTEGRATED: "Lenovo x86"}
 class MainWindow(ttk.Frame):
     def __init__(self, master: tk.Tk, prefill: str | None = None):
         theme.apply(master)
-        super().__init__(master, padding=12)
+        super().__init__(master, padding=16)
         self.master = master
         self.cfg = config_mod.load()
         self._events: queue.Queue = queue.Queue()
@@ -35,6 +35,7 @@ class MainWindow(ttk.Frame):
         self.xml_path = tk.StringVar()
         self.open_result = tk.BooleanVar(value=self.cfg.open_result_when_done)
         self.status = tk.StringVar(value="변환할 XML 화일을 선택하십시오.")
+        self.progress_pct = tk.StringVar(value="0%")
         # 어느 XML 을 고를지는 아직 모르므로(IBM/Lenovo 는 파싱 후에 갈린다),
         # 편집용 사본은 두 모드 다 미리 만들어 둔다.
         self.template_paths = {mode: paths.template_path(mode) for mode in modes.MODES}
@@ -53,60 +54,97 @@ class MainWindow(ttk.Frame):
     # --- 화면 구성 -----------------------------------------------------------
 
     def _build(self):
-        self.columnconfigure(1, weight=1)
-        row = 0
+        self.columnconfigure(0, weight=1)
 
-        header = ttk.Label(self, text=SUBTITLE, style="Muted.TLabel")
-        header.grid(row=row, column=0, columnspan=3, sticky="w", pady=(0, 10))
-        row += 1
+        # --- 안내 --------------------------------------------------------
+        ttk.Label(self, text=TITLE, style="Heading.TLabel").grid(
+            row=0, column=0, sticky="w")
+        ttk.Label(self, text=SUBTITLE, style="Muted.TLabel").grid(
+            row=1, column=0, sticky="w", pady=(2, 16))
 
-        ttk.Label(self, text="XML 화일").grid(row=row, column=0, sticky="w")
-        entry = ttk.Entry(self, textvariable=self.xml_path)
-        entry.grid(row=row, column=1, sticky="ew", padx=6)
-        ttk.Button(self, text="찾아보기…", command=self._pick_xml).grid(
-            row=row, column=2)
-        row += 1
+        # --- 화일 선택 -----------------------------------------------------
+        ttk.Label(self, text="XML 화일", style="FieldLabel.TLabel").grid(
+            row=2, column=0, sticky="w")
+
+        file_row = ttk.Frame(self)
+        file_row.grid(row=3, column=0, sticky="ew", pady=(4, 0))
+        file_row.columnconfigure(0, weight=1)
+        entry = ttk.Entry(file_row, textvariable=self.xml_path,
+                           font=(theme.MONO_FONT, 9))
+        entry.grid(row=0, column=0, sticky="ew", ipady=3)
+        ttk.Button(file_row, text="찾아보기…", command=self._pick_xml).grid(
+            row=0, column=1, padx=(6, 0))
 
         ttk.Label(self, text="견적서는 XML 과 같은 폴더에 저장됩니다.",
-                  style="Muted.TLabel").grid(row=row, column=1, sticky="w",
-                                             padx=6, pady=(4, 8))
-        row += 1
+                  style="Hint.TLabel").grid(row=4, column=0, sticky="w",
+                                            pady=(4, 14))
 
-        options = ttk.Frame(self)
-        options.grid(row=row, column=0, columnspan=3, sticky="ew", pady=(4, 6))
-        ttk.Checkbutton(options, text="완료 후 견적서 열기",
-                        variable=self.open_result).pack(side="left")
-        row += 1
+        # --- 옵션 -----------------------------------------------------------
+        ttk.Checkbutton(self, text="완료 후 견적서 열기",
+                        variable=self.open_result).grid(
+            row=5, column=0, sticky="w", pady=(0, 16))
 
+        # --- 템플릿 빠른 열기 -------------------------------------------------
         # 견적서 번호(NO : Trialinfo-YY-)와 머리말의 '담당 : ...' 은 템플릿에서
         # 직접 고친다. IBM 문서와 Lenovo x86 문서는 템플릿이 서로 달라서 두
         # 벌 다 바로 열 수 있게 해 둔다.
-        tmpl = ttk.Frame(self)
-        tmpl.grid(row=row, column=0, columnspan=3, sticky="ew", pady=(0, 10))
-        for mode in modes.MODES:
-            line = ttk.Frame(tmpl)
-            line.pack(fill="x", pady=(0, 2))
-            ttk.Label(line, text=f"{TEMPLATE_ROW_LABELS[mode]} 템플릿",
-                      style="Muted.TLabel", width=14).pack(side="left")
-            ttk.Label(line, text=str(self.template_paths[mode]),
-                      style="Muted.TLabel").pack(side="left", padx=(6, 10))
-            ttk.Button(line, text="열기(견적번호·담당자 수정)",
+        ttk.Label(self, text="템플릿 열기 · 견적번호·담당자 수정",
+                  style="FieldLabel.TLabel").grid(row=6, column=0, sticky="w",
+                                                  pady=(0, 4))
+
+        templates = ttk.Frame(self)
+        templates.grid(row=7, column=0, sticky="ew", pady=(0, 14))
+        templates.columnconfigure(0, weight=1)
+        for i, mode in enumerate(modes.MODES):
+            card = tk.Frame(templates, background=theme.SURFACE,
+                            highlightbackground=theme.LINE,
+                            highlightthickness=1)
+            card.grid(row=i, column=0, sticky="ew", pady=(0 if i == 0 else 6, 0))
+            card.columnconfigure(1, weight=1)
+            ttk.Label(card, text=TEMPLATE_ROW_LABELS[mode], style="Chip.TLabel"
+                      ).grid(row=0, column=0, padx=(10, 8), pady=8)
+            ttk.Label(card, text=str(self.template_paths[mode]),
+                      style="CardMuted.TLabel").grid(row=0, column=1, sticky="ew")
+            ttk.Button(card, text="열기", style="Small.TButton",
                        command=lambda m=mode: self._open_template(m)
-                       ).pack(side="left")
-        row += 1
+                       ).grid(row=0, column=2, padx=8, pady=6)
 
-        self.progress = ttk.Progressbar(self, mode="determinate", maximum=100)
-        self.progress.grid(row=row, column=0, columnspan=3, sticky="ew")
-        row += 1
+        # --- 진행률·상태 판독부 -----------------------------------------------
+        readout = tk.Frame(self, background=theme.SURFACE,
+                           highlightbackground=theme.LINE, highlightthickness=1)
+        readout.grid(row=8, column=0, sticky="ew", pady=(0, 16))
+        readout.columnconfigure(0, weight=1)
 
-        ttk.Label(self, textvariable=self.status).grid(
-            row=row, column=0, columnspan=3, sticky="w", pady=(6, 10))
-        row += 1
+        readout_top = tk.Frame(readout, background=theme.SURFACE)
+        readout_top.grid(row=0, column=0, sticky="ew", padx=12, pady=(10, 6))
+        readout_top.columnconfigure(1, weight=1)
 
-        buttons = ttk.Frame(self)
-        buttons.grid(row=row, column=0, columnspan=3, sticky="e")
-        self.convert_btn = ttk.Button(buttons, text="변환", command=self._start,
-                                      default="active")
+        self.status_dot = tk.Canvas(readout_top, width=8, height=8,
+                                    background=theme.SURFACE, highlightthickness=0)
+        self._dot_id = self.status_dot.create_oval(0, 0, 8, 8,
+                                                    fill=theme.MUTED, outline="")
+        self.status_dot.grid(row=0, column=0, padx=(0, 8))
+        ttk.Label(readout_top, textvariable=self.status, style="CardText.TLabel"
+                  ).grid(row=0, column=1, sticky="w")
+        ttk.Label(readout_top, textvariable=self.progress_pct,
+                  style="CardMuted.TLabel").grid(row=0, column=2, sticky="e")
+
+        bar_wrap = tk.Frame(readout, background=theme.SURFACE)
+        bar_wrap.grid(row=1, column=0, sticky="ew", padx=12, pady=(0, 12))
+        bar_wrap.columnconfigure(0, weight=1)
+        self.progress = ttk.Progressbar(bar_wrap, mode="determinate", maximum=100)
+        self.progress.grid(row=0, column=0, sticky="ew")
+
+        # --- 실행 -----------------------------------------------------------
+        actions = ttk.Frame(self)
+        actions.grid(row=9, column=0, sticky="ew")
+        actions.columnconfigure(0, weight=1)
+        ttk.Label(actions, text="Enter 로도 바로 변환합니다.", style="Hint.TLabel"
+                  ).grid(row=0, column=0, sticky="w")
+        buttons = ttk.Frame(actions)
+        buttons.grid(row=0, column=1, sticky="e")
+        self.convert_btn = ttk.Button(buttons, text="변환", style="Primary.TButton",
+                                      command=self._start, default="active")
         self.convert_btn.pack(side="left", padx=(0, 6))
         ttk.Button(buttons, text="종료", command=self.master.destroy).pack(
             side="left")
@@ -123,6 +161,9 @@ class MainWindow(ttk.Frame):
         if chosen:
             self.xml_path.set(chosen)
             self.status.set("<변환> 버튼을 누르면 견적서 변환작업을 시작합니다.")
+            self.progress["value"] = 0
+            self.progress_pct.set("0%")
+            self._set_state(theme.MUTED)
 
     def _open_template(self, mode: str):
         """템플릿을 기본 프로그램(Excel)으로 연다.
@@ -151,6 +192,7 @@ class MainWindow(ttk.Frame):
             return
 
         self._set_busy(True)
+        self._set_state(theme.ACCENT)
         threading.Thread(target=self._worker, args=(xml,), daemon=True).start()
 
     def _worker(self, xml: Path):
@@ -180,6 +222,7 @@ class MainWindow(ttk.Frame):
                 kind = event[0]
                 if kind == "progress":
                     self.progress["value"] = event[1]
+                    self.progress_pct.set(f"{event[1]:.0f}%")
                     self.status.set(event[2])
                 elif kind == "done":
                     self._on_done(event[1])
@@ -192,6 +235,8 @@ class MainWindow(ttk.Frame):
     def _on_done(self, result: convert.Result):
         self._set_busy(False)
         self.progress["value"] = 100
+        self.progress_pct.set("100%")
+        self._set_state(theme.OK)
         self.status.set(
             f"견적서작성을 완료하였습니다.  장비군 {result.group_count}개 · "
             f"{result.elapsed:.1f}초")
@@ -207,6 +252,8 @@ class MainWindow(ttk.Frame):
     def _on_error(self, message: str):
         self._set_busy(False)
         self.progress["value"] = 0
+        self.progress_pct.set("0%")
+        self._set_state(theme.DANGER)
         self.status.set("변환에 실패했습니다.")
         messagebox.showerror(TITLE, message)
 
@@ -214,6 +261,10 @@ class MainWindow(ttk.Frame):
         self._busy = busy
         self.convert_btn.state(["disabled"] if busy else ["!disabled"])
         self.master.config(cursor="watch" if busy else "")
+
+    def _set_state(self, color: str):
+        """대기/진행/완료/실패를 판독부의 작은 점 색으로도 알려 준다."""
+        self.status_dot.itemconfig(self._dot_id, fill=color)
 
 
 def _open(path: Path):
@@ -228,7 +279,7 @@ def run(prefill: str | None = None) -> int:
     root = tk.Tk()
     root.title(TITLE)
     root.configure(background=theme.BG)
-    root.minsize(620, 300)
+    root.minsize(640, 460)
     root.call("tk", "scaling", 1.3)
     MainWindow(root, prefill)
     root.mainloop()
