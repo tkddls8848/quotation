@@ -36,8 +36,8 @@ web/frontend/dist/
 web/src/quotation/
 web/src/template_data.py
 # 배포 전에 web/scripts/build_browser_engine.py 가 만드는 브라우저 변환 엔진
-# (Pyodide 런타임 + 휠 + 코어 zip, 약 14 MiB. 판본과 해시로 재현한다)
-web/frontend/public/py/
+# (Rust→WASM 약 1 MiB. wasm-pack 산출물이라 소스로 재현한다)
+web/frontend/public/engine/
 web/.engine-cache/
 # pywrangler 가 Pyodide 의존성을 받아 두는 자리 (pylock.toml 로 재현한다)
 web/python_modules/

@@ -37,10 +37,9 @@ from pathlib import Path
 import pytest
 
 import api
-from xlsx_parity import differences
 
 ROOT = Path(__file__).resolve().parents[2]
-ENGINE_DIR = ROOT / "web" / "frontend" / "public" / "py"
+ENGINE_DIR = ROOT / "web" / "frontend" / "public" / "engine"
 DRIVER = ROOT / "web" / "scripts" / "browser_convert.mjs"
 
 #: 대조할 파일. 어느 쪽 문서(IBM/레노버)든 사람이 고르지 않고 내용으로
@@ -117,46 +116,68 @@ def _cpython(fixtures, name: str, today: dt.date) -> api.ApiResponse:
         today=today)
 
 
-# --- 바이트 대조 ---------------------------------------------------------------
+# --- 내용 대조 -----------------------------------------------------------------
+#
+# 브라우저는 Rust→WASM 엔진으로, CPython 은 openpyxl 로 같은 견적서를 만든다.
+# OOXML 을 적는 라이브러리가 서로 달라 ZIP 바이트는 같지 않다 — 부품 순서,
+# 압축, 색을 적는 방식(팔레트 색인 27 = ARGB FFCCFFFF)이 다르다. 무엇을 같게
+# 볼지는 [결정 0005](../../doc/decisions/0005-accept-meaningful-xlsx-parity.md)
+# 가 정한다: **Excel 이 읽는 내용**과 **첫 페이지 도형**이다.
 
 @pytest.mark.parametrize("name", CASES)
-def test_browser_xlsx_is_byte_identical(name, browser_results, fixtures):
+def test_browser_xlsx_matches_cell_by_cell(name, browser_results, fixtures):
+    """값·수식·서식·글꼴·채우기·테두리·정렬·병합·인쇄영역·행높이."""
+    import openpyxl
+    import rust_parity_workbook as judge
+
     result = browser_results[name]
     assert result["status"] == 200, result.get("body_utf8")
-
     expected = _cpython(fixtures, name, dt.date.fromisoformat(result["today"]))
     assert expected.status == 200
 
-    problems = differences(expected.body, result["xlsx"])
-    assert not problems, "\n".join(problems)
+    want = openpyxl.load_workbook(BytesIO(expected.body))
+    got = openpyxl.load_workbook(BytesIO(result["xlsx"]))
+    assert want.sheetnames == got.sheetnames
 
+    problems = []
+    for sheet in want.sheetnames:
+        problems.extend(judge.sheet_problems(name, sheet, want[sheet], got[sheet]))
+    assert not problems, "\n".join(problems[:20])
 
-def test_browser_keeps_the_template_drawings(browser_results):
-    """로고와 머리말 도형이 그대로 실려 나오는지 (양식 뒤틀림 방지)."""
-    with zipfile.ZipFile(BytesIO(browser_results["new_quote.xml"]["xlsx"])) as z:
-        names = z.namelist()
-    assert [n for n in names if n.startswith("xl/media/")]
-    assert [n for n in names if n.startswith("xl/drawings/")]
-
-
-# --- 셀 단위 대조 --------------------------------------------------------------
 
 @pytest.mark.parametrize("name", CASES)
-def test_browser_xlsx_matches_cell_by_cell(name, browser_results, fixtures,
-                                           tmp_path):
-    """골든 회귀와 같은 비교기로 한 번 더 본다. 값·수식·서식·병합·열너비."""
-    import compare
+def test_browser_xlsx_keeps_every_part_the_server_ships(name, browser_results,
+                                                        fixtures):
+    """서버 산출물에 있는 부품은 하나도 빠지면 안 된다.
 
+    더 실리는 것은 막지 않는다. umya 는 템플릿의 프린터 설정을 그대로 들고
+    가고 문자열을 `sharedStrings.xml` 로 모으는데, openpyxl 은 프린터 설정을
+    버리고 문자열을 셀 안에 적는다. 둘 다 Excel 이 읽는 내용은 같다
+    (결정 0005). 빠지는 부품은 다르다 — 그림이 사라지는 것이 그런 경우다.
+    """
     result = browser_results[name]
     expected = _cpython(fixtures, name, dt.date.fromisoformat(result["today"]))
 
-    want = tmp_path / "cpython.xlsx"
-    got = tmp_path / "browser.xlsx"
-    want.write_bytes(expected.body)
-    got.write_bytes(result["xlsx"])
+    server = zipfile.ZipFile(BytesIO(expected.body))
+    browser = zipfile.ZipFile(BytesIO(result["xlsx"]))
+    with server, browser:
+        missing = sorted(set(server.namelist()) - set(browser.namelist()))
+        extra = sorted(set(browser.namelist()) - set(server.namelist()))
+    assert not missing, f"브라우저 산출물에 없는 부품: {missing}"
+    if extra:
+        print(f"[{name}] 브라우저에만 있는 부품(진단): {extra}")
 
-    report = compare.compare(want, got, ignore=set())
-    assert report.ok, "\n".join(str(d) for d in report.diffs[:20])
+
+def test_browser_keeps_the_template_drawings(browser_results, template_bytes):
+    """로고와 머리말 도형이 템플릿 원본 그대로 실려 나오는지 (양식 뒤틀림 방지)."""
+    produced = zipfile.ZipFile(BytesIO(browser_results["new_quote.xml"]["xlsx"]))
+    template = zipfile.ZipFile(BytesIO(template_bytes))
+    with produced, template:
+        parts = [name for name in produced.namelist()
+                 if name.startswith(("xl/media/", "xl/drawings/"))]
+        assert parts
+        for part in parts:
+            assert produced.read(part) == template.read(part), part
 
 
 # --- 계약 대조 -----------------------------------------------------------------

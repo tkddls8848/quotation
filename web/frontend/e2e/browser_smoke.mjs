@@ -52,8 +52,8 @@ const dist = resolve(distArg);
 const outDir = resolve(outArg);
 mkdirSync(outDir, { recursive: true });
 
-if (!existsSync(join(dist, 'py', 'engine.json'))) {
-  console.error(`${dist}/py 에 변환 엔진이 없습니다. `
+if (!existsSync(join(dist, 'engine', 'engine.json'))) {
+  console.error(`${dist}/engine 에 변환 엔진이 없습니다. `
     + 'python web/scripts/build_browser_engine.py 뒤에 프런트엔드를 빌드하십시오.');
   process.exit(2);
 }

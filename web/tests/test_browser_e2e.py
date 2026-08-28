@@ -26,7 +26,7 @@ from openpyxl import load_workbook
 
 import api
 import clock
-from xlsx_parity import differences
+import rust_parity_workbook as judge
 
 ROOT = Path(__file__).resolve().parents[2]
 FRONTEND = ROOT / "web" / "frontend"
@@ -39,7 +39,7 @@ CASES = ("new_quote.xml", "euckr_quote.xml", "upgrade_quote.xml")
 def _reason() -> str | None:
     if shutil.which("node") is None:
         return "node 가 없습니다"
-    if not (DIST / "py" / "engine.json").is_file():
+    if not (DIST / "engine" / "engine.json").is_file():
         return "빌드된 dist 에 변환 엔진이 없습니다 (build_browser_engine.py + vite build)"
     if not (FRONTEND / "node_modules" / "playwright").is_dir():
         return "playwright 가 없습니다"
@@ -91,8 +91,16 @@ def test_browser_downloads_match_the_cpython_conversion(downloads, fixtures,
             deployment_version="e2e", request_id="e2e", today=today)
         assert expected.status == 200
 
-        problems = differences(expected.body, got)
-        assert not problems, f"{name}:\n" + "\n".join(problems)
+        # 무엇을 같게 볼지는 결정 0005 가 정한다 — ZIP 바이트가 아니라
+        # Excel 이 읽는 내용이다. 브라우저는 Rust→WASM 이, 여기 CPython 은
+        # openpyxl 이 OOXML 을 적으므로 부품 순서·압축·색 표기가 다르다.
+        want = load_workbook(BytesIO(expected.body))
+        have = load_workbook(BytesIO(got))
+        assert want.sheetnames == have.sheetnames, name
+        problems = []
+        for sheet in want.sheetnames:
+            problems.extend(judge.sheet_problems(name, sheet, want[sheet], have[sheet]))
+        assert not problems, name + ":" + chr(10) + chr(10).join(problems[:20])
 
 
 def test_browser_names_the_download_after_the_source(downloads):

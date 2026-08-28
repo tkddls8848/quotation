@@ -18,16 +18,16 @@ import { mkdtempSync } from 'node:fs';
 import { pathToFileURL } from 'node:url';
 
 /**
- * Node 는 확장자 없는 폴더의 `.js` 를 ESM 으로 볼지 CJS 로 볼지 정하지 못해
- * `pyodide.asm.js` 로드에 실패한다. 브라우저에는 없는 문제라 여기서만 푼다.
+ * wasm-bindgen 글루는 ES 모듈이다. Node 는 확장자 없는 폴더의 `.js` 를 CJS 로
+ * 보므로 그대로 import 하면 깨진다. 브라우저에는 없는 문제라 여기서만 푼다 —
  * 자산을 하드링크한 임시 폴더에 `package.json` 한 줄을 얹는다.
  */
-function commonjsShim(engineDir) {
+function moduleShim(engineDir) {
   const shim = mkdtempSync(join(tmpdir(), 'quotation-engine-'));
   for (const name of readdirSync(engineDir)) {
     linkSync(join(engineDir, name), join(shim, name));
   }
-  writeFileSync(join(shim, 'package.json'), '{"type":"commonjs"}\n');
+  writeFileSync(join(shim, 'package.json'), '{"type":"module"}\n');
   return shim;
 }
 
@@ -41,7 +41,7 @@ const engineDir = resolve(engineArg);
 const outDir = resolve(outArg);
 mkdirSync(outDir, { recursive: true });
 
-const baseUrl = commonjsShim(engineDir) + '/';
+const baseUrl = moduleShim(engineDir) + '/';
 const engine = await createEngine({
   baseUrl,
   loadBinary: async (url) => new Uint8Array(readFileSync(url)),
