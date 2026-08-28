@@ -9,7 +9,9 @@ publish = false
 crate-type = ["cdylib", "rlib"]
 
 [dependencies]
+js-sys = "0.3.83"
 quotation-core = { path = "../core" }
+quotation-webapi = { path = "../webapi" }
 wasm-bindgen = "0.2.106"
 
 

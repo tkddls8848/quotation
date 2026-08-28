@@ -951,6 +951,7 @@ name = "quotation-parity"
 version = "0.1.0"
 dependencies = [
  "quotation-core",
+ "quotation-webapi",
  "serde_json",
 ]
 
@@ -976,8 +977,19 @@ name = "quotation-wasm"
 version = "0.1.0"
 dependencies = [
  "getrandom 0.4.3",
+ "js-sys",
  "quotation-core",
+ "quotation-webapi",
  "wasm-bindgen",
+]
+
+[[package]]
+name = "quotation-webapi"
+version = "0.1.0"
+dependencies = [
+ "quotation-core",
+ "sha2",
+ "zip 2.4.2",
 ]
 
 [[package]]
