@@ -1,0 +1,16 @@
+[package]
+name = "quotation-core"
+version = "0.1.0"
+edition.workspace = true
+rust-version.workspace = true
+
+[dependencies]
+base64 = "0.22.1"
+flate2 = { version = "1.1.9", default-features = false, features = ["rust_backend"] }
+quick-xml = { version = "0.38.4", features = ["encoding"] }
+rust_decimal = { version = "1.38.0", default-features = false, features = ["std"] }
+umya-spreadsheet = "3.1.0"
+zip = { version = "2.4.2", default-features = false, features = ["deflate"] }
+
+[dev-dependencies]
+zip = { version = "2.4.2", default-features = false, features = ["deflate"] }

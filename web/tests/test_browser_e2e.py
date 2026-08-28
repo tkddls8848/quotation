@@ -7,13 +7,13 @@ CSP 를 건 서버에서 dist 를 내려 주고, Chromium 으로 파일을 골�
 
 돌리려면 세 가지가 있어야 한다. 없으면 건너뛴다.
 
-    python web/scripts/sync_core.py
     python web/scripts/build_browser_engine.py
     npm --prefix web/frontend ci && npm --prefix web/frontend run build
     npm --prefix web/frontend install --no-save playwright   (브라우저 구동)
 """
 from __future__ import annotations
 
+import datetime as dt
 import json
 import os
 import shutil
@@ -24,9 +24,8 @@ from pathlib import Path
 import pytest
 from openpyxl import load_workbook
 
-import api
-import clock
-from xlsx_parity import differences
+import xlsx_content
+from quotation.core import convert
 
 ROOT = Path(__file__).resolve().parents[2]
 FRONTEND = ROOT / "web" / "frontend"
@@ -39,7 +38,7 @@ CASES = ("new_quote.xml", "euckr_quote.xml", "upgrade_quote.xml")
 def _reason() -> str | None:
     if shutil.which("node") is None:
         return "node 가 없습니다"
-    if not (DIST / "py" / "engine.json").is_file():
+    if not (DIST / "engine" / "engine.json").is_file():
         return "빌드된 dist 에 변환 엔진이 없습니다 (build_browser_engine.py + vite build)"
     if not (FRONTEND / "node_modules" / "playwright").is_dir():
         return "playwright 가 없습니다"
@@ -68,12 +67,11 @@ def downloads(tmp_path_factory, fixtures) -> Path:
     return out
 
 
-def test_browser_downloads_match_the_cpython_conversion(downloads, fixtures,
-                                                        template_bytes):
-    """받은 파일이 서버·데스크톱이 만드는 것과 같은 견적서여야 한다."""
-    # 견적 날짜는 브라우저도 여기도 Asia/Seoul 기준으로 정한다 (clock.py).
+def test_browser_downloads_match_the_desktop_conversion(downloads, fixtures):
+    """받은 파일이 데스크톱이 만드는 것과 같은 견적서여야 한다."""
+    # 견적 날짜는 브라우저도 여기도 Asia/Seoul 기준으로 정한다.
     # 받은 파일이 실제로 그 날짜를 담았는지 먼저 확인하고, 그 날짜로 대조한다.
-    today = clock.seoul_today()
+    today = dt.datetime.now(dt.timezone(dt.timedelta(hours=9))).date()
 
     for name in CASES:
         got = (downloads / f"{Path(name).stem}.xlsx").read_bytes()
@@ -83,16 +81,19 @@ def test_browser_downloads_match_the_cpython_conversion(downloads, fixtures,
             f"{name}: 견적 날짜가 Asia/Seoul 기준이 아닙니다 "
             f"(문서 {stamped!r}, 기대 {today.isoformat()!r})")
 
-        expected = api.convert_response(
-            [api.Upload(filename=name,
-                        content=(fixtures / name).read_bytes(),
-                        content_type="text/xml")],
-            template_bytes=template_bytes, template_version="e2e",
-            deployment_version="e2e", request_id="e2e", today=today)
-        assert expected.status == 200
+        expected = convert.convert_bytes(
+            (fixtures / name).read_bytes(), today=today, source_name=name).xlsx
 
-        problems = differences(expected.body, got)
-        assert not problems, f"{name}:\n" + "\n".join(problems)
+        # 무엇을 같게 볼지는 결정 0005·0009 가 정한다 — ZIP 바이트가 아니라
+        # Excel 이 읽는 내용이다. 두 경로 모두 같은 Rust 코어를 부르지만
+        # wasm 과 네이티브 확장이라 압축·색 표기가 다를 수 있다.
+        want = load_workbook(BytesIO(expected))
+        have = load_workbook(BytesIO(got))
+        assert want.sheetnames == have.sheetnames, name
+        problems = []
+        for sheet in want.sheetnames:
+            problems.extend(xlsx_content.sheet_problems(name, sheet, want[sheet], have[sheet]))
+        assert not problems, name + ":" + chr(10) + chr(10).join(problems[:20])
 
 
 def test_browser_names_the_download_after_the_source(downloads):

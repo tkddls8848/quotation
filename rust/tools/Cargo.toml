@@ -1,0 +1,10 @@
+[package]
+name = "quotation-tools"
+version = "0.1.0"
+edition.workspace = true
+rust-version.workspace = true
+publish = false
+
+[dependencies]
+quotation-core = { path = "../core" }
+quotation-webapi = { path = "../webapi" }

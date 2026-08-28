@@ -7,7 +7,7 @@ declare const process: { env: Record<string, string | undefined> };
  * 빌드 결과는 web/frontend/dist 로 나가고 Workers Static Assets 가 그대로 배포한다
  * (web/wrangler.jsonc 의 assets.directory).
  *
- * 변환 엔진(Pyodide 런타임 + 파이썬 모듈)은 `public/py/` 에 있고 그대로 복사된다.
+ * 변환 엔진(Rust→WASM)은 `public/engine/` 에 있고 그대로 복사된다.
  * `python web/scripts/build_browser_engine.py` 가 만든다. 번들러가 손대지 않는
  * 이유는 그것이 실행 파일이 아니라 **런타임이 읽는 자료** 이기 때문이다.
  *

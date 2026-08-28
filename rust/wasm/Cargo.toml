@@ -1,0 +1,25 @@
+[package]
+name = "quotation-wasm"
+version = "0.1.0"
+edition.workspace = true
+rust-version.workspace = true
+publish = false
+
+[lib]
+crate-type = ["cdylib", "rlib"]
+
+[dependencies]
+js-sys = "0.3.83"
+quotation-core = { path = "../core" }
+quotation-webapi = { path = "../webapi" }
+wasm-bindgen = "0.2.106"
+
+
+# zip·umya 가 끌고 오는 난수원. 브라우저에서는 crypto.getRandomValues 를 쓴다.
+[target.'cfg(target_arch = "wasm32")'.dependencies]
+getrandom = { version = "0.4.3", features = ["wasm_js"] }
+
+# wasm-pack 이 들고 오는 binaryen 은 기본 기능 집합이 좁다. Rust 가 내보내는
+# bulk memory 명령을 켜 주지 않으면 검증에서 멈춘다.
+[package.metadata.wasm-pack.profile.release]
+wasm-opt = ["-Oz", "--enable-bulk-memory", "--enable-nontrapping-float-to-int"]

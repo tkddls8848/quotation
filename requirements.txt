@@ -1,9 +1,10 @@
-# 공용 코어(quotation/) 런타임과 테스트.
-# 데스크톱 빌드 도구는 desktop/requirements.txt, 웹 배포 의존성은
-# web/pyproject.toml 과 web/frontend/package.json 에 있다.
+# 공용 코어(quotation/)는 변환 규칙을 Rust 확장(quotation_rust)으로 부른다.
+# 확장은 maturin 으로 만들어 설치한다 (README 의 개발 절차 참고).
+#
+#   maturin build --release -m rust/python/Cargo.toml --out target/wheels
+#   pip install target/wheels/quotation_rust-*.whl
 
-# 런타임
-lxml==6.1.1
+# 테스트에서 산출물을 열어 보는 데 쓴다. 변환 자체에는 쓰지 않는다.
 openpyxl==3.1.5
 
 # 테스트

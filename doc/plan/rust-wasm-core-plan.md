@@ -2,8 +2,19 @@
 
 - 성격: **계획**. 착수 시점의 설계 의도와 범위를 적는다. 뒤집히면 이 문서를
   고쳐 덮지 않고 [`doc/decisions/`](../decisions/) 에 결정 기록을 남긴다.
-- 상태: **Phase 0 미착수.** Phase 0 관문을 통과하지 못하면 나머지는 폐기한다.
+- 상태: **끝났다 (2026-08-28).** 변환 규칙은 `rust/` 에 한 벌뿐이고, 브라우저는
+  WASM 으로 데스크톱은 확장 모듈로 같은 코어를 부른다. 파이썬 구현은 지웠다.
+  서버 경로는 없앴다 ([결정 0010](../decisions/0010-retire-the-server-conversion-path.md)).
+  Phase 0 재개 경위: 이전의 폐기 판단은 템플릿을 한 셀만 바꾼 저장본을
+  구성 XML 변환 결과와 혼동한 잘못된 근거였다. [결정 0004](../decisions/0004-resume-rust-wasm-phase0.md)가
+  [결정 0003](../decisions/0003-reject-rust-wasm-core-after-phase0.md)를 철회한다.
+  실제 구성 XML을 Python 원본과 독립 Rust 구현에 각각 넣어 비교하기 전에는
+  동등성·폐기를 판정하지 않는다.
+- 승인 기준: [결정 0005](../decisions/0005-accept-meaningful-xlsx-parity.md)의
+  제품·금액·수식·구조 동등성과 첫 페이지 도형 보존을 쓴다. ZIP 직렬화 차이는
+  계속 관찰하되 그 자체로 중단 사유로 삼지 않는다.
 - 근거가 된 실측: [`measurements/runtime.md`](../measurements/runtime.md)
+- 남은 일정: [`rust-wasm-core-schedule.md`](rust-wasm-core-schedule.md)
 - 되돌아봐야 할 결정: [결정 0002](../decisions/0002-convert-in-browser.md),
   [계획 §1](web-app-plan.md#1-결론)
 
@@ -136,11 +147,33 @@ zip 을 직접 손봐 되살린다. Rust 에서 확인할 것:
 
 | 단계 | 범위 | 줄 수 | 동등성 판정 |
 |---|---|---:|---|
-| 1 | `money`, `naming`, `modes` | 186 | 단위 테스트 이식. 파이썬·Rust 양쪽에 같은 입력을 넣어 출력 문자열 비교 |
-| 2 | `xml_reader` (`quick-xml` + `encoding_rs`) | 325 | fixture 6종의 파싱 결과가 파이썬 모델과 같은가. XXE 차단·인라인 DTD 거절 포함 |
-| 3 | `models`, `integrated`, `dcsc_summary`, `convert` | 611 | 같은 fixture 로 중간 모델 비교 |
-| 4 | `writer/*` (`ibm_writer`, `decorate`, `drawings`) | 822 | **`xlsx_parity.py` 로 최종 산출물 비교.** 여기가 본체다 |
-| 5 | 바인딩 둘 + 배선 교체 | — | 아래 §7 |
+| 1 ✅ | `money`, `naming`, `modes` | 186 | 단위 테스트 이식(`rust/core/tests/pure_rules.rs`). 파이썬·Rust 양쪽에 같은 입력을 넣어 출력 비교(`tools/rust_parity_pure_rules.py`) |
+| 2 ✅ | `xml_reader` (`quick-xml` + `encoding_rs`) | 325 | fixture 6종의 파싱 결과가 파이썬 모델과 같은가. XXE 차단·인라인 DTD 거절 포함 |
+| 3 ✅ | `models`, `integrated`, `dcsc_summary`, `convert` | 611 | 같은 fixture 로 중간 모델 비교 |
+| 4 ✅ | `writer/*` (`ibm_writer`, `decorate`, `drawings`) | 822 | **`xlsx_parity.py` 로 최종 산출물 비교.** 여기가 본체다 |
+| 5 ✅ | 바인딩 둘 + 배선 교체 + 파이썬 제거 | — | 아래 §7, [일정 §5](rust-wasm-core-schedule.md) |
+
+### Phase 1 결과 (2026-08-26)
+
+`rust/core` 크레이트에 `money` · `naming` · `modes` 를 옮겼다. 규칙은 한 줄도
+바꾸지 않았고, 파이썬이 계속 기준이다.
+
+- 이식한 단위 테스트 21건 통과 (`cargo test`).
+- 대조 1,009건 통과 (`tools/rust_parity_pure_rules.py`). 입력은 지어내지 않고
+  골든 fixture 6종과 저장소의 실제 구성 XML 에서 ProductDescription ·
+  ProductName · MonetaryAmount 를 그대로 뽑아 썼다.
+- 하네스가 실제로 차이를 잡는지 확인했다. Rust 쪽 금칙 문자 치환자를 일부러
+  `-` 에서 `_` 로 바꾸자 `메일/스펨_1식`, `PCIe Gen4 I/O Expansion Drawer` 등
+  실제 fixture 값에서 14건이 붉어졌다.
+
+이 단계에서 파이썬 구현만으로는 몰랐던 것 하나가 드러났다. 레노버 DCSC 는
+금액을 지수 표기(`4.0172E7`)로 적고, 그 값이 골든 fixture 에 들어 있다.
+[결정 0006](../decisions/0006-compare-amounts-by-value.md) 이 이 값을 어떻게
+대조할지 정한다.
+
+파이썬 문자열 규칙 가운데 Rust 기본값과 다른 둘은 `rust/core/src/text.rs` 에
+모아 두었다 — `str.strip()` 의 공백 범위(`0x1c`~`0x1f` 포함)와, 바이트가
+아니라 글자 수로 자르는 슬라이스다. 한글 장비 이름이 31자 제한에 걸리는 자리다.
 
 Phase 2 에서 **EUC-KR 우회책이 없어진다.** Pyodide 의 libxml2 에 iconv 가 없어
 넣은 것인데([사고 0002](../incidents/0002-pyodide-lxml-euckr.md)),

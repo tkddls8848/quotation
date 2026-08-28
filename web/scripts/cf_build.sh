@@ -35,7 +35,6 @@ export DEPLOYMENT_VERSION="${DEPLOYMENT_VERSION:-${WORKERS_CI_COMMIT_SHA:-$(git 
 echo "=== 배포 판본: ${DEPLOYMENT_VERSION}"
 
 echo "=== 1/3 공용 코어와 템플릿 생성"
-python3 scripts/sync_core.py
 
 echo "=== 2/3 브라우저 변환 엔진 생성"
 python3 scripts/build_browser_engine.py

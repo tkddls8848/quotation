@@ -5,7 +5,6 @@
   "scripts": {
     "dev": "wrangler dev --env=\"\"",
     "check": "wrangler deploy --dry-run --env=\"\" --outdir .wrangler/dry-run",
-    "check:server": "wrangler deploy --dry-run --env server --outdir .wrangler/dry-run-server",
     "deploy": "wrangler deploy --env=\"\""
   },
   "devDependencies": {

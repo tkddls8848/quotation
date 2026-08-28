@@ -1,6 +1,10 @@
-"""증설 견적 — 참조 구성 제외와 제거 부품 표시.
+"""증설 견적 — 실제 샘플로 확인하는 회귀.
 
-골든: samples/1080MES.{xml,xls}
+증설 문서는 기존(BASE)·증설후(PROPOSED) 구성을 참조용으로 함께 담고, 제거되는
+부품은 수량을 음수로 붉게 적는다. 규칙은 Rust 코어에 있고, 여기서는 **나온
+견적서**로 확인한다.
+
+샘플(`samples/`)은 저장소에 담지 않는다. 없으면 건너뛴다.
 """
 from __future__ import annotations
 
@@ -10,62 +14,51 @@ from pathlib import Path
 import pytest
 from openpyxl import load_workbook
 
+from quotation.core import convert
+from xlsx_content import same_color
+
 ROOT = Path(__file__).resolve().parents[1]
-
-from quotation.core import convert, xml_reader  # noqa: E402
-from quotation.core.writer.decorate import RED  # noqa: E402
-
-SAMPLE = ROOT / "samples" / "1080MES.xml"
+SAMPLE = ROOT / "samples" / "X-ROIS 통합서버#2 증설.xml"
 TODAY = dt.date(2026, 7, 23)
 
-
-@pytest.fixture(scope="module")
-def quote():
-    if not SAMPLE.exists():
-        pytest.skip(f"샘플 없음: {SAMPLE.name}")
-    return xml_reader.parse(SAMPLE)
+#: 제거(REMOVE) 부품의 붉은 글꼴.
+RED = "FFFF0000"
 
 
 @pytest.fixture(scope="module")
-def book(tmp_path_factory):
+def result():
     if not SAMPLE.exists():
         pytest.skip(f"샘플 없음: {SAMPLE.name}")
-    # 산출물은 XML 옆에 생기므로 샘플을 임시 폴더로 복사해 변환한다
-    work = tmp_path_factory.mktemp("up")
-    xml = work / SAMPLE.name
-    xml.write_bytes(SAMPLE.read_bytes())
-    return load_workbook(convert.convert(xml, today=TODAY).output)
+    return convert.convert_bytes(SAMPLE.read_bytes(), today=TODAY,
+                                 source_name=SAMPLE.name)
+
+
+@pytest.fixture(scope="module")
+def book(result):
+    from io import BytesIO
+
+    return load_workbook(BytesIO(result.xlsx))
 
 
 # --- 참조 구성 제외 -------------------------------------------------------------
 
-def test_base_and_proposed_are_excluded(quote):
-    """기존(BASE)·증설후(PROPOSED) 구성은 견적서에 넣지 않는다.
+def test_upgrade_becomes_one_equipment_group(result):
+    """본체 라인이 없는 그룹(DISCO/NEW)은 앞 그룹에 붙어 한 장이 된다.
 
-    XML 29줄 중 BASE 11 + PROPOSED 13 을 빼면 증설분 5줄만 남는다.
+    XML 29줄 중 BASE 11 + PROPOSED 13 은 참조용이라 견적에 넣지 않는다.
+    남는 증설분 5줄이 한 장비군이 된다.
     """
-    kinds = {i.txn_type for g in quote.groups for i in g.items}
-    assert kinds == {"UPGRADE", "DISCO", "NEW"}
-    assert sum(len(g.items) for g in quote.groups) == 5
+    assert result.group_count == 1
+    assert result.line_count == 5
 
 
-def test_upgrade_becomes_one_equipment_group(quote):
-    """본체 라인이 없는 그룹(DISCO/NEW)은 앞 그룹에 붙어 한 장이 된다."""
-    assert len(quote.groups) == 1
-    assert quote.groups[0].sheet_name == "SERVER 1"
-
-
-def test_equipment_name_comes_from_base_config(quote):
+def test_equipment_name_comes_from_base_config(book):
     """증설 라인의 설명에는 장비 이름이 없다. 이름은 BASE 구성에서 딴다.
 
     UPGRADE 라인 설명은 '9080 Model HEU' 지만 장비 이름은 'Server 1' 이다.
     """
-    assert quote.groups[0].item_key == "Server 1"
-    assert quote.groups[0].items[0].description == "9080 Model HEU"
-
-
-def test_only_one_detail_sheet(book):
     assert book.sheetnames == ["TOTAL", "SERVER 1", "template"]
+    assert book["SERVER 1"]["D8"].value == "9080 Model HEU"
 
 
 def test_base_items_absent_from_sheet(book):
@@ -101,8 +94,7 @@ def test_removed_parts_without_priced_parent(book):
 def test_removed_parts_are_red(book, row):
     ws = book["SERVER 1"]
     for col in "CDEFG":
-        color = ws[f"{col}{row}"].font.color
-        assert color is not None and color.rgb == RED, f"{col}{row} 이 붉지 않다"
+        assert same_color(ws[f"{col}{row}"].font.color, RED), f"{col}{row} 이 붉지 않다"
 
 
 @pytest.mark.parametrize("row", REMOVE_ROWS_UPGRADE + REMOVE_ROWS_DISCO)
@@ -116,7 +108,7 @@ def test_removed_parts_have_no_amount(book, row):
 def test_normal_rows_stay_uncoloured(book):
     ws = book["SERVER 1"]
     for row in (8, 10, 22, 25):
-        assert ws[f"C{row}"].font.color is None, f"{row}행이 물들었다"
+        assert not same_color(ws[f"C{row}"].font.color, RED), f"{row}행이 물들었다"
 
 
 # --- 합계 ---------------------------------------------------------------------

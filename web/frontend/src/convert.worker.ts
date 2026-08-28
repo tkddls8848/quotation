@@ -1,18 +1,18 @@
 /**
  * 변환 Web Worker.
  *
- * Pyodide 기동과 XLSX 생성은 수백 ms~수 초의 CPU 를 쓴다. 화면 스레드에서
- * 하면 진행 표시도 취소 버튼도 얼어붙는다. 그래서 여기서 돈다.
+ * XLSX 생성은 수백 ms 의 CPU 를 쓴다. 화면 스레드에서 하면 진행 표시도 취소
+ * 버튼도 얼어붙는다. 그래서 여기서 돈다.
  *
- * 규칙은 하나다. **이 파일에는 변환 규칙이 없다.** 파이썬(`entry.py` → `api.py`
- * → `quotation.core`)이 하고, 여기는 심부름만 한다.
+ * 규칙은 하나다. **이 파일에는 변환 규칙이 없다.** Rust 코어(`rust/webapi` →
+ * `rust/core`)가 하고, 여기는 심부름만 한다.
  */
 
 import { createEngine } from './engine.js';
 import type { Engine } from './engine.js';
 
 /** 자산 위치. 배포에서는 정적 자산으로 같은 출처에서 내려온다. */
-const BASE_URL = new URL('/py/', self.location.origin).href;
+const BASE_URL = new URL('/engine/', self.location.origin).href;
 
 export type WorkerRequest =
   | { kind: 'warmup' }
