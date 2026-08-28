@@ -8,12 +8,6 @@ on:
 permissions:
   contents: read
 
-env:
-  # Python Workers 배포에 필요한 최소 판본.
-  # pywrangler 는 wrangler 4.42.1 이상을 요구하고, wrangler 3.x 는 wrangler.jsonc
-  # 를 아예 읽지 못한다 (설정을 못 찾아 "Missing entry-point" 로 실패한다).
-  MIN_UV_VERSION: "0.12.3"
-
 jobs:
   core:
     name: 공용 코어 · 데스크톱 · Worker · eConfig 테스트 (lxml ${{ matrix.lxml }})
@@ -153,68 +147,23 @@ jobs:
       - run: npm run build
 
   bundle:
-    name: 배포 설정 검증 (무료 기본 + Paid 서버 환경)
+    name: 배포 설정 검증 (정적 자산 — 무료 계정)
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
-        with:
-          python-version: "3.12"
       - uses: actions/setup-node@v4
         with:
           node-version: "22"
-      - name: 배포 도구 설치
-        run: |
-          python -m pip install -r requirements.txt
-          python -m pip install workers-py "uv>=${MIN_UV_VERSION}"
       - name: wrangler 설치 (web/package.json 에 고정된 판본)
         run: npm ci
         working-directory: web
       - name: 정적 자산 빌드
         run: npm ci && npm run build
         working-directory: web/frontend
-      - name: 공용 코어를 Worker 번들로 복사
-        run: python web/scripts/sync_core.py
-      - name: 무료 계정 기본 배포 검사 (Worker 스크립트 없음)
+      - name: 배포 검사 (Worker 스크립트 없음)
         # 여기 Worker 스크립트가 잡히면 무료 계정 전제가 깨진 것이다.
+        # 변환은 브라우저의 Rust→WASM 엔진이 한다 (결정 0002, 0010).
         run: npx wrangler deploy --dry-run --env="" --outdir .wrangler/dry-run
-        working-directory: web
-      - name: Pyodide 의존성 해석 (Workers Paid 서버 환경용)
-        # lxml·openpyxl 을 Pyodide 대상으로 받아 web/python_modules 에 넣는다.
-        # 무료 계정 배포에는 쓰이지 않지만, `--env server` 로 올릴 길이 계속
-        # 열려 있는지 여기서 확인한다.
-        #
-        # `pywrangler sync` 는 --env 를 모른다(사용 가능한 옵션이 아니다) — 이
-        # 저장소의 최상위 wrangler.jsonc 는 무료 계정 전제로 Worker 스크립트가
-        # 없어 `python_workers` 플래그도 없으므로, 최상위만 보는 이 명령은
-        # `--env server` 설정과 무관하게 항상 실패한다(workers-py 1.16.6,
-        # 2026-08-14 무렵부터). 아래 "Paid 서버 환경 검사" 가 `wrangler deploy
-        # --dry-run --env server` 로 실제로 필요한 것(그 env 설정이 유효한지)을
-        # 이미 검증하므로, 여기서는 실패해도 배포를 막지 않는다.
-        continue-on-error: true
-        run: python3 -m pywrangler sync
-        working-directory: web
-      - name: 해석된 판본과 번들 크기
-        # 여기 찍히는 판본을 web/pylock.toml 로 고정한다. 배포 번들 한도
-        # (Paid 10 MB)에 드는지도 여기서 본다.
-        if: always()
-        run: |
-          echo "::group::pylock.toml"
-          [ -f pylock.toml ] && grep -E '^name|^version|^\[\[packages' pylock.toml | paste - - - | head -40 || echo "(없음)"
-          echo "::endgroup::"
-          echo "::group::python_modules 크기"
-          [ -d python_modules ] && du -sh python_modules && du -sh python_modules/* | sort -rh | head -15 || echo "(없음)"
-          echo "::endgroup::"
-        working-directory: web
-      - name: Worker 가 부르는 이름이 실제 SDK 에 있는지
-        # workers SDK 는 JS 객체를 파이썬 클래스로 감싸서 준다. JS 이름을 부르면
-        # AttributeError 가 나는데 worker.py 가 그것을 사용자 문구 하나로 접어
-        # 버려, 배포된 앱이 모든 변환을 거절하면서도 아무 단서를 남기지 않았다
-        # (사고 기록 incidents/0001). sync 로 받은 실제 SDK 소스와 대조한다.
-        run: python -m pytest web/tests/test_worker_runtime.py -q
-        working-directory: ${{ github.workspace }}
-      - name: Paid 서버 환경 검사 (자격 증명 없이)
-        run: npx wrangler deploy --dry-run --env server --outdir .wrangler/dry-run-server
         working-directory: web
 
   deploy-staging:
@@ -261,9 +210,8 @@ jobs:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
       - name: 배포
-        # 무료 계정 배포는 정적 자산뿐이라 pywrangler 가 필요 없다. Workers Paid
-        # 에 서버 변환 API 까지 올릴 때만 `cf_deploy.sh deploy --env server` 를
-        # 쓴다 (그쪽은 pywrangler 로 의존성을 vendoring 한다).
+        # 배포는 정적 자산뿐이다. 변환은 브라우저의 Rust→WASM 엔진이 하므로
+        # Worker 스크립트도, pywrangler 도 필요 없다 (결정 0002, 0010).
         run: bash scripts/cf_deploy.sh deploy --env staging
         working-directory: web
         env:
