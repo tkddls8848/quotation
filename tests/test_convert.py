@@ -7,7 +7,7 @@ from pathlib import Path
 import pytest
 from openpyxl import load_workbook
 
-from quotation.core import convert, resources, xml_reader
+from quotation.core import convert, resources
 from quotation.core.xml_reader import QuotationXmlError
 
 TODAY = dt.date(2026, 7, 23)
@@ -176,16 +176,18 @@ def test_supply_row_is_always_blank(tmp_path, fixtures):
 # --- 견적서 번호 ---------------------------------------------------------------
 
 def _quote_number(tmp_path, fixtures, template_b2: str) -> str:
-    from quotation.core.writer import ibm_writer
+    """템플릿 B2 를 바꿔 넣고 변환해, 결과의 B2 를 돌려준다."""
+    from io import BytesIO
 
     template = tmp_path / "t.xlsx"
     wb = load_workbook(resources.default_template_path())
     wb["TOTAL"]["B2"] = template_b2
     wb.save(template)
 
-    quote = xml_reader.parse(fixtures / "new_quote.xml")
-    out = ibm_writer.write(quote, template, tmp_path / "o.xlsx", today=TODAY)
-    return load_workbook(out)["TOTAL"]["B2"].value
+    result = convert.convert_bytes(
+        (fixtures / "new_quote.xml").read_bytes(),
+        template.read_bytes(), today=TODAY)
+    return load_workbook(BytesIO(result.xlsx))["TOTAL"]["B2"].value
 
 
 def test_quote_number_updates_year_only(tmp_path, fixtures):

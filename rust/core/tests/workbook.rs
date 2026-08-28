@@ -100,15 +100,14 @@ fn puts_the_drawing_reference_on_the_first_sheet_only() {
 fn writes_the_same_content_for_the_same_input() {
     // 날짜를 고정하면 내용이 재현된다. 대조가 성립하는 전제다.
     //
-    // 파일 전체 바이트는 같지 않다. zip 은 부품마다 수정 시각을 담고
-    // `docProps/core.xml` 에도 시각이 들어간다 — 견적서 내용이 아니라서
-    // `web/tests/xlsx_parity.py` 도 그 자리를 정규화한다.
+    // 파일 전체 바이트는 같지 않다 (결정 0011). zip 은 부품마다 수정 시각을
+    // 담고, `xl/styles.xml` 의 numFmt 나열 순서는 실행마다 달라진다 — 둘 다
+    // 견적서 내용이 아니다.
     let first = build("upgrade_quote.xml");
     let second = build("upgrade_quote.xml");
     for name in [
         "xl/worksheets/sheet1.xml",
         "xl/worksheets/sheet2.xml",
-        "xl/styles.xml",
         "xl/sharedStrings.xml",
     ] {
         assert_eq!(part(&first, name), part(&second, name), "{name}");

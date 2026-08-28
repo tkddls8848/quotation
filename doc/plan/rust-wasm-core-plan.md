@@ -2,10 +2,9 @@
 
 - 성격: **계획**. 착수 시점의 설계 의도와 범위를 적는다. 뒤집히면 이 문서를
   고쳐 덮지 않고 [`doc/decisions/`](../decisions/) 에 결정 기록을 남긴다.
-- 상태: **코어 이식 완료, 배선 교체 남음.** Phase 1~4 로 코어를 다 옮겼고
-  바인딩 둘(WASM·PyO3)이 파이썬과 같은 견적서를 만든다. 남은 것은 실제 배포
-  경로를 그쪽으로 돌리는 일이며, 그 앞에 사람이 정할 갈래가 하나 있다
-  ([일정 §5](rust-wasm-core-schedule.md)).
+- 상태: **끝났다 (2026-08-28).** 변환 규칙은 `rust/` 에 한 벌뿐이고, 브라우저는
+  WASM 으로 데스크톱은 확장 모듈로 같은 코어를 부른다. 파이썬 구현은 지웠다.
+  서버 경로는 없앴다 ([결정 0010](../decisions/0010-retire-the-server-conversion-path.md)).
   Phase 0 재개 경위: 이전의 폐기 판단은 템플릿을 한 셀만 바꾼 저장본을
   구성 XML 변환 결과와 혼동한 잘못된 근거였다. [결정 0004](../decisions/0004-resume-rust-wasm-phase0.md)가
   [결정 0003](../decisions/0003-reject-rust-wasm-core-after-phase0.md)를 철회한다.
@@ -152,7 +151,7 @@ zip 을 직접 손봐 되살린다. Rust 에서 확인할 것:
 | 2 ✅ | `xml_reader` (`quick-xml` + `encoding_rs`) | 325 | fixture 6종의 파싱 결과가 파이썬 모델과 같은가. XXE 차단·인라인 DTD 거절 포함 |
 | 3 ✅ | `models`, `integrated`, `dcsc_summary`, `convert` | 611 | 같은 fixture 로 중간 모델 비교 |
 | 4 ✅ | `writer/*` (`ibm_writer`, `decorate`, `drawings`) | 822 | **`xlsx_parity.py` 로 최종 산출물 비교.** 여기가 본체다 |
-| 5 | 바인딩 둘 ✅ + 배선 교체 | — | 아래 §7, [일정 §5](rust-wasm-core-schedule.md) |
+| 5 ✅ | 바인딩 둘 + 배선 교체 + 파이썬 제거 | — | 아래 §7, [일정 §5](rust-wasm-core-schedule.md) |
 
 ### Phase 1 결과 (2026-08-26)
 

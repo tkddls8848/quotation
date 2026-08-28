@@ -947,15 +947,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "quotation-parity"
-version = "0.1.0"
-dependencies = [
- "quotation-core",
- "quotation-webapi",
- "serde_json",
-]
-
-[[package]]
 name = "quotation-phase0-roundtrip"
 version = "0.1.0"
 dependencies = [
@@ -970,6 +961,14 @@ version = "0.1.0"
 dependencies = [
  "pyo3",
  "quotation-core",
+]
+
+[[package]]
+name = "quotation-tools"
+version = "0.1.0"
+dependencies = [
+ "quotation-core",
+ "quotation-webapi",
 ]
 
 [[package]]

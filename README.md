@@ -10,8 +10,9 @@ eConfig Export XML을 기존 견적서 양식의 Excel 파일(`.xlsx`)로 변환
 | 웹 앱 (Cloudflare Workers) | [`web/`](web/) | 운영 중 — [문서](doc/) |
 
 웹 앱은 **브라우저 안에서** 변환합니다. Cloudflare Workers 무료 계정의 CPU
-한도(요청당 10 ms)로는 견적서를 만들 수 없기 때문이며, 브라우저가 돌리는 파이썬은
-데스크톱·서버가 돌리는 것과 같은 파일입니다. 자세한 근거는 [web/README.md](web/README.md).
+한도(요청당 10 ms)로는 견적서를 만들 수 없기 때문이며, 브라우저가 돌리는 것은
+데스크톱이 쓰는 것과 **같은 Rust 코어**입니다 (WASM). 자세한 근거는
+[web/README.md](web/README.md).
 
 - Excel을 설치하지 않아도 변환할 수 있습니다.
 - 상세 구성품·수량·LP 가격을 TOTAL 및 장비군별 상세 시트에 반영합니다.
@@ -22,7 +23,7 @@ eConfig Export XML을 기존 견적서 양식의 Excel 파일(`.xlsx`)로 변환
 
 구성 파일을 만든 구성기에 따라 값의 뜻이 달라집니다. 사람이 고르지 않고
 문서 내용으로 알아냅니다 — 레노버 구성기만 장비 본체 라인에 사람이 적어 넣은
-이름(`ProductName`)을 남기기 때문입니다 (`quotation/core/modes.py`).
+이름(`ProductName`)을 남기기 때문입니다 (`rust/core/src/modes.rs`).
 
 | 문서 | 판별 근거 | 무엇이 다른가 |
 |---|---|---|
@@ -38,21 +39,24 @@ eConfig Export XML을 기존 견적서 양식의 Excel 파일(`.xlsx`)로 변환
 앱(데스크톱)과 웹 파일은 섞이지 않습니다. 변환 규칙만 공용 코어에 한 벌 둡니다.
 
 ```text
-quotation/              공용 코어 — Excel·GUI·경로에 의존하지 않는 순수 변환 로직
-  core/
-    xml_reader.py       eConfig XML 파서 (경로·바이트 입력, XXE 차단, 인코딩 처리)
-    models.py           견적 데이터 모델
-    money.py            금액 파싱 (콤마, N/C, Decimal)
-    naming.py           종목 키 및 시트명 생성 (Excel 금칙 문자·중복 정리 포함)
-    modes.py            IBM/레노버 x86 문서 판별 (UNIX / 통합)
-    integrated.py       통합 모드 전용 해석 규칙 — 레노버 x86 구성 파일
-    dcsc_summary.py     레노버 DCSC 요약표 읽기 (품목별 실금액)
-    convert.py          변환 오케스트레이션 (convert / convert_bytes)
-    resources.py        기준 템플릿 위치
-    writer/             openpyxl 기반 견적서 작성 및 도형 보존
-  resources/            기준 템플릿 (.xlsx 한 벌이 유일한 원본)
+rust/                   변환 규칙 — 여기 한 벌뿐이다
+  core/                 XML 읽기부터 견적서 작성까지 (money·naming·modes·models·
+                        xml_reader·integrated·dcsc_summary·writer)
+  webapi/               요청 검증·응답 헤더·오류 문구 (브라우저가 쓴다)
+  wasm/                 브라우저 진입점 (wasm-bindgen)
+  python/               데스크톱·CI 용 확장 모듈 (PyO3, quotation_rust)
+  tools/                판본 확인 같은 개발용 실행 파일
+  roundtrip/            템플릿 도형 보존 확인용
 
-desktop_ibm/                데스크톱 전용 — 웹에서 쓰지 않는다
+quotation/              얇은 파이썬 얼굴 — 규칙은 없다
+  core/
+    convert.py          공개 API (convert / convert_bytes / document_mode)
+    modes.py            모드 이름 (unix / integrated)
+    xml_reader.py       QuotationXmlError (확장이 정의한 것을 그대로 쓴다)
+    resources.py        기준 템플릿 위치
+  resources/            기준 템플릿 (.xlsx 두 벌이 유일한 원본)
+
+desktop_ibm/            데스크톱 전용 — 웹에서 쓰지 않는다
   quotation_desktop/    Tkinter 화면, 사용자 설정, 실행 경로
   launcher.py           PyInstaller 진입점
   QuotationTool.spec    단일 EXE 빌드 정의
@@ -60,40 +64,31 @@ desktop_ibm/                데스크톱 전용 — 웹에서 쓰지 않는다
   tests/                데스크톱 전용 테스트
 
 web/                    웹 전용 — 데스크톱에서 쓰지 않는다
-  src/                  변환 API 층 (api/conversion_adapter/limits/errors/clock/template)
-                        Worker 와 브라우저가 같은 파일을 쓴다. worker.py 만 Workers 전용
-  browser/entry.py      브라우저(Pyodide) 진입점 — worker.py 와 같은 역할
-  frontend/             Vite + TypeScript SPA + Pyodide 변환 일꾼
-  scripts/              코어 동기화, 브라우저 엔진 포장, 템플릿 검증
-  tests/                API·경계 테스트 + 브라우저/CPython 동일성 검증
-  wrangler.jsonc        기본=정적 자산(무료), env.server=Python Worker(Paid)
+  frontend/             Vite + TypeScript SPA + 변환 일꾼
+    src/engine.js       wasm 을 세우고 convert 를 부른다 (규칙 없음)
+    public/engine/      배포 직전 만드는 엔진 자산 (추적하지 않음)
+  scripts/              엔진 포장, 템플릿 검증, 배포 스크립트
+  tests/                브라우저↔데스크톱 동일성 + 실제 Chromium E2E
+  wrangler.jsonc        정적 자산 배포 (무료 계정)
 
-rust/                   Rust 코어 이식 (doc/plan/rust-wasm-core-plan.md)
-  core/                 옮긴 변환 규칙 전부 — XML 읽기부터 견적서 작성까지
-  wasm/                 브라우저 진입점 (wasm-bindgen)
-  python/               데스크톱·CI 용 확장 모듈 (PyO3, quotation_rust)
-  parity/               파이썬 구현과 대조하는 탐침
-  roundtrip/            Phase 0 관문 — 첫 페이지 도형 보존 확인용
-
-tests/                  공용 코어 테스트 + 익명화 fixture(tests/fixtures/public)
-tools/                  공용 개발 도구 (골든 비교, 템플릿 변환, Rust 대조)
+tests/                  공개 API 회귀 + 익명화 fixture(tests/fixtures/public)
+tools/                  개발 도구 (골든 비교, 내용 비교기, 템플릿 변환, 실측)
 doc/                    성격별로 나눈 문서 — 명세·안내·계획·결정·사고·실측
 ```
 
-`rust/` 는 이미 같은 견적서를 만들지만 **아직 배포 경로에 연결되어 있지
-않습니다.** 데스크톱과 웹은 지금도 `quotation/` 을 씁니다. 배선을 바꾸기 전에
-정할 것이 하나 남아 있습니다 — [일정 §5](doc/plan/rust-wasm-core-schedule.md).
+**변환 규칙은 `rust/` 에 한 벌뿐입니다.** 데스크톱은 확장 모듈로, 브라우저는
+WASM 으로 같은 코어를 부릅니다. 두 경로가 같은 견적서를 만드는지는
+`web/tests/test_browser_parity.py` 가 매번 대조합니다.
 
-`quotation/`, `tests/`, `tools/` 는 **데스크톱과 웹이 함께 쓰는 공용 자산**
-입니다. 어느 한쪽에 딸린 것이 아니므로 `desktop_ibm/` 이나 `web/` 아래로 옮기지
-않습니다.
+`rust/`, `quotation/`, `tests/`, `tools/` 는 **데스크톱과 웹이 함께 쓰는 공용
+자산**입니다. 어느 한쪽에 딸린 것이 아니므로 `desktop_ibm/` 이나 `web/` 아래로
+옮기지 않습니다.
 
-경계는 테스트로 지킵니다. `web/tests/test_worker_smoke.py` 는 Worker 층과 공용
-코어가 `tkinter`·`quotation_desktop` 을 import 하지 못하게 막고,
-`tests/test_bytes_api.py` 는 경로 입력(데스크톱)과 바이트 입력(웹)의 산출물이
-셀 단위로 같은지 대조하며, `web/tests/test_browser_parity.py` 와
-`web/tests/test_browser_e2e.py` 는 브라우저가 만든 견적서가 CPython 산출물과
-같은지 zip 부품 단위·셀 단위로 대조합니다.
+경계는 테스트로 지킵니다. `tests/test_bytes_api.py` 는 경로 입력(데스크톱)과
+바이트 입력(웹)의 산출물이 같은지 보고, `web/tests/test_browser_parity.py` 와
+`web/tests/test_browser_e2e.py` 는 브라우저(WASM)가 만든 견적서가 데스크톱
+(확장 모듈) 산출물과 셀 단위로 같은지 대조합니다 — 실제 Chromium 으로 받아 본
+파일까지 같은 기준으로 봅니다.
 
 ## 데스크톱 앱 사용
 
@@ -108,12 +103,12 @@ doc/                    성격별로 나눈 문서 — 명세·안내·계획·�
 ## 웹 앱
 
 브라우저에서 XML을 고르면 **그 자리에서** 같은 견적서를 만들어 내려받습니다.
-XML도 결과 파일도 네트워크를 타지 않습니다. 처음 한 번 변환기(약 14 MiB)를
+XML도 결과 파일도 네트워크를 타지 않습니다. 처음 한 번 변환기(약 1 MiB)를
 내려받은 뒤로는 다시 받지 않습니다.
 
-데스크톱과 같은 변환 코어를 브라우저 안의 파이썬(Pyodide)이 그대로 돌립니다.
-결과가 같은지는 테스트가 매번 셀 단위·바이트 단위로 대조합니다. 실행·배포
-방법과 근거는 [web/README.md](web/README.md).
+데스크톱과 같은 Rust 코어를 브라우저가 WASM 으로 돌립니다. 결과가 같은지는
+테스트가 매번 셀 단위로 대조하고, 실제 Chromium 으로 받아 본 파일까지 같은
+기준으로 봅니다. 실행·배포 방법과 근거는 [web/README.md](web/README.md).
 
 ## 템플릿 사용자 지정
 
@@ -137,34 +132,26 @@ XML도 결과 파일도 네트워크를 타지 않습니다. 처음 한 번 변�
 
 ## 개발
 
-요구 사항: Python 3.11 이상. 웹 UI 작업에는 Node.js 22 이상. `.xls` 골든
+요구 사항: Python 3.11 이상, **Rust 툴체인**(변환 규칙이 거기 있습니다). 웹 UI 작업에는 Node.js 22 이상. `.xls` 골든
 견적서를 `.xlsx` 로 변환할 때만 Microsoft Excel이 필요합니다.
 
 ```powershell
 python -m venv .venv
-.\.venv\Scripts\python.exe -m pip install -r requirements.txt
+.\.venv\Scripts\python.exe -m pip install -r requirements.txt maturin
 
-# 웹 코어 사본과 템플릿 모듈 생성 (web/tests 를 돌리기 전에 한 번)
-.\.venv\Scripts\python.exe web\scripts\sync_core.py
+# 변환 코어 확장 빌드와 설치 (파이썬 쪽 테스트·데스크톱이 이것을 부른다)
+.\.venv\Scripts\python.exe -m maturin build --release -m rust\python\Cargo.toml --out target\wheels
+.\.venv\Scripts\python.exe -m pip install --force-reinstall target\wheels\quotation_rust-0.1.0-cp311-abi3-win_amd64.whl
+
+# 브라우저 엔진 자산 (web/tests 를 돌리기 전에 한 번)
+cargo install wasm-pack
+.\.venv\Scripts\python.exe web\scripts\build_browser_engine.py
 
 # 전체 테스트 (Excel 불필요)
 .\.venv\Scripts\python.exe -m pytest -q
 
-# Rust 이식본 대조만 따로 (Rust 도구 필요, 없으면 위 전체 테스트에서 건너뜀)
+# 변환 규칙 자체의 테스트와 실측
 cargo test
-.\.venv\Scripts\python.exe tools\rust_parity_pure_rules.py   # 순수 규칙
-.\.venv\Scripts\python.exe tools\rust_parity_xml_reader.py   # 파싱
-.\.venv\Scripts\python.exe tools\rust_parity_quotation.py    # 견적 내용
-.\.venv\Scripts\python.exe tools\rust_parity_workbook.py     # 견적서 파일
-
-# 확장 모듈(데스크톱·CI 경로) 빌드와 설치
-.\.venv\Scripts\python.exe -m pip install maturin
-.\.venv\Scripts\python.exe -m maturin build --release -m rust\python\Cargo.toml --out target\wheels
-.\.venv\Scripts\python.exe -m pip install --force-reinstall target\wheels\quotation_rust-0.1.0-cp311-abi3-win_amd64.whl
-
-# 브라우저 자산(WASM) 빌드와 실측
-cargo install wasm-pack
-wasm-pack build rust\wasm --release --target web --out-dir pkg
 node tools\wasm_startup_bench.mjs
 
 # samples\ 의 .xls 골든을 .cache\ 로 변환할 때만 실행 (Excel 필요)
@@ -177,12 +164,16 @@ node tools\wasm_startup_bench.mjs
 .\desktop_ibm\tools\acceptance.ps1
 ```
 
-`tests/test_writer.py`는 생성 파일을 골든 견적서와 셀 단위로 비교합니다. 값,
-수식, 숫자 서식, 정렬, 글꼴, 병합, 열 너비, 인쇄 영역, 시트 순서 및 숨김 상태를
-검증하며, 허용 예외는 근거와 함께 `tests/golden_ignore.txt`에 기록합니다. 골든과
+`tests/` 는 생성 파일을 골든 견적서와 셀 단위로 비교합니다. 값, 수식, 숫자
+서식, 정렬, 글꼴, 병합, 열 너비, 인쇄 영역, 시트 순서 및 숨김 상태를 검증하며,
+허용 예외는 근거와 함께 `tests/golden_ignore.txt`에 기록합니다. 골든과
 실데이터(`samples/`)는 저장소에 담지 않으므로 해당 테스트는 자료가 없으면
 건너뜁니다. 자료 없이도 도는 검증은 `tests/fixtures/public/` 의 익명화 fixture가
 담당합니다.
+
+파일 전체 바이트는 재현되지 않습니다 — 스타일표의 나열 순서와 zip 이 적는
+시각이 실행마다 달라집니다. 내용은 재현됩니다
+([결정 0011](doc/decisions/0011-no-byte-reproducibility.md)).
 
 셀 매핑과 상세 검증 기준은 [doc/spec/SPEC_CELLMAP.md](doc/spec/SPEC_CELLMAP.md),
 기존 프로그램에서 달라진 동작의 상세는
@@ -202,4 +193,4 @@ node tools\wasm_startup_bench.mjs
 | 유지정비료(H·I열) | 입력 | 제거, H열은 빈 칸 |
 | 할인율 | 입력란 제공 | 제거, `공급가` 행은 수기 입력 |
 | 저장 위치 | 선택 가능 | XML과 같은 폴더 고정 (웹은 브라우저 다운로드) |
-| XML 인코딩 | EUC-KR | 그대로 지원. libxml2 가 EUC-KR 을 모르는 환경(Pyodide)에서는 파이썬 코덱으로 UTF-8 로 옮겨 읽는다 |
+| XML 인코딩 | EUC-KR | 그대로 지원. 선언된 인코딩을 코어가 직접 읽는다 |

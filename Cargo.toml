@@ -1,6 +1,6 @@
 [workspace]
 resolver = "2"
-members = ["rust/core", "rust/parity", "rust/python", "rust/roundtrip", "rust/wasm", "rust/webapi"]
+members = ["rust/core", "rust/python", "rust/roundtrip", "rust/tools", "rust/wasm", "rust/webapi"]
 
 [workspace.package]
 edition = "2024"

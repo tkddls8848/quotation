@@ -99,7 +99,7 @@ def adopt(source: Path, mode: str) -> int:
     original.write_bytes(incoming)
 
     # 파생물을 다시 만들지 않으면 Worker 번들과 브라우저 엔진이 옛 양식을 쥔다.
-    for script in ("sync_core.py", "build_browser_engine.py"):
+    for script in ("build_browser_engine.py",):
         path = ROOT / "web" / "scripts" / script
         if not path.is_file():
             continue
