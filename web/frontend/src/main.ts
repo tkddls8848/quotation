@@ -66,6 +66,9 @@ function setBusy(busy: boolean): void {
   cancel.hidden = !busy;
   dropzone.setAttribute('aria-disabled', String(busy));
   document.body.classList.toggle('is-busy', busy);
+  for (const button of queue.querySelectorAll<HTMLButtonElement>('.queue__remove')) {
+    button.disabled = busy;
+  }
 }
 
 function humanSize(bytes: number): string {
@@ -90,7 +93,7 @@ function setRowState(index: number, state: string, text: string): void {
 
 function drawQueue(files: readonly File[]): void {
   queue.replaceChildren();
-  for (const file of files) {
+  files.forEach((file, index) => {
     const row = document.createElement('li');
     row.className = 'queue__item';
     row.dataset.state = 'waiting';
@@ -107,28 +110,40 @@ function drawQueue(files: readonly File[]): void {
     state.className = 'queue__state';
     state.textContent = '대기';
 
-    row.append(name, size, state);
+    const remove = document.createElement('button');
+    remove.type = 'button';
+    remove.className = 'queue__remove';
+    remove.textContent = '삭제';
+    remove.disabled = running !== null;
+    remove.setAttribute('aria-label', `${file.name} 목록에서 빼기`);
+    remove.addEventListener('click', () => removeFile(index));
+
+    row.append(name, size, state, remove);
     queue.append(row);
-  }
+  });
   queue.hidden = files.length === 0;
 }
 
-function choose(files: readonly File[]): void {
+function updateSelectedSummary(): void {
+  selected.hidden = chosen.length === 0;
+  selected.textContent =
+    chosen.length === 1
+      ? '화일 1개'
+      : `화일 ${chosen.length}개 · 합계 ${humanSize(
+          chosen.reduce((sum, f) => sum + f.size, 0),
+        )}`;
+}
+
+/** 새로 고른 화일을 대기 목록에 이어 붙인다. 통째로 바꿔치기하지 않는다. */
+function addFiles(files: readonly File[]): void {
   clearError();
   setStatus('');
 
-  const { accepted, rejected } = selectFiles(files, config);
-  chosen = accepted;
-  drawQueue(accepted);
-
-  selected.hidden = accepted.length === 0;
-  selected.textContent =
-    accepted.length === 1
-      ? '화일 1개'
-      : `화일 ${accepted.length}개 · 합계 ${humanSize(
-          accepted.reduce((sum, f) => sum + f.size, 0),
-        )}`;
-  submit.disabled = accepted.length === 0;
+  const { accepted, rejected } = selectFiles(files, config, chosen);
+  chosen = [...chosen, ...accepted];
+  drawQueue(chosen);
+  updateSelectedSummary();
+  submit.disabled = chosen.length === 0;
 
   if (rejected.length) {
     showError(
@@ -143,8 +158,21 @@ function choose(files: readonly File[]): void {
   }
 }
 
+/** 대기 목록에서 화일 하나를 뺀다. 변환이 진행 중일 때는 손대지 않는다. */
+function removeFile(index: number): void {
+  if (running) return;
+  clearError();
+  chosen = chosen.filter((_, i) => i !== index);
+  drawQueue(chosen);
+  updateSelectedSummary();
+  submit.disabled = chosen.length === 0;
+  if (chosen.length === 0) setStatus('');
+}
+
 function pickFromInput(): void {
-  choose(Array.from(fileInput.files ?? []));
+  addFiles(Array.from(fileInput.files ?? []));
+  // 값을 비워 두어야 같은 화일을 다시 고를 때도 change 이벤트가 일어난다.
+  fileInput.value = '';
 }
 
 // --- 드래그앤드롭 ------------------------------------------------------------
@@ -166,9 +194,9 @@ dropzone.addEventListener('drop', (event) => {
   if (running) return;
   const files = event.dataTransfer?.files;
   if (!files?.length) return;
-  // 드롭한 화일을 입력 요소에도 반영해 두면 폼 상태가 화면과 어긋나지 않는다.
-  fileInput.files = files;
-  choose(Array.from(files));
+  addFiles(Array.from(files));
+  // 입력 요소를 비워 두어야 같은 화일을 다시 드롭했을 때도 change 가 어긋나지 않는다.
+  fileInput.value = '';
 });
 
 // 키보드만으로도 화일을 고를 수 있어야 한다.

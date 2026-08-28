@@ -20,11 +20,21 @@ export interface Selection {
   rejected: Rejected[];
 }
 
-/** 고른 화일 중 변환할 수 있는 것만 추린다. 거른 것은 이유와 함께 돌려준다. */
-export function selectFiles(files: readonly File[], config: AppConfig): Selection {
+/**
+ * 고른 화일 중 변환할 수 있는 것만 추린다. 거른 것은 이유와 함께 돌려준다.
+ *
+ * `existing` 은 이미 대기 목록에 있는 화일이다. 새로 고른 화일을 여기 이어
+ * 붙일 것이므로, 이름 겹침과 한 번에 받는 개수도 `existing` 을 합쳐서 셈한다.
+ */
+export function selectFiles(
+  files: readonly File[],
+  config: AppConfig,
+  existing: readonly File[] = [],
+): Selection {
   const accepted: File[] = [];
   const rejected: Rejected[] = [];
-  const seen = new Set<string>();
+  const seen = new Set<string>(existing.map((f) => f.name));
+  let total = existing.length;
 
   for (const file of files) {
     const reason = rejectReason(file, config);
@@ -39,13 +49,14 @@ export function selectFiles(files: readonly File[], config: AppConfig): Selectio
     }
     seen.add(file.name);
 
-    if (accepted.length >= config.max_batch_files) {
+    if (total >= config.max_batch_files) {
       rejected.push({
         name: file.name,
         reason: `한 번에 ${config.max_batch_files}개까지만 변환합니다.`,
       });
       continue;
     }
+    total += 1;
     accepted.push(file);
   }
   return { accepted, rejected };

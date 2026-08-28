@@ -48,6 +48,25 @@ describe('selectFiles', () => {
     expect(accepted).toEqual([]);
     expect(rejected).toHaveLength(1);
   });
+
+  it('이미 대기 중인 화일과 이름이 겹치면 거른다', () => {
+    const { accepted, rejected } = selectFiles(
+      [file('견적.xml'), file('새.xml')],
+      APP_CONFIG,
+      [file('견적.xml')],
+    );
+    expect(accepted.map((f) => f.name)).toEqual(['새.xml']);
+    expect(rejected[0].reason).toContain('두 번');
+  });
+
+  it('대기 중인 개수까지 합쳐서 한 번에 받는 개수를 셈한다', () => {
+    const existing = Array.from({ length: 2 }, (_, i) => file(`e${i}.xml`));
+    const incoming = Array.from({ length: 2 }, (_, i) => file(`q${i}.xml`));
+    const { accepted, rejected } = selectFiles(incoming, { ...APP_CONFIG, max_batch_files: 3 }, existing);
+    expect(accepted.map((f) => f.name)).toEqual(['q0.xml']);
+    expect(rejected).toHaveLength(1);
+    expect(rejected[0].reason).toContain('3개');
+  });
 });
 
 describe('rejectReason', () => {
