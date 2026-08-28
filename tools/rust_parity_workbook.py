@@ -63,8 +63,9 @@ def pyo3_workbook(data: bytes, template_path: Path, out: Path) -> bytes:
     import quotation_rust
 
     del out
-    return bytes(quotation_rust.convert_bytes(
-        data, template_path.read_bytes(), TODAY.year, TODAY.month, TODAY.day))
+    result = quotation_rust.convert_bytes(
+        data, template_path.read_bytes(), TODAY.year, TODAY.month, TODAY.day)
+    return bytes(result["xlsx"])
 
 
 def rust_workbook(data: bytes, template_path: Path, out: Path) -> bytes:

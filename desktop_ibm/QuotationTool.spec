@@ -17,7 +17,9 @@ a = Analysis(
     binaries=[],
     # 템플릿을 번들에 넣는다. paths.resource_dir() 가 sys._MEIPASS/resources 를 본다.
     datas=[(str(t), "resources") for t in TEMPLATES],
-    hiddenimports=["quotation_desktop.ui.main_window"],
+    # 변환 코어는 Rust 확장이다. quotation.core 가 실행 시점에 import 하므로
+    # 정적 분석으로는 잡히지 않는다 — 여기서 직접 알려 준다.
+    hiddenimports=["quotation_desktop.ui.main_window", "quotation_rust"],
     hookspath=[],
     runtime_hooks=[],
     # 쓰지 않는 무거운 의존성을 뺀다 (openpyxl 이 선택적으로 끌어올 수 있다)

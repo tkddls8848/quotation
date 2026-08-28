@@ -35,8 +35,11 @@ XP_AMOUNT = "./UnitListPrice/FinancialAmount/MonetaryAmount"
 MAX_QUOTATION_ITEMS = 5_000
 
 
-class QuotationXmlError(Exception):
-    """XML 이 견적서 생성 요건을 만족하지 않을 때. 메시지는 원본 프로그램과 동일하다."""
+#: XML 이 견적서 생성 요건을 만족하지 않을 때. 메시지는 원본 프로그램과 동일하다.
+#:
+#: 클래스는 Rust 확장이 정의한 것을 그대로 쓴다. 변환이 어느 경로로 돌든
+#: 호출자가 같은 예외를 잡게 하려는 것이다.
+from quotation_rust import QuotationXmlError  # noqa: E402
 
 
 def _text(el, path: str) -> str:

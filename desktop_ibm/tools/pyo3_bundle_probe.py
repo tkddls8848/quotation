@@ -47,8 +47,55 @@ def main() -> int:
         failed += 0 if ok else 1
         print(f"  {'OK  ' if ok else 'FAIL'} {label} -> {got!r}" + ("" if ok else f" (기대 {want!r})"))
 
+    failed += _convert_check()
     print("확장이 EXE 안에서 정상 동작합니다." if not failed else f"{failed}건 다릅니다.")
     return 0 if not failed else 1
+
+
+def _convert_check() -> int:
+    """번들 안에서 **실제 변환**까지 도는가.
+
+    확장을 부를 수 있다는 것과 견적서가 나온다는 것은 다른 문제다. 템플릿을
+    찾고, XML 을 읽고, xlsx 바이트를 만드는 데까지 가 본다.
+    """
+    import datetime as dt
+    import tempfile
+    from pathlib import Path
+
+    try:
+        from quotation.core import convert
+    except ImportError as error:
+        print(f"  FAIL 코어를 부를 수 없습니다: {error}")
+        return 1
+
+    sample = (b"<CFXML><CFData><ProductLineItem>"
+              b"<ProductLineNumber>1000</ProductLineNumber>"
+              b"<TransactionType>NEW</TransactionType>"
+              b"<ProprietaryGroupIdentifier>1000</ProprietaryGroupIdentifier>"
+              b"<Quantity>1</Quantity><CPUSIUvalue>1</CPUSIUvalue>"
+              b"<ProductIdentification><PartnerProductIdentification>"
+              b"<ProductDescription>Server 1:probe</ProductDescription>"
+              b"<ProprietaryProductIdentifier>1234-567</ProprietaryProductIdentifier>"
+              b"<ProductTypeCode>Hardware</ProductTypeCode>"
+              b"</PartnerProductIdentification></ProductIdentification>"
+              b"<UnitListPrice><FinancialAmount><MonetaryAmount>1,000.5</MonetaryAmount>"
+              b"</FinancialAmount></UnitListPrice>"
+              b"</ProductLineItem></CFData></CFXML>")
+
+    with tempfile.TemporaryDirectory() as folder:
+        source = Path(folder) / "probe.xml"
+        source.write_bytes(sample)
+        try:
+            result = convert.convert(source, today=dt.date(2026, 8, 28))
+        except Exception as error:  # noqa: BLE001 - 무엇이든 실패면 보고한다
+            print(f"  FAIL 변환이 되지 않습니다: {type(error).__name__}: {error}")
+            return 1
+        made = result.output.read_bytes()
+
+    ok = made[:2] == b"PK" and len(made) > 10_000 and result.group_count == 1
+    print(f"  {'OK  ' if ok else 'FAIL'} 변환 1건 -> {len(made):,} bytes, "
+          f"장비군 {result.group_count}")
+    return 0 if ok else 1
 
 
 if __name__ == "__main__":

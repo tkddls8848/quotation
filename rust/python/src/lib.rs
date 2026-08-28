@@ -7,9 +7,10 @@
 //! `convert_bytes` 가 XML 한 건을 견적서 파일로 바꾼다. 나머지 함수는 규칙을
 //! 하나씩 대조하기 위한 것이고, 파이썬 쪽 대조 하네스가 쓴다.
 
+use pyo3::create_exception;
 use pyo3::exceptions::{PyRuntimeError, PyValueError};
 use pyo3::prelude::*;
-use pyo3::types::PyBytes;
+use pyo3::types::{PyBytes, PyDict};
 
 use quotation_core::writer::{self, Date};
 use quotation_core::xml_reader;
@@ -73,6 +74,25 @@ fn resolve_mode(raw: Option<&str>, product_names: Vec<String>) -> PyResult<Strin
         .map_err(|error| PyValueError::new_err(error.to_string()))
 }
 
+create_exception!(
+    quotation_rust,
+    QuotationXmlError,
+    pyo3::exceptions::PyException,
+    "XML 이 견적서 생성 요건을 만족하지 않을 때. 문구는 원본 프로그램과 같다."
+);
+
+/// 문서를 읽어 읽기 방식만 알아낸다 (`unix` 또는 `integrated`).
+///
+/// 템플릿을 모드로 고르는 호출자가 쓴다 — 어느 양식을 쓸지는 문서를 읽어야
+/// 알 수 있고, 그 판단을 파이썬 쪽에서 다시 하지 않게 한다.
+#[pyfunction]
+#[pyo3(signature = (xml, mode=None))]
+fn document_mode(xml: &[u8], mode: Option<&str>) -> PyResult<String> {
+    let quotation = xml_reader::parse_bytes(xml, mode)
+        .map_err(|error| QuotationXmlError::new_err(error.to_string()))?;
+    Ok(quotation.mode.as_str().to_owned())
+}
+
 /// eConfig XML 바이트 -> 견적서 `.xlsx` 바이트.
 ///
 /// 파이썬 `quotation.core.convert.convert_bytes` 와 같은 일을 한다. 날짜는
@@ -88,17 +108,35 @@ fn convert_bytes<'py>(
     month: u32,
     day: u32,
     mode: Option<&str>,
-) -> PyResult<Bound<'py, PyBytes>> {
+) -> PyResult<Bound<'py, PyDict>> {
     let quotation = xml_reader::parse_bytes(xml, mode)
-        .map_err(|error| PyValueError::new_err(error.to_string()))?;
+        .map_err(|error| QuotationXmlError::new_err(error.to_string()))?;
     let book = writer::build_bytes(&quotation, template, Date { year, month, day })
         .map_err(|error| PyRuntimeError::new_err(error.to_string()))?;
-    Ok(PyBytes::new(python, &book))
+
+    let result = PyDict::new(python);
+    result.set_item("xlsx", PyBytes::new(python, &book))?;
+    result.set_item("mode", quotation.mode.as_str())?;
+    result.set_item("group_count", quotation.groups.len())?;
+    result.set_item(
+        "line_count",
+        quotation
+            .groups
+            .iter()
+            .map(|group| group.items.len())
+            .sum::<usize>(),
+    )?;
+    Ok(result)
 }
 
 #[pymodule]
 fn quotation_rust(module: &Bound<'_, PyModule>) -> PyResult<()> {
+    module.add(
+        "QuotationXmlError",
+        module.py().get_type::<QuotationXmlError>(),
+    )?;
     module.add_function(wrap_pyfunction!(convert_bytes, module)?)?;
+    module.add_function(wrap_pyfunction!(document_mode, module)?)?;
     module.add_function(wrap_pyfunction!(parse_amount, module)?)?;
     module.add_function(wrap_pyfunction!(item_key, module)?)?;
     module.add_function(wrap_pyfunction!(sheet_name, module)?)?;

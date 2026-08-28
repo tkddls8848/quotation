@@ -99,8 +99,25 @@ def test_no_charge_is_written_as_text(tmp_path, fixtures):
     assert wb["TOTAL"]["G8"].value is None, "합계가 0 이면 병합 셀을 비운다"
 
 
+def _same_color(color, argb: str) -> bool:
+    """같은 색인가. 팔레트 색인과 ARGB 는 같은 색을 두 가지로 적은 것이다.
+
+    OOXML 을 적는 라이브러리마다 고르는 표기가 다르다 (결정 0009).
+    """
+    from openpyxl.styles.colors import COLOR_INDEX
+
+    if color is None:
+        return False
+    if color.type == "rgb":
+        return color.rgb == argb
+    if color.type == "indexed" and 0 <= color.indexed < len(COLOR_INDEX):
+        return f"FF{COLOR_INDEX[color.indexed][2:]}" == argb
+    return False
+
+
 def test_removed_parts_are_negative_and_red(tmp_path, fixtures):
-    from quotation.core.writer.decorate import RED
+    #: 제거(REMOVE) 부품의 붉은 글꼴. 규칙은 코어에 있고 값만 여기 적는다.
+    RED = "FFFF0000"
 
     wb = load_workbook(_convert(tmp_path, fixtures / "upgrade_quote.xml").output)
     ws = wb["SERVER 1"]
@@ -110,8 +127,7 @@ def test_removed_parts_are_negative_and_red(tmp_path, fixtures):
     assert ws["E10"].value == "=-1*E8"
     assert ws["F10"].value is None and ws["G10"].value is None
     for col in "CDEFG":
-        color = ws[f"{col}10"].font.color
-        assert color is not None and color.rgb == RED, f"{col}10 이 붉지 않다"
+        assert _same_color(ws[f"{col}10"].font.color, RED), f"{col}10 이 붉지 않다"
     assert ws["C8"].font.color is None, "정상 행이 물들었다"
 
 
