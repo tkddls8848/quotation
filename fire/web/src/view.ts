@@ -355,7 +355,7 @@ export function mountFire(root: HTMLElement): void {
 
   // 머리말과 꼬리말까지 이 도구가 갖는다. 셸은 빈 칸만 내준다.
   const head = create('header', 'page__head');
-  head.append(create('h1', '', 'FIRE 계산기'));
+  head.append(create('h1', '', '계산기'));
   const lede = create('p', 'lede');
   lede.append(
     document.createTextNode('모아 둔 돈과 앞으로의 저축, 그리고 은퇴한 뒤에 쓸 돈을 넣으면 '),

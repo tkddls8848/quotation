@@ -11,8 +11,8 @@
   </head>
   <body>
     <!-- 셸은 탭과 빈 칸만 갖는다. 칸을 채우는 것은 각 도구다
-         (quotation/web/src/panel.ts, fire/web/src/view.ts,
-         converters/web/src/panel.ts). -->
+         (quotation/web/src/panel.ts, converters/web/src/panel.ts,
+         fire/web/src/view.ts). -->
     <div class="shell">
       <nav class="tabs" role="tablist" aria-label="도구">
         <button
@@ -26,17 +26,6 @@
           견적서 변환
         </button>
         <button
-          id="tab-fire"
-          class="tab"
-          type="button"
-          role="tab"
-          aria-controls="panel-fire"
-          aria-selected="false"
-          tabindex="-1"
-        >
-          FIRE 계산기
-        </button>
-        <button
           id="tab-converters"
           class="tab"
           type="button"
@@ -47,18 +36,29 @@
         >
           문서 변환기
         </button>
+        <button
+          id="tab-calc"
+          class="tab"
+          type="button"
+          role="tab"
+          aria-controls="panel-calc"
+          aria-selected="false"
+          tabindex="-1"
+        >
+          계산기
+        </button>
       </nav>
 
       <div id="panel-quote" role="tabpanel" aria-labelledby="tab-quote" tabindex="-1">
         <main id="quote-root" class="page"></main>
       </div>
 
-      <div id="panel-fire" role="tabpanel" aria-labelledby="tab-fire" tabindex="-1" hidden>
-        <main id="fire-root" class="fire"></main>
-      </div>
-
       <div id="panel-converters" role="tabpanel" aria-labelledby="tab-converters" tabindex="-1" hidden>
         <main id="converters-root" class="converters"></main>
+      </div>
+
+      <div id="panel-calc" role="tabpanel" aria-labelledby="tab-calc" tabindex="-1" hidden>
+        <main id="calc-root" class="fire"></main>
       </div>
     </div>
 
