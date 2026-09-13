@@ -16,6 +16,8 @@ quotation/
     resources/          기준 템플릿 — .xlsx 두 벌이 유일한 원본
   desktop/              Windows 단일 EXE (Tkinter + PyInstaller)
   web/                  견적서 탭 (화면·엔진 포장·동일성 검증)
+                        package.json 은 실제 브라우저로 받아 보는 도구(playwright)
+                        하나만 갖는다. 화면 빌드는 셸이 한다
   tests/                공개 API 회귀 + 익명화 fixture
   tools/                이 기능의 개발 도구 — 골든 비교(compare.py), 내용
                         비교(xlsx_content.py), 기동 실측, .xls 변환
@@ -41,6 +43,7 @@ quotation/
 | 웹 화면을 고친다 | `web/src/panel.ts` |
 | 엔진 자산을 다시 만든다 | `python web/scripts/build_browser_engine.py` (저장소 루트에서) |
 | 두 경로가 같은지 본다 | `pytest quotation/web/tests -q` |
+| 실제 브라우저로 받아 본다 | `npm --prefix quotation/web install` 뒤 위와 같음 |
 
 변환 규칙이 한 벌이라는 것은 테스트가 지킨다. `tests/test_bytes_api.py` 가
 경로 입력(데스크톱)과 바이트 입력(웹)을 대조하고,

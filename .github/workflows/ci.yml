@@ -65,8 +65,10 @@ jobs:
         run: npm ci && npm run build
         working-directory: web
       - name: 브라우저 구동 도구
-        run: npm install --no-save playwright && npx playwright install --with-deps chromium
-        working-directory: web
+        # 견적서 기능이 제 구동 도구를 갖는다. Node 는 스크립트가 놓인 자리에서
+        # 패키지를 찾으므로 셸(web/)에 깔면 e2e 스크립트가 찾지 못한다.
+        run: npm install && npx playwright install --with-deps chromium
+        working-directory: quotation/web
       - name: 동일성 검증
         # 브라우저가 만든 견적서가 CPython 산출물과 같은지 셀 단위로 대조한다
         # (결정 0009). 실제 Chromium 으로 받은 파일도 같은 기준으로 본다.

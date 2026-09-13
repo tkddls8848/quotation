@@ -12,7 +12,8 @@ use sha2::{Digest, Sha256};
 use quotation_core::modes::Mode;
 
 const IBM: &[u8] = include_bytes!("../../../python/quotation/resources/견적서_template_IBM.xlsx");
-const LENOVO: &[u8] = include_bytes!("../../../python/quotation/resources/견적서_template_Lenovo.xlsx");
+const LENOVO: &[u8] =
+    include_bytes!("../../../python/quotation/resources/견적서_template_Lenovo.xlsx");
 
 /// 모드별 활성 템플릿 바이트.
 pub fn bytes(mode: Mode) -> &'static [u8] {

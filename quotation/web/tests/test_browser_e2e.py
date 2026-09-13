@@ -29,10 +29,14 @@ from quotation.core import convert
 
 FEATURE = Path(__file__).resolve().parents[2]   # quotation/
 ROOT = FEATURE.parent
-#: 화면 셸. 빌드 산출물(dist)과 브라우저 구동 도구가 여기 있다.
+#: 화면 셸. 빌드 산출물(dist)이 여기 있다.
 FRONTEND = ROOT / "web"
 DIST = FRONTEND / "dist"
-SMOKE = FEATURE / "web" / "e2e" / "browser_smoke.mjs"
+#: 브라우저 구동 도구는 이 기능이 갖는다. Node 의 패키지 해석은 **부르는 위치가
+#: 아니라 스크립트가 놓인 자리**를 따라 올라가므로, playwright 도 여기 있어야
+#: 한다 (셸의 node_modules 는 이 스크립트에서 보이지 않는다).
+E2E = FEATURE / "web"
+SMOKE = E2E / "e2e" / "browser_smoke.mjs"
 
 CASES = ("new_quote.xml", "euckr_quote.xml", "upgrade_quote.xml")
 
@@ -42,8 +46,8 @@ def _reason() -> str | None:
         return "node 가 없습니다"
     if not (DIST / "engine" / "engine.json").is_file():
         return "빌드된 dist 에 변환 엔진이 없습니다 (build_browser_engine.py + vite build)"
-    if not (FRONTEND / "node_modules" / "playwright").is_dir():
-        return "playwright 가 없습니다"
+    if not (E2E / "node_modules" / "playwright").is_dir():
+        return "playwright 가 없습니다 (npm --prefix quotation/web install)"
     return None
 
 
@@ -63,7 +67,7 @@ def downloads(tmp_path_factory, fixtures) -> Path:
     proc = subprocess.run(
         ["node", str(SMOKE), str(DIST), str(out),
          *[str(fixtures / name) for name in CASES]],
-        capture_output=True, text=True, timeout=900, cwd=str(FRONTEND), env=env)
+        capture_output=True, text=True, timeout=900, cwd=str(E2E), env=env)
     assert proc.returncode == 0, \
         f"브라우저 스모크 실패:\n{proc.stdout[-2000:]}\n{proc.stderr[-4000:]}"
     return out

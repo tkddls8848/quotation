@@ -26,7 +26,12 @@ fn feature(parts: &[&str]) -> PathBuf {
 }
 
 fn template() -> Vec<u8> {
-    let path = feature(&["python", "quotation", "resources", "견적서_template_IBM.xlsx"]);
+    let path = feature(&[
+        "python",
+        "quotation",
+        "resources",
+        "견적서_template_IBM.xlsx",
+    ]);
     std::fs::read(&path).unwrap_or_else(|error| panic!("템플릿 {path:?}: {error}"))
 }
 

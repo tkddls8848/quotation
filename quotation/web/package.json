@@ -1,0 +1,13 @@
+{
+  "name": "quotation-web-e2e",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "description": "견적서 탭의 브라우저 구동 도구. 화면 빌드는 셸(web/)이 하고, 여기에는 실제 브라우저로 받아 보는 검증만 있다.",
+  "scripts": {
+    "browsers": "playwright install --with-deps chromium"
+  },
+  "devDependencies": {
+    "playwright": "^1.57.0"
+  }
+}
