@@ -12,6 +12,7 @@
     "paths": {
       "@quotation/*": ["../quotation/web/src/*"],
       "@fire/*": ["../fire/web/src/*"],
+      "@converters/*": ["../converters/web/src/*"],
       // 도구의 테스트는 제 폴더에 있지만 vitest 는 셸에 깔린다. 그 자리를 알려 준다.
       "vitest": ["./node_modules/vitest"]
     },
@@ -26,5 +27,5 @@
     "skipLibCheck": true,
     "noEmit": true
   },
-  "include": ["src", "vite.config.ts", "../quotation/web/src", "../fire/web/src"]
+  "include": ["src", "vite.config.ts", "../quotation/web/src", "../fire/web/src", "../converters/web/src"]
 }

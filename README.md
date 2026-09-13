@@ -61,7 +61,9 @@ quotation/              견적기 — 이 기능에 딸린 것은 전부 여기 
 fire/                   FIRE 계산기
   web/src/              계산 모델과 화면 (model.ts · view.ts · fire.css)
 
-converters/             PDF↔HWP 변환기 — 자리만 잡아 두었다
+converters/             문서 변환기 — HWPX 읽기가 돈다 (gong-go 의 converter/ 에서 이관)
+  web/src/              화면과 파서 (panel.ts · hwpx.ts · zip.ts)
+  desktop/              한글 COM 으로 .hwp → .hwpx (Windows 전용)
 
 web/                    셸 — 도구를 탭으로 세우는 틀. 도구 논리는 없다
   index.html  src/      탭·공통 색·진입점
@@ -75,7 +77,7 @@ doc/                    성격별로 나눈 문서 — 명세·안내·계획·�
 의존은 한 방향뿐입니다.
 
 ```text
-셸(web/) ──별명(@quotation, @fire)──▶ 기능
+셸(web/) ──별명(@quotation, @fire, @converters)──▶ 기능
 기능 ──▶ 기능                          금지
 ```
 

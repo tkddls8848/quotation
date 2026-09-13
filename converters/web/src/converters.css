@@ -1,0 +1,137 @@
+/* 변환기 탭 전용 스타일. 색과 글꼴은 셸이 정한 변수를 그대로 쓴다
+   (web/src/styles.css). 여기에는 이 탭에만 있는 것만 둔다. */
+
+.converters {
+  max-width: 54rem;
+}
+
+.conv-intro h1 {
+  margin: 0 0 0.25rem;
+  font-size: 1.35rem;
+}
+
+.conv-intro p {
+  margin: 0 0 1.5rem;
+  color: var(--muted);
+}
+
+.conv-tool {
+  padding: 1.25rem;
+  margin-bottom: 1rem;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+}
+
+.conv-tool h2 {
+  margin: 0 0 0.35rem;
+  font-size: 1.05rem;
+}
+
+.conv-note {
+  margin: 0 0 1rem;
+  color: var(--muted);
+  font-size: 0.92rem;
+}
+
+/* 파일 고르기 — 칸 전체가 단추다. 끌어다 놓기도 같은 자리에서 받는다. */
+.conv-drop {
+  display: block;
+  padding: 1.5rem 1rem;
+  text-align: center;
+  color: var(--muted);
+  border: 1px dashed var(--line);
+  border-radius: 10px;
+  cursor: pointer;
+}
+
+.conv-drop:hover,
+.conv-drop:focus-within,
+.conv-drop[data-over='yes'] {
+  color: var(--text);
+  border-color: var(--accent);
+}
+
+.conv-drop input {
+  display: block;
+  margin: 0 auto 0.6rem;
+  max-width: 100%;
+}
+
+.conv-status {
+  min-height: 1.4rem;
+  margin: 0.75rem 0 0;
+  font-size: 0.92rem;
+  color: var(--muted);
+}
+
+.conv-status[data-tone='ok'] {
+  color: var(--ok);
+}
+
+.conv-status[data-tone='error'] {
+  padding: 0.6rem 0.75rem;
+  color: var(--danger);
+  background: var(--danger-bg);
+  border-radius: 8px;
+}
+
+.conv-stats {
+  margin: 0.5rem 0;
+  font-variant-numeric: tabular-nums;
+}
+
+.conv-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  align-items: center;
+  margin: 0.75rem 0;
+}
+
+.conv-download {
+  padding: 0.5rem 1rem;
+  color: var(--accent-text);
+  background: var(--accent);
+  border: 0;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.conv-filename {
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+
+/* 미리보기는 원문이다. 줄바꿈을 살리되 가로로 흐르지 않게 접는다. */
+.conv-preview {
+  max-height: 22rem;
+  margin: 0;
+  padding: 0.75rem;
+  overflow: auto;
+  white-space: pre-wrap;
+  word-break: break-word;
+  font: 13px/1.5 ui-monospace, "D2Coding", Consolas, monospace;
+  background: var(--bg);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+}
+
+.conv-roadmap dl {
+  margin: 0;
+}
+
+.conv-roadmap dt {
+  margin-top: 0.9rem;
+  font-weight: 600;
+}
+
+.conv-roadmap dt:first-child {
+  margin-top: 0;
+}
+
+.conv-roadmap dd {
+  margin: 0.2rem 0 0;
+  color: var(--muted);
+  font-size: 0.92rem;
+}

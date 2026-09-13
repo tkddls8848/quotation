@@ -10,7 +10,7 @@ const at = (path: string) => fileURLToPath(new URL(path, import.meta.url));
 /**
  * 셸의 빌드 설정.
  *
- * 도구는 저장소 최상위에 기능별로 나뉘어 있고 (`quotation/`, `fire/`), 셸은
+ * 도구는 저장소 최상위에 기능별로 나뉘어 있고 (`quotation/`, `fire/`, `converters/`), 셸은
  * 별명으로만 그것들을 부른다. 도구끼리는 서로를 부르지 않는다 — 별명이
  * 셸에서 도구로 가는 한 방향만 있기 때문에 그 규칙이 설정으로 지켜진다.
  *
@@ -27,6 +27,7 @@ export default defineConfig({
     alias: {
       '@quotation': at('../quotation/web/src'),
       '@fire': at('../fire/web/src'),
+      '@converters': at('../converters/web/src'),
     },
   },
   define: {
@@ -54,6 +55,7 @@ export default defineConfig({
       'src/**/*.test.ts',
       '../quotation/web/src/**/*.test.ts',
       '../fire/web/src/**/*.test.ts',
+      '../converters/web/src/**/*.test.ts',
     ],
   },
 });
