@@ -16,7 +16,8 @@ const TODAY: Date = Date {
     day: 27,
 };
 
-fn repository(parts: &[&str]) -> PathBuf {
+/// 견적기 폴더(`quotation/`) 기준 경로. 이 크레이트는 `quotation/rust/core` 다.
+fn feature(parts: &[&str]) -> PathBuf {
     let mut path = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
     path.push("..");
     path.push("..");
@@ -25,12 +26,12 @@ fn repository(parts: &[&str]) -> PathBuf {
 }
 
 fn template() -> Vec<u8> {
-    let path = repository(&["quotation", "resources", "견적서_template_IBM.xlsx"]);
+    let path = feature(&["python", "quotation", "resources", "견적서_template_IBM.xlsx"]);
     std::fs::read(&path).unwrap_or_else(|error| panic!("템플릿 {path:?}: {error}"))
 }
 
 fn fixture(name: &str) -> Vec<u8> {
-    let path = repository(&["tests", "fixtures", "public", name]);
+    let path = feature(&["tests", "fixtures", "public", name]);
     std::fs::read(&path).unwrap_or_else(|error| panic!("fixture {path:?}: {error}"))
 }
 

@@ -18,12 +18,13 @@ APP_NAME = "QuotationTool"
 def resource_dir() -> Path:
     """번들된 리소스 폴더. PyInstaller 는 임시 폴더에 풀어 놓는다.
 
-    개발 중에는 공용 코어 패키지의 ``quotation/resources`` 를 본다.
+    개발 중에는 견적기의 파이썬 패키지 ``python/quotation/resources`` 를 본다.
+    (이 파일은 ``quotation/desktop/quotation_desktop/`` 에 있다.)
     """
     bundled = getattr(sys, "_MEIPASS", None)
     if bundled:
         return Path(bundled) / "resources"
-    return Path(__file__).resolve().parents[2] / "quotation" / "resources"
+    return Path(__file__).resolve().parents[2] / "python" / "quotation" / "resources"
 
 
 def app_dir() -> Path:

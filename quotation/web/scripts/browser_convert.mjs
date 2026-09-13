@@ -11,7 +11,7 @@
  */
 import { createEngine } from '../src/engine.js';
 
-import { mkdirSync, readFileSync, readdirSync, writeFileSync, linkSync } from 'node:fs';
+import { copyFileSync, mkdirSync, readFileSync, readdirSync, writeFileSync, linkSync } from 'node:fs';
 import { basename, extname, join, resolve } from 'node:path';
 import { tmpdir } from 'node:os';
 import { mkdtempSync } from 'node:fs';
@@ -25,7 +25,16 @@ import { pathToFileURL } from 'node:url';
 function moduleShim(engineDir) {
   const shim = mkdtempSync(join(tmpdir(), 'quotation-engine-'));
   for (const name of readdirSync(engineDir)) {
-    linkSync(join(engineDir, name), join(shim, name));
+    const from = join(engineDir, name);
+    const to = join(shim, name);
+    try {
+      linkSync(from, to);
+    } catch (error) {
+      // 하드링크는 같은 볼륨 안에서만 걸린다. WSL 에서 저장소가 /mnt/c 에 있고
+      // 임시 폴더가 ext4 면 EXDEV 가 난다 — 그때는 복사한다 (2.7 MiB 한 번).
+      if (error.code !== 'EXDEV') throw error;
+      copyFileSync(from, to);
+    }
   }
   writeFileSync(join(shim, 'package.json'), '{"type":"module"}\n');
   return shim;

@@ -22,6 +22,7 @@ import build_browser_engine as engine
 from quotation.core.resources import TEMPLATE_NAMES
 
 FEATURE = Path(__file__).resolve().parents[2]   # quotation/
+ROOT = FEATURE.parent                           # 저장소 뿌리 (Cargo 작업공간)
 CORE = FEATURE / "python" / "quotation"
 TEMPLATES = {mode: CORE / "resources" / name for mode, name in TEMPLATE_NAMES.items()}
 
@@ -104,7 +105,7 @@ def test_the_wasm_carries_the_repository_templates():
 
     facts = engine.template_facts()
     result = subprocess.run(
-        ["cargo", "run", "--quiet", "--package", "quotation-parity",
+        ["cargo", "run", "--quiet", "--package", "quotation-tools",
          "--bin", "template-versions"],
         cwd=ROOT, capture_output=True, check=False)
     if result.returncode != 0:
