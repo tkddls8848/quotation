@@ -25,7 +25,7 @@ jobs:
       - name: 변환 코어 확장 설치
         # 변환 규칙은 Rust 한 벌이다. 파이썬은 그것을 부른다 (계획 §4).
         run: |
-          maturin build --release -m rust/python/Cargo.toml --out target/wheels
+          maturin build --release -m quotation/rust/python/Cargo.toml --out target/wheels
           python -m pip install target/wheels/*.whl
       - name: 테스트
         run: python -m pytest -q
@@ -43,7 +43,7 @@ jobs:
         with:
           node-version: "22"
           cache: npm
-          cache-dependency-path: web/frontend/package-lock.json
+          cache-dependency-path: web/package-lock.json
       - uses: dtolnay/rust-toolchain@stable
         with:
           targets: wasm32-unknown-unknown
@@ -53,28 +53,28 @@ jobs:
       - name: 변환 코어 확장 설치
         # 브라우저 산출물을 데스크톱 경로와 대조하려면 확장이 있어야 한다.
         run: |
-          maturin build --release -m rust/python/Cargo.toml --out target/wheels
+          maturin build --release -m quotation/rust/python/Cargo.toml --out target/wheels
           python -m pip install target/wheels/*.whl
       - name: 브라우저 변환 엔진 생성
         # Rust 코어를 wasm 으로 빌드해 정적 자산으로 내보낸다. 전송 크기가
         # 결정 0008 의 한도를 넘으면 여기서 멈춘다.
         run: |
           bash web/scripts/ensure_wasm_toolchain.sh
-          python web/scripts/build_browser_engine.py
+          python quotation/web/scripts/build_browser_engine.py
       - name: 화면 빌드
         run: npm ci && npm run build
-        working-directory: web/frontend
+        working-directory: web
       - name: 브라우저 구동 도구
         run: npm install --no-save playwright && npx playwright install --with-deps chromium
-        working-directory: web/frontend
+        working-directory: web
       - name: 동일성 검증
         # 브라우저가 만든 견적서가 CPython 산출물과 같은지 셀 단위로 대조한다
         # (결정 0009). 실제 Chromium 으로 받은 파일도 같은 기준으로 본다.
         # 여기가 붉으면 무료 계정 운영 경로를 내보내면 안 된다.
-        run: python -m pytest web/tests -q
+        run: python -m pytest quotation/web/tests -q
       - name: 엔진 자산 크기
         if: always()
-        run: du -sh web/frontend/public/engine && ls -la web/frontend/public/engine
+        run: du -sh web/public/engine && ls -la web/public/engine
 
   rust:
     name: Rust 코어 · 파이썬 대조 · WASM 크기
@@ -100,17 +100,17 @@ jobs:
       - name: 확장 모듈 빌드와 설치
         # 관문 3 — 데스크톱과 CI 가 쓸 배포 형태가 리눅스에서도 서는지 본다.
         run: |
-          maturin build --release -m rust/python/Cargo.toml --out target/wheels
+          maturin build --release -m quotation/rust/python/Cargo.toml --out target/wheels
           python -m pip install --force-reinstall target/wheels/*.whl
       - name: WASM 전송 크기
         # 관문 2 — 전송 크기가 이 선을 넘으면 브라우저 자산 교체의 전제가
         # 무너진다. 선의 근거는 결정 0008 에 있다.
         run: |
           bash web/scripts/ensure_wasm_toolchain.sh
-          wasm-pack build rust/wasm --release --target web --out-dir pkg
+          wasm-pack build quotation/rust/wasm --release --target web --out-dir pkg
           python - <<'PY'
           import gzip, pathlib, sys
-          pkg = pathlib.Path("rust/wasm/pkg")
+          pkg = pathlib.Path("quotation/rust/wasm/pkg")
           total = sum(len(gzip.compress(f.read_bytes(), 9))
                       for f in pkg.iterdir() if f.suffix in (".wasm", ".js"))
           limit = int(1.1 * 1024 * 1024)  # 결정 0008 의 1.1 MiB
@@ -123,14 +123,14 @@ jobs:
     runs-on: ubuntu-latest
     defaults:
       run:
-        working-directory: web/frontend
+        working-directory: web
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
           node-version: "22"
           cache: npm
-          cache-dependency-path: web/frontend/package-lock.json
+          cache-dependency-path: web/package-lock.json
       - run: npm ci
       - run: npm run typecheck
       - run: npm test
@@ -144,12 +144,12 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: "22"
-      - name: wrangler 설치 (web/package.json 에 고정된 판본)
+      - name: 설치 (web/package.json 에 고정된 판본)
         run: npm ci
         working-directory: web
       - name: 정적 자산 빌드
-        run: npm ci && npm run build
-        working-directory: web/frontend
+        run: npm run build
+        working-directory: web
       - name: 배포 검사 (Worker 스크립트 없음)
         # 여기 Worker 스크립트가 잡히면 무료 계정 전제가 깨진 것이다.
         # 변환은 브라우저의 Rust→WASM 엔진이 한다 (결정 0002, 0010).
@@ -188,10 +188,10 @@ jobs:
         # 있어야 한다 — ensure_wasm_toolchain.sh 가 없는 것만 채운다.
         run: |
           bash web/scripts/ensure_wasm_toolchain.sh
-          python web/scripts/build_browser_engine.py
+          python quotation/web/scripts/build_browser_engine.py
       - name: 정적 자산 빌드
         run: npm ci && npm run build
-        working-directory: web/frontend
+        working-directory: web
         env:
           DEPLOYMENT_VERSION: ${{ github.sha }}
       - name: 인증 확인 (진단용)

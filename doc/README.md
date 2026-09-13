@@ -26,12 +26,13 @@
 | [`plan/rust-wasm-core-plan.md`](plan/rust-wasm-core-plan.md) | 변환 코어 Rust→WASM 이식 계획 (착수 전) |
 | [`decisions/0001-template-in-bundle.md`](decisions/0001-template-in-bundle.md) | 템플릿을 R2 에서 번들로 |
 | [`decisions/0002-convert-in-browser.md`](decisions/0002-convert-in-browser.md) | 변환을 서버에서 브라우저로 |
+| [`decisions/0012-one-folder-per-feature.md`](decisions/0012-one-folder-per-feature.md) | 기능마다 최상위 폴더 하나 |
 | [`incidents/0001-worker-rejected-everything.md`](incidents/0001-worker-rejected-everything.md) | Worker 가 모든 변환을 거절했다 |
 | [`incidents/0002-pyodide-lxml-euckr.md`](incidents/0002-pyodide-lxml-euckr.md) | Pyodide 의 libxml2 는 EUC-KR 을 모른다 |
 | [`measurements/runtime.md`](measurements/runtime.md) | CPU·판본·크기 실측 |
 
 운영·배포 절차는 문서 폴더가 아니라 코드 옆에 둔다 —
-[`web/README.md`](../web/README.md), [`desktop_ibm/README.md`](../desktop_ibm/README.md).
+[`web/README.md`](../web/README.md), [`quotation/desktop/README.md`](../quotation/desktop/README.md).
 
 ## 지금 구조
 

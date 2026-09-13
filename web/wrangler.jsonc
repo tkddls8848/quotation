@@ -2,8 +2,8 @@
   // Cloudflare Workers 배포 정의 (계획서 §4, 결정 decisions/0002).
   //
   //   배포 전에 반드시 실행:
-  //     python scripts/build_browser_engine.py  브라우저 변환 엔진 생성 (wasm)
-  //     npm --prefix frontend run build         정적 자산
+  //     python ../quotation/web/scripts/build_browser_engine.py   변환 엔진 (wasm)
+  //     npm run build                                            정적 자산
   //
   // ── 기본 배포는 정적 자산뿐이다 (무료 계정 기준) ──────────────────────────
   //
@@ -31,7 +31,7 @@
 
   // SPA 정적 자산. 변환 엔진(frontend/public/engine)도 여기 담겨 나간다.
   "assets": {
-    "directory": "frontend/dist",
+    "directory": "dist",
     "not_found_handling": "single-page-application"
   },
 

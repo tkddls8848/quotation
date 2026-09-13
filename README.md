@@ -6,7 +6,7 @@ eConfig Export XML을 기존 견적서 양식의 Excel 파일(`.xlsx`)로 변환
 
 | 실행 방식 | 위치 | 상태 |
 |---|---|---|
-| 데스크톱 앱 (Windows 단일 EXE) | [`desktop_ibm/`](desktop_ibm/) | 운영 중 — IBM·레노버 x86 모두 지원 |
+| 데스크톱 앱 (Windows 단일 EXE) | [`quotation/desktop/`](quotation/desktop/) | 운영 중 — IBM·레노버 x86 모두 지원 |
 | 웹 앱 (Cloudflare Workers) | [`web/`](web/) | 운영 중 — [문서](doc/) |
 
 웹 앱은 **브라우저 안에서** 변환합니다. Cloudflare Workers 무료 계정의 CPU
@@ -23,7 +23,7 @@ eConfig Export XML을 기존 견적서 양식의 Excel 파일(`.xlsx`)로 변환
 
 구성 파일을 만든 구성기에 따라 값의 뜻이 달라집니다. 사람이 고르지 않고
 문서 내용으로 알아냅니다 — 레노버 구성기만 장비 본체 라인에 사람이 적어 넣은
-이름(`ProductName`)을 남기기 때문입니다 (`rust/core/src/modes.rs`).
+이름(`ProductName`)을 남기기 때문입니다 (`quotation/rust/core/src/modes.rs`).
 
 | 문서 | 판별 근거 | 무엇이 다른가 |
 |---|---|---|
@@ -36,59 +36,66 @@ eConfig Export XML을 기존 견적서 양식의 Excel 파일(`.xlsx`)로 변환
 
 ## 저장소 구조
 
-앱(데스크톱)과 웹 파일은 섞이지 않습니다. 변환 규칙만 공용 코어에 한 벌 둡니다.
+**기능마다 최상위 폴더 하나**를 갖습니다. 한 기능을 고쳐도 다른 기능이 흔들리지
+않도록, 기능끼리는 서로를 부르지 않습니다.
 
 ```text
-rust/                   변환 규칙 — 여기 한 벌뿐이다
-  core/                 XML 읽기부터 견적서 작성까지 (money·naming·modes·models·
-                        xml_reader·integrated·dcsc_summary·writer)
-  webapi/               요청 검증·응답 헤더·오류 문구 (브라우저가 쓴다)
-  wasm/                 브라우저 진입점 (wasm-bindgen)
-  python/               데스크톱·CI 용 확장 모듈 (PyO3, quotation_rust)
-  tools/                판본 확인 같은 개발용 실행 파일
-  roundtrip/            템플릿 도형 보존 확인용
+quotation/              견적기 — 이 기능에 딸린 것은 전부 여기 있다
+  rust/                 변환 규칙 — 여기 한 벌뿐이다
+    core/               XML 읽기부터 견적서 작성까지
+    webapi/             요청 검증·응답 헤더·오류 문구
+    wasm/               브라우저 진입점 (wasm-bindgen)
+    python/             데스크톱·CI 용 확장 모듈 (PyO3, quotation_rust)
+    tools/ roundtrip/   개발용 실행 파일, 도형 보존 확인
+  python/quotation/     얇은 파이썬 얼굴 — 규칙은 없다
+    core/               convert·modes·xml_reader·resources
+    resources/          기준 템플릿 (.xlsx 두 벌이 유일한 원본)
+  desktop/              Windows 단일 EXE (Tkinter + PyInstaller)
+  web/                  견적서 탭
+    src/                화면·배선·엔진 호출 (panel.html / panel.ts / engine.js)
+    scripts/            엔진 포장, 템플릿 검증, Node 구동기
+    tests/ e2e/         브라우저↔데스크톱 동일성, 실제 Chromium
+  tests/                공개 API 회귀 + 익명화 fixture
+  tools/                이 기능의 개발 도구 (골든 비교, 내용 비교, 기동 실측)
 
-quotation/              얇은 파이썬 얼굴 — 규칙은 없다
-  core/
-    convert.py          공개 API (convert / convert_bytes / document_mode)
-    modes.py            모드 이름 (unix / integrated)
-    xml_reader.py       QuotationXmlError (확장이 정의한 것을 그대로 쓴다)
-    resources.py        기준 템플릿 위치
-  resources/            기준 템플릿 (.xlsx 두 벌이 유일한 원본)
+fire/                   FIRE 계산기
+  web/src/              계산 모델과 화면 (model.ts · view.ts · fire.css)
 
-desktop_ibm/            데스크톱 전용 — 웹에서 쓰지 않는다
-  quotation_desktop/    Tkinter 화면, 사용자 설정, 실행 경로
-  launcher.py           PyInstaller 진입점
-  QuotationTool.spec    단일 EXE 빌드 정의
-  tools/                EXE 인수 테스트
-  tests/                데스크톱 전용 테스트
+converters/             PDF↔HWP 변환기 — 자리만 잡아 두었다
 
-web/                    웹 전용 — 데스크톱에서 쓰지 않는다
-  frontend/             Vite + TypeScript SPA + 변환 일꾼
-    src/engine.js       wasm 을 세우고 convert 를 부른다 (규칙 없음)
-    public/engine/      배포 직전 만드는 엔진 자산 (추적하지 않음)
-  scripts/              엔진 포장, 템플릿 검증, 배포 스크립트
-  tests/                브라우저↔데스크톱 동일성 + 실제 Chromium E2E
+web/                    셸 — 도구를 탭으로 세우는 틀. 도구 논리는 없다
+  index.html  src/      탭·공통 색·진입점
+  public/engine/        배포 직전 만드는 엔진 자산 (추적하지 않음)
+  scripts/              Cloudflare 빌드·배포, wasm 도구 갖추기
   wrangler.jsonc        정적 자산 배포 (무료 계정)
 
-tests/                  공개 API 회귀 + 익명화 fixture(tests/fixtures/public)
-tools/                  개발 도구 (골든 비교, 내용 비교기, 템플릿 변환, 실측)
 doc/                    성격별로 나눈 문서 — 명세·안내·계획·결정·사고·실측
 ```
 
-**변환 규칙은 `rust/` 에 한 벌뿐입니다.** 데스크톱은 확장 모듈로, 브라우저는
-WASM 으로 같은 코어를 부릅니다. 두 경로가 같은 견적서를 만드는지는
-`web/tests/test_browser_parity.py` 가 매번 대조합니다.
+의존은 한 방향뿐입니다.
 
-`rust/`, `quotation/`, `tests/`, `tools/` 는 **데스크톱과 웹이 함께 쓰는 공용
-자산**입니다. 어느 한쪽에 딸린 것이 아니므로 `desktop_ibm/` 이나 `web/` 아래로
-옮기지 않습니다.
+```text
+셸(web/) ──별명(@quotation, @fire)──▶ 기능
+기능 ──▶ 기능                          금지
+```
 
-경계는 테스트로 지킵니다. `tests/test_bytes_api.py` 는 경로 입력(데스크톱)과
-바이트 입력(웹)의 산출물이 같은지 보고, `web/tests/test_browser_parity.py` 와
-`web/tests/test_browser_e2e.py` 는 브라우저(WASM)가 만든 견적서가 데스크톱
-(확장 모듈) 산출물과 셀 단위로 같은지 대조합니다 — 실제 Chromium 으로 받아 본
-파일까지 같은 기준으로 봅니다.
+**기능 바깥에 공유 코드를 두지 않습니다.** 여러 기능이 쓸 법한 것이라도 각
+기능이 제 것을 안에 둡니다. 공유는 기능 **안에서만** 합니다 — 공유부를 밖에
+두면 거기 생긴 문제 하나가 여러 기능의 장애로 번지기 때문입니다. 개발 도구
+(`quotation/tools/`)도 그래서 그 기능 폴더 안에 있습니다.
+
+별명은 셸의 `vite.config.ts` 에만 있습니다. 그래서 FIRE 계산기를 고쳐도 견적서
+변환은 빌드도 테스트도 그대로이고, 반대도 같습니다. 빌드 산출물도 기능마다
+따로 나갑니다 — 견적서만 쓰는 사람은 FIRE 계산기 코드를 내려받지 않습니다.
+
+**변환 규칙은 `quotation/rust/` 에 한 벌뿐입니다.** 데스크톱은 확장 모듈로,
+브라우저는 WASM 으로 같은 코어를 부릅니다.
+
+경계는 테스트로 지킵니다. `quotation/tests/test_bytes_api.py` 는 경로 입력
+(데스크톱)과 바이트 입력(웹)의 산출물이 같은지 보고,
+`quotation/web/tests/test_browser_parity.py` 와 `..._e2e.py` 는 브라우저(WASM)가
+만든 견적서가 데스크톱(확장 모듈) 산출물과 셀 단위로 같은지 대조합니다 — 실제
+Chromium 으로 받아 본 파일까지 같은 기준으로 봅니다.
 
 ## 데스크톱 앱 사용
 
@@ -98,7 +105,7 @@ WASM 으로 같은 코어를 부릅니다. 두 경로가 같은 견적서를 만
 4. `변환`을 누릅니다.
 
 결과 파일은 **항상 XML 파일과 같은 폴더**에 저장됩니다. 파일명은 XML과 같고
-확장자만 `.xlsx`로 바뀝니다. 자세한 내용은 [desktop_ibm/README.md](desktop_ibm/README.md).
+확장자만 `.xlsx`로 바뀝니다. 자세한 내용은 [quotation/desktop/README.md](quotation/desktop/README.md).
 
 ## 웹 앱
 
@@ -121,7 +128,7 @@ XML도 결과 파일도 네트워크를 타지 않습니다. 처음 한 번 변�
 갱신합니다(예: `NO : Trialinfo-26-`). 형식이 다르면 값은 그대로 둡니다.
 
 **양식은 IBM 용·레노버 x86 용 둘뿐입니다.**
-`quotation/resources/견적서_template_IBM.xlsx` 와 `..._Lenovo.xlsx` 가 유일한
+`quotation/python/quotation/resources/견적서_template_IBM.xlsx` 와 `..._Lenovo.xlsx` 가 유일한
 원본이며 데스크톱과 웹이 같은 파일을 씁니다. 어느 것을 쓸지는 문서에서 알아낸
 읽기 방식(위 "IBM·레노버 판별")이 정하며, 다른 양식은 지원하지 않습니다.
 
@@ -140,28 +147,28 @@ python -m venv .venv
 .\.venv\Scripts\python.exe -m pip install -r requirements.txt maturin
 
 # 변환 코어 확장 빌드와 설치 (파이썬 쪽 테스트·데스크톱이 이것을 부른다)
-.\.venv\Scripts\python.exe -m maturin build --release -m rust\python\Cargo.toml --out target\wheels
+.\.venv\Scripts\python.exe -m maturin build --release -m quotation\rust\python\Cargo.toml --out target\wheels
 .\.venv\Scripts\python.exe -m pip install --force-reinstall target\wheels\quotation_rust-0.1.0-cp311-abi3-win_amd64.whl
 
-# 브라우저 엔진 자산 (web/tests 를 돌리기 전에 한 번)
+# 브라우저 엔진 자산 (quotation/web/tests 를 돌리기 전에 한 번)
 cargo install wasm-pack
-.\.venv\Scripts\python.exe web\scripts\build_browser_engine.py
+.\.venv\Scripts\python.exe quotation\web\scripts\build_browser_engine.py
 
 # 전체 테스트 (Excel 불필요)
 .\.venv\Scripts\python.exe -m pytest -q
 
 # 변환 규칙 자체의 테스트와 실측
 cargo test
-node tools\wasm_startup_bench.mjs
+node quotation\tools\wasm_startup_bench.mjs
 
 # samples\ 의 .xls 골든을 .cache\ 로 변환할 때만 실행 (Excel 필요)
-.\tools\xls2xlsx.ps1
+.\quotation\tools\xls2xlsx.ps1
 
-# 데스크톱 EXE 빌드 (산출물은 desktop_ibm\dist, 중간물은 desktop_ibm\build)
-.\.venv\Scripts\python.exe -m pip install -r desktop_ibm\requirements.txt
-.\.venv\Scripts\python.exe -m PyInstaller desktop_ibm\QuotationTool.spec --noconfirm --clean `
-    --distpath desktop_ibm\dist --workpath desktop_ibm\build
-.\desktop_ibm\tools\acceptance.ps1
+# 데스크톱 EXE 빌드 (산출물은 quotation\desktop\dist, 중간물은 quotation\desktop\build)
+.\.venv\Scripts\python.exe -m pip install -r quotation\desktop\requirements.txt
+.\.venv\Scripts\python.exe -m PyInstaller quotation\desktop\QuotationTool.spec --noconfirm --clean `
+    --distpath quotation\desktop\dist --workpath quotation\desktop\build
+.\quotation\desktop\tools\acceptance.ps1
 ```
 
 `tests/` 는 생성 파일을 골든 견적서와 셀 단위로 비교합니다. 값, 수식, 숫자

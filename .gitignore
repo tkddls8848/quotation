@@ -4,10 +4,10 @@ __pycache__/
 .pytest_cache/
 .acceptance-tmp/
 
-# 빌드 산출물 — 데스크톱 배포본은 desktop_ibm/dist 에 낸다 (폴더만 .gitkeep 으로 남긴다)
+# 빌드 산출물 — 데스크톱 배포본은 quotation/desktop/dist 에 낸다 (폴더만 .gitkeep 으로 남긴다)
 build/
-desktop_ibm/dist/*
-!desktop_ibm/dist/.gitkeep
+quotation/desktop/dist/*
+!quotation/desktop/dist/.gitkeep
 
 # 골든 .xlsx 변환 캐시 (tools/xls2xlsx.ps1 로 재생성 가능)
 .cache/
@@ -21,8 +21,8 @@ samples/
 
 # 데스크톱 실행 시 자동 생성되는 외부 템플릿
 # (원본은 quotation/resources/견적서_template_{IBM,Lenovo}.xlsx 뿐이다)
-desktop_ibm/견적서_template_IBM.xlsx
-desktop_ibm/견적서_template_Lenovo.xlsx
+quotation/desktop/견적서_template_IBM.xlsx
+quotation/desktop/견적서_template_Lenovo.xlsx
 
 # QuotationTool.spec 은 직접 작성한 빌드 정의이므로 추적한다.
 # PyInstaller 가 자동 생성하는 spec 만 제외한다.
@@ -30,15 +30,11 @@ launcher.spec
 
 # --- 웹 ---------------------------------------------------------------------
 node_modules/
-web/frontend/dist/
+web/dist/
 .wrangler/
-# 배포 전에 web/scripts/sync_core.py 가 만들어 넣는 것들
-web/src/quotation/
-web/src/template_data.py
-# 배포 전에 web/scripts/build_browser_engine.py 가 만드는 브라우저 변환 엔진
+# 배포 전에 quotation/web/scripts/build_browser_engine.py 가 만드는 변환 엔진
 # (Rust→WASM 약 1 MiB. wasm-pack 산출물이라 소스로 재현한다)
-web/frontend/public/engine/
-web/.engine-cache/
+web/public/engine/
 # pywrangler 가 Pyodide 의존성을 받아 두는 자리 (pylock.toml 로 재현한다)
 web/python_modules/
 web/.venv-workers/
@@ -52,5 +48,5 @@ artifacts/
 
 # --- Rust ---------------------------------------------------------------------
 # wasm-pack 산출물과 maturin 휠. Cargo.lock 과 소스로 재현한다.
-rust/wasm/pkg/
-rust/wasm/pkg-node/
+quotation/rust/wasm/pkg/
+quotation/rust/wasm/pkg-node/

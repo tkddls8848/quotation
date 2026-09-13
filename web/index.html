@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="robots" content="noindex, nofollow" />
+    <!-- CSS 가 닿기 전에 흰 화면이 번쩍이지 않도록 미리 알린다 -->
+    <meta name="color-scheme" content="dark" />
+    <title>견적서 작성기</title>
+    <link rel="icon" href="data:," />
+  </head>
+  <body>
+    <!-- 셸은 탭과 빈 칸만 갖는다. 칸을 채우는 것은 각 도구다
+         (quotation/web/src/panel.ts, fire/web/src/view.ts). -->
+    <div class="shell">
+      <nav class="tabs" role="tablist" aria-label="도구">
+        <button
+          id="tab-quote"
+          class="tab"
+          type="button"
+          role="tab"
+          aria-controls="panel-quote"
+          aria-selected="true"
+        >
+          견적서 변환
+        </button>
+        <button
+          id="tab-fire"
+          class="tab"
+          type="button"
+          role="tab"
+          aria-controls="panel-fire"
+          aria-selected="false"
+          tabindex="-1"
+        >
+          FIRE 계산기
+        </button>
+      </nav>
+
+      <div id="panel-quote" role="tabpanel" aria-labelledby="tab-quote" tabindex="-1">
+        <main id="quote-root" class="page"></main>
+      </div>
+
+      <div id="panel-fire" role="tabpanel" aria-labelledby="tab-fire" tabindex="-1" hidden>
+        <main id="fire-root" class="fire"></main>
+      </div>
+    </div>
+
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>

@@ -56,7 +56,7 @@ Cloudflare Workers **Free 는 요청당 CPU 10 ms** 다. 견적서 한 건을 �
 | 테스트 | 무엇을 지키는가 |
 |---|---|
 | `web/tests/test_browser_engine.py` | 담기는 코드·양식이 저장소 원본과 바이트가 같다 |
-| `web/tests/test_browser_parity.py` | 브라우저(WASM)가 만든 견적서가 데스크톱(확장 모듈) 산출물과 같다 — 셀 단위(값·수식·서식·글꼴·채우기·테두리·정렬·병합·인쇄영역·행높이), 부품 목록, 첫 페이지 도형 |
+| `quotation/web/tests/test_browser_parity.py` | 브라우저(WASM)가 만든 견적서가 데스크톱(확장 모듈) 산출물과 같다 — 셀 단위(값·수식·서식·글꼴·채우기·테두리·정렬·병합·인쇄영역·행높이), 부품 목록, 첫 페이지 도형 |
 | `web/tests/test_browser_e2e.py` | 운영과 같은 CSP 아래 실제 Chromium 으로 내려받은 파일이 CPython 산출물과 같다 |
 
 정규화하는 것은 딱 둘이고 둘 다 견적서 내용이 아니다 — 파일을 만든 **시각**
@@ -75,20 +75,34 @@ iconv 가 없어 파이썬 코덱으로 UTF-8 로 옮겨 읽는 우회책이 있
 ## 폴더
 
 ```text
-web/
-  frontend/
-    src/engine.js          wasm 을 세우고 convert 를 부른다 (검증도 이 파일을 쓴다)
-    src/convert.worker.ts  변환 Web Worker
-    src/converter.ts       화면과 일꾼 사이의 배선
-    e2e/browser_smoke.mjs  실제 브라우저 스모크
-    public/engine/         변환 엔진 자산 (생성물, 추적하지 않음)
+web/                       셸 — 여기에는 도구의 논리가 없다
+  index.html               탭과 빈 칸만 있다
+  src/main.ts              탭을 세우고 도구를 처음 열릴 때 불러온다
+  src/tabs.ts              탭 전환 (#해시·키보드)
+  src/styles.css           공통 색과 틀
+  public/engine/           변환 엔진 자산 (생성물, 추적하지 않음)
   scripts/
-    build_browser_engine.py 브라우저 변환 엔진 포장 (wasm-pack → public/engine)
-    ensure_wasm_toolchain.sh Rust·wasm-pack 갖추기 (CI·Cloudflare 가 먼저 부른다)
-    browser_convert.mjs    엔진을 Node 로 돌리는 동일성 검증 구동기
-    verify_template.py     템플릿 검증 (필수 시트·도형·실변환)
-  tests/                   브라우저↔데스크톱 동일성, 실제 Chromium E2E, 포장 검사
+    cf_build.sh            Cloudflare 빌드 단계
+    cf_deploy.sh           Cloudflare 배포 단계
+    ensure_wasm_toolchain.sh  Rust·wasm-pack 갖추기 (빌드 이미지에 없다)
   wrangler.jsonc           정적 자산 배포 (무료 계정)
+```
+
+도구는 최상위 기능 폴더에 있습니다. 셸은 별명으로만 부릅니다
+(`vite.config.ts` 의 `@quotation`, `@fire`).
+
+```text
+quotation/web/             견적서 탭
+  src/panel.ts             화면 배선, src/panel.html 뼈대, src/quotation.css
+  src/engine.js            wasm 을 세우고 convert 를 부른다
+  src/convert.worker.ts    변환 Web Worker
+  scripts/build_browser_engine.py  엔진 포장 (wasm-pack → web/public/engine)
+  scripts/browser_convert.mjs      엔진을 Node 로 돌리는 동일성 검증 구동기
+  scripts/verify_template.py       템플릿 검증
+  e2e/browser_smoke.mjs    실제 브라우저 스모크
+  tests/                   브라우저↔데스크톱 동일성, 실제 Chromium E2E
+
+fire/web/src/              FIRE 계산기 (model.ts · view.ts · fire.css)
 ```
 
 변환 규칙은 여기 없다. `rust/core` 에 한 벌 있고, 브라우저는 그것을 wasm 으로,
@@ -99,22 +113,22 @@ web/
 
 ```bash
 # 1) 변환 코어 확장 (파이썬 테스트가 이것을 부른다)
-maturin build --release -m ../rust/python/Cargo.toml --out ../target/wheels
+maturin build --release -m ../quotation/rust/python/Cargo.toml --out ../target/wheels
 pip install --force-reinstall ../target/wheels/quotation_rust-*.whl
 
 # 2) 브라우저 변환 엔진 (Rust→WASM, 약 1 MiB)
 #    전송 크기가 결정 0008 의 한도를 넘으면 여기서 멈춘다
-cargo install wasm-pack                  # 리눅스면 bash scripts/ensure_wasm_toolchain.sh
-python scripts/build_browser_engine.py
+cargo install wasm-pack                  # 리눅스면 bash web/scripts/ensure_wasm_toolchain.sh
+python ../quotation/web/scripts/build_browser_engine.py
 
 # 3) 화면
-cd frontend && npm ci && npm run dev     # 개발 서버
+npm ci && npm run dev                    # 개발 서버 (web/ 에서)
 npm run build                            # dist/
 
 # 4) 동일성 검증 — 여기가 붉으면 내보내지 않는다
 #    브라우저(WASM) 산출물을 데스크톱(확장) 산출물과 셀 단위로 대조하고,
 #    실제 Chromium 으로 받아 본 파일까지 같은 기준으로 본다
-pytest ../web/tests -q
+pytest ../quotation/web/tests -q
 ```
 
 ## 배포
