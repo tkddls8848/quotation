@@ -317,4 +317,38 @@ export function mountQuotation(root: HTMLElement, deploymentVersion: string): vo
   maxSize.textContent = String(Math.floor(config.max_upload_bytes / MiB));
   maxBatch.textContent = String(config.max_batch_files);
   el('deployment-version').textContent = deploymentVersion;
+  void useBundledDesktopApp();
+
+  /**
+   * 배포에 EXE 가 함께 실려 있으면 단추를 그쪽으로 돌린다.
+   *
+   * 실려 있으면 이 사이트에서 바로 받아지고 github.com 으로 빠지지 않는다. EXE 를
+   * 저장소에 담아 두지 않고 배포할 때 릴리스에서 받아 오기 때문에
+   * (`web/scripts/fetch_desktop_app.sh`), 없을 수도 있다 — 그때는 뼈대에 적힌
+   * GitHub 릴리스 주소를 그대로 둔다.
+   */
+  async function useBundledDesktopApp(): Promise<void> {
+    try {
+      const response = await fetch('/download/desktop.json', { cache: 'no-cache' });
+      if (!response.ok) return;
+      const manifest = (await response.json()) as {
+        url?: string;
+        size?: number;
+        version?: string;
+      };
+      if (!manifest.url) return;
+
+      const link = el<HTMLAnchorElement>('desktop-download');
+      link.href = manifest.url;
+      link.setAttribute('download', '');
+      if (manifest.size) {
+        // 태그 이름(desktop-v3.0.0)이 아니라 판본만 보여 준다.
+        const version = (manifest.version ?? '').replace(/^desktop-/, '').replace(/^v/, '');
+        el('desktop-detail').textContent =
+          [version, `${(manifest.size / MiB).toFixed(1)} MiB`].filter(Boolean).join(' · ');
+      }
+    } catch {
+      // 받아 오지 못했다. 단추는 GitHub 릴리스를 그대로 가리킨다.
+    }
+  }
 }

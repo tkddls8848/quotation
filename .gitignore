@@ -35,6 +35,8 @@ web/dist/
 # 배포 전에 quotation/web/scripts/build_browser_engine.py 가 만드는 변환 엔진
 # (Rust→WASM 약 1 MiB. wasm-pack 산출물이라 소스로 재현한다)
 web/public/engine/
+# 배포할 때 릴리스에서 받아 오는 데스크톱 EXE (web/scripts/fetch_desktop_app.sh)
+web/public/download/
 # pywrangler 가 Pyodide 의존성을 받아 두는 자리 (pylock.toml 로 재현한다)
 web/python_modules/
 web/.venv-workers/

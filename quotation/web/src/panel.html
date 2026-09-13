@@ -8,9 +8,10 @@
   </p>
 </header>
 
-<!-- 데스크톱 앱은 GitHub 릴리스에서 내려받는다. Cloudflare 정적 자산은 파일
-     하나가 25 MiB 를 넘을 수 없고, 빌더가 리눅스라 EXE 를 만들지도 못한다.
-     EXE 는 .github/workflows/desktop-release.yml 이 만든다. -->
+<!-- EXE 는 Windows 러너가 만들고(.github/workflows/desktop-release.yml),
+     배포할 때 이 사이트의 정적 자산으로 함께 실린다(web/scripts/fetch_desktop_app.sh).
+     아래 href 는 그것이 실리지 않았을 때 물러설 자리다 — 실려 있으면 panel.ts 가
+     같은 도메인 경로로 바꿔 단다. -->
 <aside class="handoff">
   <div class="handoff__text">
     <strong class="handoff__title">Windows 데스크톱 앱</strong>
@@ -21,11 +22,13 @@
   </div>
   <div class="handoff__links">
     <a
+      id="desktop-download"
       class="handoff__button"
       href="https://github.com/tkddls8848/quotation/releases/latest/download/QuotationTool.exe"
     >
       EXE 내려받기
     </a>
+    <span id="desktop-detail" class="handoff__more"></span>
     <a
       class="handoff__more"
       href="https://github.com/tkddls8848/quotation/releases"
