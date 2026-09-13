@@ -73,7 +73,24 @@ jobs:
         # 브라우저가 만든 견적서가 CPython 산출물과 같은지 셀 단위로 대조한다
         # (결정 0009). 실제 Chromium 으로 받은 파일도 같은 기준으로 본다.
         # 여기가 붉으면 무료 계정 운영 경로를 내보내면 안 된다.
-        run: python -m pytest quotation/web/tests -q
+        run: |
+          # 파이프를 타므로 pipefail 이 없으면 pytest 실패가 tee 의 0 에 삼켜진다.
+          set -o pipefail
+          python -m pytest quotation/web/tests -q -rs | tee pytest-web.txt
+
+      - name: 관문이 비어 있지 않은지
+        # 잡이 녹색이어도 그 안에서 조용히 건너뛰었으면 아무것도 검증하지 않은
+        # 것이다. 실제로 그런 일이 있었다 — 없는 패키지 이름을 부르던 탐침이
+        # cargo 실패를 skip 으로 삼키고 내내 비어 있었다. CI 에는 건너뛸 이유가
+        # 없다 (엔진·node·브라우저를 모두 앞 단계에서 갖춘다).
+        run: |
+          if grep -qE "[0-9]+ skipped" pytest-web.txt; then
+            echo "CI 에서는 이 검증이 건너뛰어지면 안 됩니다:"
+            grep "SKIPPED" pytest-web.txt || true
+            exit 1
+          fi
+          echo "건너뛴 검증 없음"
+
       - name: 엔진 자산 크기
         if: always()
         run: du -sh web/public/engine && ls -la web/public/engine
