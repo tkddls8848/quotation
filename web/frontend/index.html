@@ -10,71 +10,150 @@
     <link rel="icon" href="data:," />
   </head>
   <body>
-    <main class="page">
-      <header class="page__head">
-        <h1>견적서 작성기</h1>
-        <p class="lede">
-          eConfig Export XML 을 견적서 Excel 화일로 바꿉니다. 여러 개를 한 번에
-          고를 수 있고, XML 하나마다 <code>.xlsx</code> 하나를 같은 이름으로
-          내려받습니다. IBM 제품과 Lenovo 제품(x86, ThinkSystem) XML 을
-          가리지 않고 알아서 구분해 변환합니다.
-        </p>
-      </header>
-
-      <form id="form" novalidate>
-        <div
-          id="dropzone"
-          class="dropzone"
-          role="button"
-          tabindex="0"
-          aria-describedby="dropzone-help"
+    <div class="shell">
+      <nav class="tabs" role="tablist" aria-label="도구">
+        <button
+          id="tab-quote"
+          class="tab"
+          type="button"
+          role="tab"
+          aria-controls="panel-quote"
+          aria-selected="true"
         >
-          <span class="dropzone__title">XML 화일을 끌어다 놓거나 눌러서 고르십시오</span>
-          <span id="dropzone-help" class="dropzone__help">
-            확장자 <code>.xml</code>, 한 개당 최대 <span id="max-size">10</span> MiB,
-            한 번에 <span id="max-batch">50</span> 개까지
-          </span>
-          <input
-            id="file"
-            class="visually-hidden"
-            type="file"
-            name="file"
-            multiple
-            accept=".xml,text/xml,application/xml"
-          />
-        </div>
+          견적서 변환
+        </button>
+        <button
+          id="tab-fire"
+          class="tab"
+          type="button"
+          role="tab"
+          aria-controls="panel-fire"
+          aria-selected="false"
+          tabindex="-1"
+        >
+          FIRE 계산기
+        </button>
+      </nav>
 
-        <p id="selected" class="selected" hidden></p>
-        <ul id="queue" class="queue" hidden></ul>
+      <div id="panel-quote" role="tabpanel" aria-labelledby="tab-quote" tabindex="-1">
+        <main class="page">
+          <header class="page__head">
+            <h1>견적서 작성기</h1>
+            <p class="lede">
+              eConfig Export XML 을 견적서 Excel 화일로 바꿉니다. 여러 개를 한 번에
+              고를 수 있고, XML 하나마다 <code>.xlsx</code> 하나를 같은 이름으로
+              내려받습니다. IBM 제품과 Lenovo 제품(x86, ThinkSystem) XML 을
+              가리지 않고 알아서 구분해 변환합니다.
+            </p>
+          </header>
 
-        <div class="actions">
-          <button id="submit" type="submit" disabled>변환 및 다운로드</button>
-          <button id="cancel" type="button" hidden>취소</button>
-        </div>
-      </form>
+          <!-- 데스크톱 앱은 GitHub 릴리스에서 내려받는다. Cloudflare 정적 자산은
+               파일 하나가 25 MiB 를 넘을 수 없고, 빌더가 리눅스라 EXE 를 만들지도
+               못한다. EXE 는 .github/workflows/desktop-release.yml 이 만든다. -->
+          <aside class="handoff">
+            <div class="handoff__text">
+              <strong class="handoff__title">Windows 데스크톱 앱</strong>
+              <p class="handoff__note">
+                인터넷 없이 쓰거나 한 번에 아주 많이 변환할 때 씁니다. 설치 없이 EXE
+                하나로 돌고, 변환 결과는 이 화면과 같습니다.
+              </p>
+            </div>
+            <div class="handoff__links">
+              <a
+                class="handoff__button"
+                href="https://github.com/tkddls8848/quotation/releases/latest/download/QuotationTool.exe"
+              >
+                EXE 내려받기
+              </a>
+              <a
+                class="handoff__more"
+                href="https://github.com/tkddls8848/quotation/releases"
+                target="_blank"
+                rel="noopener"
+              >
+                지난 판본
+              </a>
+            </div>
+          </aside>
 
-      <p id="status" class="status" role="status" aria-live="polite"></p>
+          <form id="form" novalidate>
+            <div
+              id="dropzone"
+              class="dropzone"
+              role="button"
+              tabindex="0"
+              aria-describedby="dropzone-help"
+            >
+              <span class="dropzone__title">XML 화일을 끌어다 놓거나 눌러서 고르십시오</span>
+              <span id="dropzone-help" class="dropzone__help">
+                확장자 <code>.xml</code>, 한 개당 최대 <span id="max-size">10</span> MiB,
+                한 번에 <span id="max-batch">50</span> 개까지
+              </span>
+              <input
+                id="file"
+                class="visually-hidden"
+                type="file"
+                name="file"
+                multiple
+                accept=".xml,text/xml,application/xml"
+              />
+            </div>
 
-      <div id="error" class="error" role="alert" hidden>
-        <p id="error-message"></p>
-        <p class="error__id">
-          요청 ID: <code id="error-id"></code>
-          <span class="error__hint">문의할 때 이 번호를 알려 주십시오.</span>
-        </p>
+            <p id="selected" class="selected" hidden></p>
+            <ul id="queue" class="queue" hidden></ul>
+
+            <div class="actions">
+              <button id="submit" type="submit" disabled>변환 및 다운로드</button>
+              <button id="cancel" type="button" hidden>취소</button>
+            </div>
+          </form>
+
+          <p id="status" class="status" role="status" aria-live="polite"></p>
+
+          <div id="error" class="error" role="alert" hidden>
+            <p id="error-message"></p>
+            <p class="error__id">
+              요청 ID: <code id="error-id"></code>
+              <span class="error__hint">문의할 때 이 번호를 알려 주십시오.</span>
+            </p>
+          </div>
+
+          <footer class="page__foot">
+            <p>
+              변환은 이 브라우저 안에서 이루어집니다. 고른 XML 과 만들어진 견적서는
+              서버로 보내지 않으며 어디에도 저장되지 않습니다. 처음 한 번만 변환기를
+              내려받고 그 뒤로는 다시 받지 않습니다.
+            </p>
+            <p class="versions">
+              배포 <code id="deployment-version">-</code> · 템플릿
+              <code id="template-version">-</code>
+            </p>
+          </footer>
+        </main>
       </div>
 
-      <footer class="page__foot">
-        <p>
-          변환은 이 브라우저 안에서 이루어집니다. 고른 XML 과 만들어진 견적서는
-          서버로 보내지 않으며 어디에도 저장되지 않습니다. 처음 한 번만 변환기를
-          내려받고 그 뒤로는 다시 받지 않습니다.
-        </p>
-        <p class="versions">
-          배포 <code id="deployment-version">-</code> · 템플릿
-          <code id="template-version">-</code>
-        </p>
-      </footer>
-    </main>
+      <div id="panel-fire" role="tabpanel" aria-labelledby="tab-fire" tabindex="-1" hidden>
+        <section class="fire">
+          <header class="page__head">
+            <h1>FIRE 계산기</h1>
+            <p class="lede">
+              모아 둔 돈과 앞으로의 저축, 그리고 은퇴한 뒤에 쓸 돈을 넣으면
+              <strong>언제 일을 그만둘 수 있는지</strong> 셈합니다. 판정은 은퇴 시점부터
+              기대 수명까지 매달 물가만큼 더 쓰고 남은 자산을 세후 수익률로 굴리는
+              모의 실험으로 합니다 — 흔히 쓰는 "25배" 어림은 참고선으로만 보여 줍니다.
+            </p>
+          </header>
+          <div id="fire-root"></div>
+          <footer class="page__foot">
+            <p>
+              셈은 이 브라우저 안에서만 이루어집니다. 넣은 숫자는 서버로 가지 않고
+              이 브라우저에만 남습니다. 세금은 이자·배당 원천징수 15.4% 를 기본으로 보며,
+              실제 세액과 수익률은 상품과 상황에 따라 다릅니다. 투자 권유가 아닙니다.
+            </p>
+          </footer>
+        </section>
+      </div>
+    </div>
 
     <script type="module" src="/src/main.ts"></script>
   </body>

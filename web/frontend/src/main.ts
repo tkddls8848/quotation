@@ -15,6 +15,7 @@ import { APP_CONFIG, AppConfig, ConvertError } from './api';
 import { Tally, progressLabel, selectFiles, summarize } from './batch';
 import { Converter } from './converter';
 import { saveBlob } from './download';
+import { setupTabs } from './tabs';
 
 const MiB = 1024 * 1024;
 
@@ -305,6 +306,20 @@ function boot(): void {
   maxSize.textContent = String(Math.floor(config.max_upload_bytes / MiB));
   maxBatch.textContent = String(config.max_batch_files);
   el('deployment-version').textContent = __DEPLOYMENT_VERSION__;
+
+  // FIRE 계산기는 그 탭을 처음 열 때 받아 온다. 견적서만 쓰는 사람이 쓰지도
+  // 않을 코드를 내려받을 이유가 없다.
+  setupTabs([
+    { id: 'quote', title: '견적서 작성기' },
+    {
+      id: 'fire',
+      title: 'FIRE 계산기',
+      onFirstShow: async () => {
+        const { mountFire } = await import('./fire/view');
+        mountFire(el('fire-root'));
+      },
+    },
+  ]);
 }
 
 boot();

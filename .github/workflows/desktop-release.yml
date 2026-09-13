@@ -1,0 +1,88 @@
+name: 데스크톱 앱 배포
+
+# 화면 위의 <EXE 내려받기> 단추가 가리키는 파일을 만든다.
+#
+#   https://github.com/<소유자>/<저장소>/releases/latest/download/QuotationTool.exe
+#
+# Cloudflare 정적 자산에 EXE 를 같이 올리지 않는 이유가 둘 있다.
+#   - 파일 하나가 25 MiB 를 넘을 수 없다 (Workers 한도)
+#   - Cloudflare 빌더는 리눅스라 Windows EXE 를 만들지 못한다
+#
+# 그래서 Windows 러너에서 만들어 릴리스에 붙인다. 태그를 밀거나 Actions 에서
+# 손으로 돌린다.
+
+on:
+  push:
+    tags:
+      - 'v*'
+      - 'desktop-v*'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+defaults:
+  run:
+    shell: pwsh
+
+jobs:
+  build:
+    name: Windows 단일 EXE
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: Swatinem/rust-cache@v2
+
+      - name: 의존성 설치
+        run: python -m pip install -r desktop_ibm/requirements.txt maturin
+
+      - name: 변환 코어 확장 빌드와 설치
+        # 변환 규칙은 Rust 한 벌이다. EXE 도 그것을 부른다 (spec 의 hiddenimports).
+        run: |
+          maturin build --release -m rust/python/Cargo.toml --out target/wheels
+          $wheel = Get-ChildItem target/wheels/*.whl | Select-Object -First 1
+          python -m pip install --force-reinstall $wheel.FullName
+
+      - name: EXE 빌드
+        run: |
+          python -m PyInstaller desktop_ibm/QuotationTool.spec --noconfirm --clean `
+            --distpath desktop_ibm/dist --workpath desktop_ibm/build
+
+      - name: 인수 검사
+        # 빌드가 됐다고 도는 것은 아니다. 첫 실행에서 템플릿을 만들고 변환까지
+        # 되는지 본다.
+        run: ./desktop_ibm/tools/acceptance.ps1
+
+      - name: 크기 확인
+        run: |
+          $exe = Get-Item desktop_ibm/dist/QuotationTool.exe
+          "{0:N1} MiB — {1}" -f ($exe.Length / 1MB), $exe.FullName
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: QuotationTool
+          path: desktop_ibm/dist/QuotationTool.exe
+
+      - name: 릴리스에 붙인다
+        # 태그로 밀었으면 그 태그, 손으로 돌렸으면 날짜로 이름을 짓는다.
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          $tag = if ($env:GITHUB_REF -like 'refs/tags/*') {
+            $env:GITHUB_REF -replace 'refs/tags/', ''
+          } else {
+            "desktop-$(Get-Date -Format 'yyyyMMdd-HHmm')"
+          }
+          gh release view $tag 2>$null
+          if ($LASTEXITCODE -eq 0) {
+            gh release upload $tag desktop_ibm/dist/QuotationTool.exe --clobber
+          } else {
+            gh release create $tag desktop_ibm/dist/QuotationTool.exe `
+              --title "데스크톱 앱 $tag" `
+              --notes "견적서 변환기 Windows 단일 EXE. 설치 없이 그대로 실행합니다. 첫 실행 때 EXE 옆에 템플릿 두 개를 만듭니다."
+          }
