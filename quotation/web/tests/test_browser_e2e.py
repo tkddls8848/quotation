@@ -18,6 +18,7 @@ import json
 import os
 import shutil
 import subprocess
+import sys
 from io import BytesIO
 from pathlib import Path
 
@@ -41,6 +42,19 @@ SMOKE = E2E / "e2e" / "browser_smoke.mjs"
 CASES = ("new_quote.xml", "euckr_quote.xml", "upgrade_quote.xml")
 
 
+def _browser_dirs() -> list[Path]:
+    """이 운영체제에서 playwright 가 브라우저를 놓아 두는 자리."""
+    override = os.environ.get("PLAYWRIGHT_BROWSERS_PATH")
+    if override and override != "0":
+        return [Path(override)]
+    if sys.platform == "win32":
+        return [Path(os.environ.get("LOCALAPPDATA", "")) / "ms-playwright"]
+    if sys.platform == "darwin":
+        return [Path.home() / "Library" / "Caches" / "ms-playwright"]
+    # 리눅스. /opt/pw-browsers 는 미리 깔아 두는 CI 이미지들이 쓰는 자리다.
+    return [Path.home() / ".cache" / "ms-playwright", Path("/opt/pw-browsers")]
+
+
 def _reason() -> str | None:
     if shutil.which("node") is None:
         return "node 가 없습니다"
@@ -48,6 +62,11 @@ def _reason() -> str | None:
         return "빌드된 dist 에 변환 엔진이 없습니다 (build_browser_engine.py + vite build)"
     if not (E2E / "node_modules" / "playwright").is_dir():
         return "playwright 가 없습니다 (npm --prefix quotation/web install)"
+    # 꾸러미만 있고 **이 운영체제용 브라우저**가 없을 수 있다. WSL 에서 /mnt/c 의
+    # Windows 설치본을 그대로 보는 경우가 그렇다. 그때 붉히면 진짜 고장과
+    # 구분이 되지 않으므로, 없으면 없다고 밝히고 건너뛴다.
+    if not any(d.is_dir() and any(d.glob("chromium*")) for d in _browser_dirs()):
+        return "이 운영체제용 playwright 브라우저가 없습니다 (npx playwright install chromium)"
     return None
 
 
