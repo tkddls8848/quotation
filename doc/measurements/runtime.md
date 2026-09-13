@@ -68,7 +68,7 @@
 - 전송 크기는 `quotation_wasm_bg.wasm` 2,239,156 B + 글루 JS 7,136 B 를 각각
   gzip 한 합이다.
 - 기동·변환은 node 23 에서 10회 중앙값이다
-  (`node tools/wasm_startup_bench.mjs`). 변환 쪽은 아직 견적서를 만들지 않고
+  (`node quotation/tools/wasm_startup_bench.mjs`). 변환 쪽은 아직 견적서를 만들지 않고
   zip 열기 → XML 훑기 → 셀 쓰기 → zip 저장을 한 번씩 지나가는 값이다.
 
 ### 크기와 속도는 맞바꾼다

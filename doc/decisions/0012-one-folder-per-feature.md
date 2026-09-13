@@ -18,7 +18,7 @@ web/scripts/build_*.py        quotation/web/scripts/
 web/frontend/src/api.ts …     quotation/web/src/
 web/frontend/src/fire/        fire/web/src/
 web/frontend/{index,vite,…}   web/            (셸)
-                              converters/     (자리만)
+                              converters/     (문서 변환기)
 ```
 
 파이썬 패키지는 `quotation/python/` 아래로 한 칸 내렸다. 그래야 기능 폴더
@@ -31,8 +31,7 @@ web/frontend/{index,vite,…}   web/            (셸)
 도구가 하나일 때는 역할별 묶음이 맞았다. 견적기뿐이었으므로 `rust/` 가 곧
 견적기의 규칙이었고 `web/` 이 곧 견적기의 화면이었다.
 
-도구가 둘이 되고(FIRE 계산기) 셋이 될 예정이 되자(PDF↔HWP 변환기) 그 묶음이
-거짓말이 됐다. `web/frontend/src/` 안에 견적서 배선과 FIRE 계산이 나란히 있는
+도구가 둘이 되고(FIRE 계산기) 셋이 되자(문서 변환기) 그 묶음이 거짓말이 됐다. `web/frontend/src/` 안에 견적서 배선과 FIRE 계산이 나란히 있는
 동안에는 **한 도구를 고치면서 다른 도구의 파일을 건드리게 된다.** 스타일 한
 장(`styles.css`)을 셋이 나눠 쓰고 있었고, 화면 뼈대(`index.html`)도 하나였다.
 
@@ -44,7 +43,7 @@ web/frontend/{index,vite,…}   web/            (셸)
 의존은 한 방향뿐이다.
 
 ```text
-셸(web/) ──별명(@quotation, @fire)──▶ 기능
+셸(web/) ──별명(@quotation, @fire, @converters)──▶ 기능
 기능 ──▶ 기능                          금지
 ```
 
@@ -82,10 +81,26 @@ web/frontend/{index,vite,…}   web/            (셸)
 
 ## 무엇으로 지키나
 
-- **빌드가 증거다.** `npm --prefix web run build` 가 기능마다 따로 덩어리를
-  낸다 (셸 1.8 kB, 견적서 5.6 kB, FIRE 8.2 kB — 전부 gzip). 한 기능이 다른
-  기능을 부르기 시작하면 그 덩어리가 합쳐지므로 바로 드러난다.
-- 기능 폴더의 `README` 가 그 경계를 적어 둔다.
+**검사가 지킨다.** 별칭을 셸에만 둔 것은 관례일 뿐이고, 관례는 샌다 — 누군가
+`../../fire/web/src/model` 이라고 적으면 별칭을 거치지 않고 그대로 붙고, 빌드도
+타입 검사도 통과한다. 그래서 `web/src/boundaries.test.ts` 가 기능 폴더의 소스를
+실제로 읽어 본다.
+
+| 막는 것 | 어떻게 |
+|---|---|
+| 기능 → 다른 기능 (별칭) | `@quotation`·`@fire`·`@converters` import 를 찾는다 |
+| 기능 → 폴더 밖 (상대 경로) | `../` 를 풀어 기능 뿌리 밖으로 나가는지 본다 |
+| 기능 → 셸 | 위와 같되 목적지가 `web/src` 인 경우 |
+| 셸 → 기능의 속 | 진입점(`@fire/view` 등) 말고 다른 곳을 부르는지 본다 |
+
+TypeScript·CSS·HTML 을 다 훑고 정적 import·동적 import·`@import`·`url()` 까지
+본다. 일부러 위반을 넣어 이 검사가 실제로 붉어지는 것을 확인했다 — 잡지 못하는
+검사는 없느니만 못하다.
+
+덧붙여 **빌드도 증거다.** `npm --prefix web run build` 가 기능마다 따로 덩어리를
+낸다. 한 기능이 다른 기능을 부르기 시작하면 그 덩어리가 합쳐지므로 눈에 띈다.
+
+기능 폴더의 `README` 가 같은 경계를 말로도 적어 둔다.
 
 ## 대가
 

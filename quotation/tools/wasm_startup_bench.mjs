@@ -1,6 +1,6 @@
 // 관문 2 — WASM 기동 시간 측정.
 //
-//   node tools/wasm_startup_bench.mjs [반복]
+//   node quotation/tools/wasm_startup_bench.mjs [반복]
 //
 // 재는 것은 두 가지다.
 //   1. 기동: .wasm 바이트를 컴파일하고 인스턴스를 세우기까지.
@@ -16,7 +16,7 @@ import { dirname, join } from "node:path";
 const root = join(dirname(fileURLToPath(import.meta.url)), "..");
 const wasmPath = join(root, "rust", "wasm", "pkg-node", "quotation_wasm_bg.wasm");
 const glueUrl = new URL("../rust/wasm/pkg-node/quotation_wasm.js", import.meta.url);
-const templatePath = join(root, "quotation", "resources", "견적서_template_IBM.xlsx");
+// 템플릿은 넘기지 않는다 — wasm 이 제 안에 싣고 다닌다 (결정 0001).
 const xmlPath = join(root, "tests", "fixtures", "public", "new_quote.xml");
 
 const rounds = Number(process.argv[2] ?? 10);
@@ -38,12 +38,17 @@ for (let i = 0; i < rounds; i += 1) {
 
 // 2. 변환 1건 — 같은 인스턴스를 여러 번 부른다. 이제 진짜 견적서를 만든다.
 const { convert } = await import(glueUrl.href);
-const template = readFileSync(templatePath);
 const xml = readFileSync(xmlPath);
 const conversions = [];
 for (let i = 0; i < rounds; i += 1) {
   const started = performance.now();
-  convert(xml, template, 2026, 8, 27);
+  const response = convert(
+    "new_quote.xml", xml, "text/xml", "bench", `bench-${i}`, Date.now(),
+  );
+  // 오류 응답도 빨리 돌아온다. 그것을 재고 있으면 숫자가 거짓말을 한다.
+  if (response.status !== 200) {
+    throw new Error(`변환 실패: status ${response.status}`);
+  }
   conversions.push(performance.now() - started);
 }
 
