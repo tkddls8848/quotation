@@ -369,3 +369,212 @@
   color: var(--muted);
   font-size: 0.76rem;
 }
+
+/* --- 예적금 상품 추천 -------------------------------------------------------
+
+   계산기 아래, 화면 너비를 다 쓰는 한 칸이다. 상품 표는 열이 넷이라 폼 옆의
+   좁은 자리에 두면 읽을 수 없다. */
+
+.fire__products {
+  margin-top: 1.75rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid var(--line);
+}
+
+.products__title {
+  margin: 0 0 0.4rem;
+  font-size: 1.15rem;
+}
+
+.products__note {
+  margin: 0 0 1rem;
+  max-width: 62ch;
+  color: var(--muted);
+  font-size: 0.86rem;
+}
+
+.products__form {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem 1.25rem;
+  align-items: flex-end;
+  padding: 0.9rem 1.1rem;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+}
+
+.products__field {
+  display: grid;
+  gap: 0.35rem;
+  min-width: 0;
+}
+
+.products__label {
+  color: var(--muted);
+  font-size: 0.8rem;
+}
+
+.products__control {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.products__control input[type='number'] {
+  width: 7.5rem;
+}
+
+.products__unit {
+  color: var(--muted);
+  font-size: 0.85rem;
+}
+
+.products__choices {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.3rem 0.9rem;
+}
+
+/* 이름을 누르는 것으로도 고를 수 있어야 한다 (손가락으로 쓰는 화면). */
+.products__choice {
+  margin-right: 0.3rem;
+  font-size: 0.9rem;
+  cursor: pointer;
+}
+
+.products__hint {
+  margin: 0;
+  max-width: 34ch;
+  color: var(--muted);
+  font-size: 0.76rem;
+}
+
+.products select {
+  padding: 0.4rem 0.55rem;
+  font: inherit;
+  color: var(--text);
+  background: var(--bg);
+  border: 1px solid var(--line);
+  border-radius: 6px;
+}
+
+.products select:focus-visible,
+.products__load:focus-visible {
+  outline: 3px solid var(--accent);
+  outline-offset: 2px;
+}
+
+.products__load {
+  align-self: flex-end;
+}
+
+.products__list {
+  margin-top: 1rem;
+}
+
+.products__summary {
+  margin: 0 0 0.6rem;
+  font-size: 0.9rem;
+}
+
+.products__message {
+  margin: 0.4rem 0;
+  max-width: 70ch;
+  color: var(--muted);
+  font-size: 0.86rem;
+}
+
+.products__message--bad {
+  padding: 0.6rem 0.8rem;
+  color: var(--text);
+  background: var(--danger-bg);
+  border-left: 3px solid var(--danger);
+  border-radius: 6px;
+}
+
+.products__message--muted {
+  font-size: 0.8rem;
+}
+
+/* 좁은 화면에서는 표가 가로로 넘친다. 칸을 줄여 뭉개는 대신 옆으로 민다. */
+.products__table-wrap {
+  overflow-x: auto;
+}
+
+.products__table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.88rem;
+}
+
+.products__caption {
+  margin-bottom: 0.4rem;
+  color: var(--muted);
+  font-size: 0.8rem;
+  text-align: left;
+}
+
+.products__table th,
+.products__table td {
+  padding: 0.55rem 0.6rem;
+  border-bottom: 1px solid var(--line);
+  text-align: left;
+  vertical-align: top;
+}
+
+.products__table th {
+  color: var(--muted);
+  font-size: 0.78rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.products__num {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.products__table td.products__num strong {
+  display: block;
+}
+
+.products__company {
+  display: block;
+  line-height: 1.35;
+}
+
+.products__marks {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.3rem;
+  margin: 0.3rem 0 0;
+}
+
+.products__mark {
+  padding: 0.05rem 0.4rem;
+  color: var(--muted);
+  font-size: 0.73rem;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+}
+
+.products__mark--plain {
+  border-color: transparent;
+  padding-left: 0;
+}
+
+.products__special {
+  margin: 0.3rem 0 0;
+  max-width: 46ch;
+  color: var(--muted);
+  font-size: 0.78rem;
+}
+
+.products__sub {
+  display: block;
+  color: var(--muted);
+  font-size: 0.76rem;
+}

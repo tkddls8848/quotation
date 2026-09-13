@@ -60,6 +60,8 @@ quotation/              견적기 — 이 기능에 딸린 것은 전부 여기 
 
 fire/                   FIRE 계산기
   web/src/              계산 모델과 화면 (model.ts · view.ts · fire.css)
+                        예적금 상품 추천 (products.ts · recommend.ts · products-view.ts)
+  worker/               금융감독원 예적금 공시 창구 (셸의 Worker 가 세운다)
 
 converters/             문서 변환기 — HWPX 읽기가 돈다 (gong-go 의 converter/ 에서 이관)
   web/src/              화면과 파서 (panel.ts · hwpx.ts · zip.ts)
@@ -67,9 +69,10 @@ converters/             문서 변환기 — HWPX 읽기가 돈다 (gong-go 의 
 
 web/                    셸 — 도구를 탭으로 세우는 틀. 도구 논리는 없다
   index.html  src/      탭·공통 색·진입점
+  worker/               길 안내만 하는 Worker (/api/fire/products → FIRE 기능)
   public/engine/        배포 직전 만드는 엔진 자산 (추적하지 않음)
   scripts/              Cloudflare 빌드·배포, wasm 도구 갖추기
-  wrangler.jsonc        정적 자산 배포 (무료 계정)
+  wrangler.jsonc        정적 자산과 Worker 하나를 배포 (무료 계정)
 
 doc/                    성격별로 나눈 문서 — 명세·안내·계획·결정·사고·실측
 ```

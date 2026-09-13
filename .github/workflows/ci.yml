@@ -156,7 +156,7 @@ jobs:
       - run: npm run build
 
   bundle:
-    name: 배포 설정 검증 (정적 자산 — 무료 계정)
+    name: 배포 설정 검증 (정적 자산 + 공시 중계 — 무료 계정)
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -169,9 +169,12 @@ jobs:
       - name: 정적 자산 빌드
         run: npm run build
         working-directory: web
-      - name: 배포 검사 (Worker 스크립트 없음)
-        # 여기 Worker 스크립트가 잡히면 무료 계정 전제가 깨진 것이다.
-        # 변환은 브라우저의 Rust→WASM 엔진이 한다 (결정 0002, 0010).
+      - name: 배포 검사 (설정과 Worker 번들)
+        # 올라가는 Worker 는 예적금 공시를 중계하는 창구 하나뿐이어야 한다
+        # (결정 0013). 변환은 여전히 브라우저의 Rust→WASM 엔진이 한다
+        # (결정 0002, 0010) — 여기에 변환이 끼어들면 무료 계정 전제가 깨진다.
+        # 이 단계는 기능 폴더의 Worker 까지 번들되는지도 함께 본다
+        # (wrangler.jsonc 의 alias 가 어긋나면 여기서 깨진다).
         run: npx wrangler deploy --dry-run --env="" --outdir .wrangler/dry-run
         working-directory: web
 
@@ -225,8 +228,11 @@ jobs:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
       - name: 배포
-        # 배포는 정적 자산뿐이다. 변환은 브라우저의 Rust→WASM 엔진이 하므로
-        # Worker 스크립트도, pywrangler 도 필요 없다 (결정 0002, 0010).
+        # 올라가는 것은 정적 자산과 공시 중계 Worker 하나다 (결정 0013).
+        # 변환은 브라우저의 Rust→WASM 엔진이 하므로 pywrangler 는 필요 없다
+        # (결정 0002, 0010). 공시 인증키(FSS_API_KEY)는 배포물에 담기지 않고
+        # `wrangler secret put` 으로 한 번 넣어 둔 값을 쓴다 — 없으면 상품
+        # 추천 칸만 안내 문구로 내려앉는다.
         run: bash scripts/cf_deploy.sh deploy --env staging
         working-directory: web
         env:
