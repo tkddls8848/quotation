@@ -355,7 +355,9 @@ export function mountFire(root: HTMLElement): void {
 
   // 머리말과 꼬리말까지 이 도구가 갖는다. 셸은 빈 칸만 내준다.
   const head = create('header', 'page__head');
-  head.append(create('h1', '', '계산기'));
+  // 탭 이름과 창 제목은 "계산기" 다 — 옆에서 잠깐 보는 사람에게 굳이 띄울
+  // 이름이 아니다. 열고 들어온 사람에게는 제 이름을 밝힌다.
+  head.append(create('h1', '', 'FIRE 계산기'));
   const lede = create('p', 'lede');
   lede.append(
     document.createTextNode('모아 둔 돈과 앞으로의 저축, 그리고 은퇴한 뒤에 쓸 돈을 넣으면 '),
