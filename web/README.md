@@ -84,6 +84,7 @@ web/
     public/engine/         변환 엔진 자산 (생성물, 추적하지 않음)
   scripts/
     build_browser_engine.py 브라우저 변환 엔진 포장 (wasm-pack → public/engine)
+    ensure_wasm_toolchain.sh Rust·wasm-pack 갖추기 (CI·Cloudflare 가 먼저 부른다)
     browser_convert.mjs    엔진을 Node 로 돌리는 동일성 검증 구동기
     verify_template.py     템플릿 검증 (필수 시트·도형·실변환)
   tests/                   브라우저↔데스크톱 동일성, 실제 Chromium E2E, 포장 검사
@@ -103,7 +104,7 @@ pip install --force-reinstall ../target/wheels/quotation_rust-*.whl
 
 # 2) 브라우저 변환 엔진 (Rust→WASM, 약 1 MiB)
 #    전송 크기가 결정 0008 의 한도를 넘으면 여기서 멈춘다
-cargo install wasm-pack
+cargo install wasm-pack                  # 리눅스면 bash scripts/ensure_wasm_toolchain.sh
 python scripts/build_browser_engine.py
 
 # 3) 화면
@@ -167,6 +168,36 @@ upload`)으로 돌아 `Missing entry-point` 로 죽는다.
 
 프리뷰 빌드를 아예 돌리고 싶지 않으면 Settings → Build → Branch control 에서
 프로덕션 브랜치(`main`)만 남긴다. 작업 브랜치 푸시마다 빌드가 도는 것을 막는다.
+
+### 빌드 이미지에 Rust 가 없다
+
+Workers Builds 이미지가 주는 것은 Node·Python·Go·Ruby 다. 변환 엔진은
+Rust→WASM 이라 `cargo` 도 `wasm-pack` 도 거기 없다. 그대로 두면 빌드가 2/3 에서
+멈춘다.
+
+```
+=== 2/3 브라우저 변환 엔진 생성
+=== wasm-pack build (rust/wasm)
+wasm-pack 이 없습니다. cargo install wasm-pack 으로 설치하십시오.
+Failed: error occurred while running build command
+```
+
+그래서 `cf_build.sh` 는 엔진을 짓기 전에 `scripts/ensure_wasm_toolchain.sh` 로
+**없는 것만** 채운다 — rustup(minimal) 과 `wasm32-unknown-unknown`, 그리고
+공식 릴리스의 `wasm-pack` 정적 이진(내려받아 sha256 으로 대조한다). 이미 갖춰진
+곳(개발 기계, GitHub Actions)에서는 판본만 찍고 지나간다.
+
+판본을 바꾸려면 Settings → Build → Variables 에 넣는다.
+
+| 변수 | 기본값 | 뜻 |
+|---|---|---|
+| `RUST_VERSION` | `stable` | rustup 이 세울 툴체인 |
+| `WASM_PACK_VERSION` | `0.15.0` | 내려받을 wasm-pack. sha256 이 스크립트에 박혀 있으니 함께 고친다 |
+
+Cloudflare 빌드 캐시가 담는 것은 패키지 관리자 폴더와 프레임워크 산출물뿐이다
+(`~/.cargo` 도 `target/` 도 아니다). 매 빌드가 Rust 를 처음부터 짓는다는 뜻이고,
+빌드 한도는 20 분이다. 엔진이 그 안에 들어오지 않기 시작하면 그때는 CF 에서
+짓는 대신 GitHub Actions 가 지어 배포하도록 옮긴다(아래 절).
 
 로그에서 어느 설정이 쓰였는지 바로 알 수 있다.
 

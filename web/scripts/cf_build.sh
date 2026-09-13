@@ -18,7 +18,8 @@
 #
 # 순서가 중요하다.
 #   1) 공용 코어·템플릿 생성: 브라우저 엔진이 이것을 담아 간다.
-#   2) 브라우저 변환 엔진: Pyodide 런타임과 파이썬 모듈을 frontend/public/py 로.
+#   2) 브라우저 변환 엔진: Rust 코어를 wasm 으로 지어 frontend/public/engine 으로.
+#      빌드 이미지에 Rust 가 없으므로 도구부터 갖춘다 (ensure_wasm_toolchain.sh).
 #   3) 정적 자산: wrangler.jsonc 의 assets.directory(frontend/dist) 가 있어야 한다.
 set -euo pipefail
 
@@ -37,6 +38,10 @@ echo "=== 배포 판본: ${DEPLOYMENT_VERSION}"
 echo "=== 1/3 공용 코어와 템플릿 생성"
 
 echo "=== 2/3 브라우저 변환 엔진 생성"
+# Cloudflare 빌드 이미지에는 Node·Python·Go·Ruby 만 있고 Rust 가 없다. 없는 것만
+# 갖춘다 — 이미 있는 곳(개발 기계, GitHub Actions)에서는 판본만 찍고 지나간다.
+export PATH="${CARGO_HOME:-$HOME/.cargo}/bin:$PATH"
+bash scripts/ensure_wasm_toolchain.sh
 python3 scripts/build_browser_engine.py
 
 echo "=== 3/3 정적 자산 빌드"
