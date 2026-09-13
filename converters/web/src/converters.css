@@ -135,3 +135,60 @@
   color: var(--muted);
   font-size: 0.92rem;
 }
+
+.pdf-controls {
+  min-width: 0;
+  margin: 1rem 0;
+  padding: 0;
+  border: 0;
+}
+
+.pdf-controls legend { font-weight: 600; }
+.conv-pdf button, .pdf-outputs a {
+  padding: 0.5rem 0.75rem;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  font: inherit;
+  cursor: pointer;
+}
+.conv-pdf button:not(.conv-download) {
+  background: var(--bg);
+  color: var(--text);
+}
+.conv-pdf button:disabled, .pdf-controls:disabled button {
+  opacity: 0.45;
+  cursor: default;
+}
+.conv-pdf :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.pdf-pages {
+  list-style: none;
+  max-height: 28rem;
+  overflow: auto;
+  padding: 0;
+  margin: 0;
+}
+.pdf-pages li {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.6rem 0;
+  border-bottom: 1px solid var(--line);
+}
+.pdf-pages label { flex: 1; min-width: 0; overflow-wrap: anywhere; cursor: pointer; }
+.pdf-pages input { margin-right: 0.5rem; }
+.pdf-pages button { flex-shrink: 0; }
+#pdf-ranges {
+  flex: 1;
+  min-width: 8rem;
+  padding: 0.6rem;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--bg);
+  color: var(--text);
+  font: inherit;
+}
+.pdf-outputs a { color: var(--accent); overflow-wrap: anywhere; }
+@media (max-width: 480px) {
+  .pdf-pages li { flex-wrap: wrap; }
+  .pdf-pages label { flex-basis: 100%; }
+}

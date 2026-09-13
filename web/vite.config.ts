@@ -28,6 +28,7 @@ export default defineConfig({
       '@quotation': at('../quotation/web/src'),
       '@fire': at('../fire/web/src'),
       '@converters': at('../converters/web/src'),
+      'pdf-lib': at('./node_modules/pdf-lib/es/index.js'),
     },
   },
   define: {

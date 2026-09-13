@@ -1,7 +1,7 @@
 /**
  * 변환기 탭.
  *
- * 지금 확실하게 되는 것 하나만 세워 둔다 — **HWPX 에서 글과 표를 꺼내는 일**.
+ * HWPX 읽기와 PDF 쪽 편집.
  * 파일은 브라우저 밖으로 나가지 않는다.
  *
  * 화면에 "안 되는 것"까지 적는 이유는 이 도구의 신뢰가 거기서 갈리기 때문이다.
@@ -11,12 +11,13 @@
 import './converters.css';
 
 import { hwpxToMarkdown, type HwpxResult } from './hwpx';
+import { pdfTool } from './pdf-panel';
 
 const MAX_BYTES = 64 * 1024 * 1024;
 
 export function mountConverters(root: HTMLElement): void {
   root.innerHTML = '';
-  root.append(header(), hwpxTool(), roadmap());
+  root.append(header(), pdfTool(), hwpxTool(), roadmap());
 }
 
 function header(): HTMLElement {
@@ -163,9 +164,6 @@ function roadmap(): HTMLElement {
   section.innerHTML = `
     <h2>아직 없는 것</h2>
     <dl>
-      <dt>PDF 편집기 (병합·분할·회전·쪽 순서)</dt>
-      <dd>브라우저만으로 확실하게 됩니다. 다음에 붙입니다.</dd>
-
       <dt>PDF → HWPX</dt>
       <dd>
         쪽을 그림으로 심으면 보이는 그대로 옮길 수 있지만 편집은 안 됩니다.
