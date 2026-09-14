@@ -5,22 +5,32 @@
   //     python ../quotation/web/scripts/build_browser_engine.py   변환 엔진 (wasm)
   //     npm run build                                            정적 자산
   //
-  // ── 기본 배포는 정적 자산뿐이다 (무료 계정 기준) ──────────────────────────
+  // ── 화면은 정적 자산뿐이고, Worker 는 창구 하나만 맡는다 (무료 계정 기준) ──
   //
   // 변환은 브라우저 안에서 돈다. Workers Free 는 요청당 CPU 10 ms 인데 견적서
   // 한 건은 가장 작은 입력도 73 ms 가 든다(실측 measurements/runtime.md). 서버에서 만드는 것은
-  // 무료 계정에서 성립하지 않는다.
+  // 무료 계정에서 성립하지 않는다. 그 결정은 그대로다 (결정 0010).
   //
-  // 그래서 여기에는 `main` 이 없다. Worker 스크립트가 없으므로
-  //   - 요청당 CPU 한도에 걸릴 일이 없다
-  //   - 하루 10만 요청 한도를 쓰지 않는다 (정적 자산 요청은 무료·무제한)
-  //   - Worker 스크립트 크기 한도(무료 3 MiB)와 무관하다
-  //   - 배포에 별도 도구가 필요 없다 (wrangler 하나면 된다)
+  // `main` 은 FIRE 계산기의 예적금 상품 추천 때문에 생겼다. 금융감독원 공시
+  // API 는 인증키를 요구하고 브라우저에서 바로 부르면 CORS 로 막힌다 — 키를
+  // 아는 자리가 하나 필요하다 (결정 0013). Worker 가 하는 일은 키를 붙여
+  // 넘기고 받은 것을 그대로 돌려주는 것뿐이라 CPU 를 거의 쓰지 않는다.
+  //
+  // Worker 가 생겨도 앞의 근거는 흔들리지 않는다.
+  //   - 정적 자산에 맞는 요청은 Worker 에 들르지 않는다 (무료·무제한). 화면을
+  //     여는 것만으로는 Worker 가 깨어나지 않는다
+  //   - 깨어나는 것은 /api/fire/products 를 부를 때뿐이고, 그 응답은 하루
+  //     캐시된다 (공시는 한 달에 한 번 바뀐다)
+  //   - 스크립트는 파일 두 개짜리다. 무료 3 MiB 한도와 무관하다
   //
   // 브라우저가 돌리는 것은 데스크톱이 쓰는 것과 같은 Rust 코어다. 결과가
   // 같다는 것은 `web/tests/test_browser_parity.py` 가 매번 대조한다.
   //
   // 서버 변환 환경(`env.server`)은 없앴다. 근거는 결정 0010 에 있다.
+  //
+  // 배포 전에 인증키를 넣어야 상품 추천이 돈다 (없으면 그 카드만 안내 문구로
+  // 내려앉고 나머지 화면은 멀쩡히 돈다):
+  //     npx wrangler secret put FSS_API_KEY
   "$schema": "node_modules/wrangler/config-schema.json",
 
   // 대시보드(Workers Builds)에 연결된 Worker 이름과 같아야 한다. 다르면
@@ -29,10 +39,27 @@
   "name": "quotation",
   "compatibility_date": "2026-08-01",
 
+  // 창구는 하나뿐이다: /api/fire/products (fire/worker/products.ts).
+  "main": "worker/index.ts",
+
+  // 셸이 기능에 닿는 길은 별명뿐이다 (결정 0012). 화면 쪽 별명은
+  // vite.config.ts 에 있고, Worker 는 vite 를 거치지 않으므로 여기 따로 적는다.
+  // 방향은 같다 — 셸 → 기능 한 방향이고, 기능은 셸을 부르지 않는다.
+  //
+  // 값의 `./` 와 `.ts` 를 지우지 말 것. wrangler 는 이 값을 제가 깔린 자리에서
+  // 찾으므로 `../fire/…` 라고만 적으면 node_modules 옆에서 헤매다
+  // "Cannot find module" 로 빌드가 깨진다 (`npm run check` 로 확인된다).
+  "alias": {
+    "@fire/worker/products": "./../fire/worker/products.ts"
+  },
+
   // SPA 정적 자산. 변환 엔진(frontend/public/engine)도 여기 담겨 나간다.
+  // `binding` 은 자산에 맞지 않는 요청을 Worker 가 다시 자산 쪽으로 넘기기
+  // 위한 것이다 — 그때 not_found_handling 이 걸려 index.html 이 나간다.
   "assets": {
     "directory": "dist",
-    "not_found_handling": "single-page-application"
+    "not_found_handling": "single-page-application",
+    "binding": "ASSETS"
   },
 
   "observability": {

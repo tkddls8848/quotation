@@ -12,6 +12,8 @@
     "paths": {
       "@quotation/*": ["../quotation/web/src/*"],
       "@fire/*": ["../fire/web/src/*"],
+      // 화면이 아니라 Worker 쪽 진입점. wrangler.jsonc 의 alias 와 짝이다.
+      "@fire/worker/*": ["../fire/worker/*"],
       "@converters/*": ["../converters/web/src/*"],
       // 도구의 테스트는 제 폴더에 있지만 vitest 는 셸에 깔린다. 그 자리를 알려 준다.
       "vitest": ["./node_modules/vitest"],
@@ -28,5 +30,15 @@
     "skipLibCheck": true,
     "noEmit": true
   },
-  "include": ["src", "vite.config.ts", "../quotation/web/src", "../fire/web/src", "../converters/web/src"]
+  // Worker 스크립트(worker/, ../fire/worker/)도 같은 프로그램에 든다. wrangler 가
+  // 따로 묶어 내보내지만 타입 검사까지 나뉘면 배포 뒤에야 오류를 안다.
+  "include": [
+    "src",
+    "worker",
+    "vite.config.ts",
+    "../quotation/web/src",
+    "../fire/web/src",
+    "../fire/worker",
+    "../converters/web/src"
+  ]
 }

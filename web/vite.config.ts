@@ -56,6 +56,8 @@ export default defineConfig({
       'src/**/*.test.ts',
       '../quotation/web/src/**/*.test.ts',
       '../fire/web/src/**/*.test.ts',
+      // 기능이 가진 Worker 도 그 폴더에서 검사한다 (결정 0013).
+      '../fire/worker/**/*.test.ts',
       '../converters/web/src/**/*.test.ts',
     ],
   },

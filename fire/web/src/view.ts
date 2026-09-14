@@ -12,6 +12,7 @@
 import './fire.css';
 
 import { FireInput, FireResult, Man, calculate, defaultInput } from './model';
+import { mountProducts } from './products-view';
 
 const STORAGE_KEY = 'fire-input-v1';
 
@@ -368,6 +369,10 @@ export function mountFire(root: HTMLElement): void {
   );
   head.append(lede);
 
+  // 계산기가 "얼마를 모아야 하는가" 를 말한 다음, 지금 그 돈을 넣을 수 있는
+  // 곳을 보여 준다. 세율 하나만 건네고 반대 방향으로는 아무것도 흐르지 않는다.
+  const products = create('section', 'fire__products');
+
   const foot = create('footer', 'page__foot');
   foot.append(
     create(
@@ -377,8 +382,17 @@ export function mountFire(root: HTMLElement): void {
         '세금은 이자·배당 원천징수 15.4% 를 기본으로 보며, 실제 세액과 수익률은 상품과 상황에 따라 다릅니다. 투자 권유가 아닙니다.',
     ),
   );
+  foot.append(
+    create(
+      'p',
+      '',
+      '예적금 상품 목록은 금융감독원 금융상품 통합 비교공시(finlife.fss.or.kr)에서 받아 옵니다. ' +
+        '공시는 한 달에 한 번 갱신되고, 실제 적용 금리·한도·우대조건은 해당 금융회사에서 확인해야 합니다.',
+    ),
+  );
 
-  root.replaceChildren(head, body, foot);
+  root.replaceChildren(head, body, products, foot);
+  mountProducts(products, () => input.taxRate);
 
   redraw = () => drawResult(result, input, calculate(input));
   changed();
