@@ -1,8 +1,8 @@
 /**
  * 기능 경계를 코드로 지킨다.
  *
- * 별칭(`@quotation`, `@fire`, `@converters`)을 셸에만 둔 것은 **관례**일 뿐이다.
- * 관례는 샌다 — 누군가 `../../fire/web/src/model` 이라고 적으면 별칭을 거치지
+ * 별칭(`@quotation`, `@converters`)을 셸에만 둔 것은 **관례**일 뿐이다.
+ * 관례는 샌다 — 누군가 `../../converters/web/src/panel` 이라고 적으면 별칭을 거치지
  * 않고 그대로 붙고, 빌드도 타입 검사도 통과한다. 그 순간 한 도구의 변경이 다른
  * 도구를 무너뜨릴 수 있게 된다 (결정 0012).
  *
@@ -12,9 +12,7 @@
  *     기능 ──▶ 기능               금지
  *     기능 ──▶ 셸                 금지
  *
- * 화면(`web/src`)뿐 아니라 Worker(`web/worker`)도 셸이고, 기능도 화면
- * (`<기능>/web/src`)과 Worker(`<기능>/worker`)를 함께 갖는다. 같은 규칙이
- * 양쪽에 다 걸린다 — 규칙이 한쪽에만 걸리면 다른 쪽으로 새기 때문이다.
+ * 셸(`web/src`)과 각 기능의 화면(`<기능>/web/src`)에 같은 규칙을 적용한다.
  *
  * 이 검사가 붉으면 고칠 곳은 이 파일이 아니라 그 import 다.
  */
@@ -33,22 +31,17 @@ interface Feature {
 /** vitest 는 셸(web/)에서 돈다. 기능은 그 바깥, 저장소 최상위에 있다. */
 const FEATURES: Record<string, Feature> = {
   quotation: { root: resolve('../quotation'), dirs: [resolve('../quotation/web/src')] },
-  // FIRE 계산기는 화면 말고 Worker 도 갖는다 — 예적금 공시를 받아 오는 창구다.
-  fire: { root: resolve('../fire'), dirs: [resolve('../fire/web/src'), resolve('../fire/worker')] },
   converters: { root: resolve('../converters'), dirs: [resolve('../converters/web/src')] },
 };
 
-/** 셸도 화면과 Worker 를 갖는다. 둘 다 같은 규칙을 받는다. */
+/** 셸의 화면 코드에도 같은 규칙을 적용한다. */
 const SHELL = resolve('.');
-const SHELL_DIRS = [resolve('src'), resolve('worker')];
+const SHELL_DIRS = [resolve('src')];
 
 /** 셸이 기능에서 가져다 쓰는 **진입점**. 이것 말고는 속을 들여다보지 않는다. */
 const ENTRY_POINTS = [
   '@quotation/panel',
-  '@fire/view',
   '@converters/panel',
-  // 화면이 아니라 Worker 쪽 진입점 (wrangler.jsonc 의 alias).
-  '@fire/worker/products',
 ];
 
 const SOURCE = /\.(ts|tsx|js|mjs|css|html)$/;
@@ -140,8 +133,7 @@ describe('기능 경계', () => {
   });
 
   it('셸도 기능을 상대 경로로 건드리지 않는다', () => {
-    // Worker 는 vite 를 거치지 않아 별칭을 wrangler.jsonc 에 따로 적어야 한다.
-    // 그게 번거롭다고 ../../fire/... 로 질러가면 규칙이 그 자리에서 무너진다.
+    // 별칭 대신 상대 경로로 기능을 참조하는 경우도 막는다.
     const crossed: string[] = [];
     for (const file of sourcesIn(SHELL_DIRS)) {
       for (const spec of specifiers(file)) {

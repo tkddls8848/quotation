@@ -80,18 +80,16 @@ web/                       셸 — 여기에는 도구의 논리가 없다
   src/main.ts              탭을 세우고 도구를 처음 열릴 때 불러온다
   src/tabs.ts              탭 전환 (#해시·키보드)
   src/styles.css           공통 색과 틀
-  worker/index.ts          길 안내만 하는 Worker — /api/fire/products 는 FIRE 기능으로,
-                           나머지는 정적 자산으로 넘긴다 (결정 0013)
   public/engine/           변환 엔진 자산 (생성물, 추적하지 않음)
   scripts/
     cf_build.sh            Cloudflare 빌드 단계
     cf_deploy.sh           Cloudflare 배포 단계
     ensure_wasm_toolchain.sh  Rust·wasm-pack 갖추기 (빌드 이미지에 없다)
-  wrangler.jsonc           배포 정의 — 정적 자산과 Worker 하나 (무료 계정)
+  wrangler.jsonc           정적 자산 배포 (무료 계정)
 ```
 
 도구는 최상위 기능 폴더에 있습니다. 셸은 별명으로만 부릅니다
-(`vite.config.ts` 의 `@quotation`, `@fire`).
+(`vite.config.ts` 의 `@quotation`, `@converters`).
 
 ```text
 quotation/web/             견적서 탭
@@ -104,11 +102,9 @@ quotation/web/             견적서 탭
   e2e/browser_smoke.mjs    실제 브라우저 스모크
   tests/                   브라우저↔데스크톱 동일성, 실제 Chromium E2E
 
-fire/web/src/              FIRE 계산기 (model.ts · view.ts · fire.css)
-  products.ts              금융감독원 예적금 공시 읽기
-  recommend.ts             요건에 맞는 상품 고르기 (순수 계산)
-  products-view.ts         상품 추천 칸
-fire/worker/products.ts    그 공시를 받아 오는 창구 (인증키를 아는 유일한 자리)
+converters/web/src/        문서 변환기 탭 (panel.ts · converters.css)
+  hwpx.ts  zip.ts          HWPX 읽기 (zip 은 제 안에 둔다)
+  pdf.ts  pdf-panel.ts     브라우저 PDF 편집기
 ```
 
 변환 규칙은 여기 없다. `rust/core` 에 한 벌 있고, 브라우저는 그것을 wasm 으로,
@@ -131,10 +127,6 @@ python ../quotation/web/scripts/build_browser_engine.py
 npm ci && npm run dev                    # 개발 서버 (web/ 에서)
 npm run build                            # dist/
 
-# 3-1) Worker 까지 돌려 보려면 (예적금 상품 추천은 /api/fire/products 가 있어야 한다)
-printf 'FSS_API_KEY=받은키\n' > .dev.vars   # 추적하지 않는다
-npm run build && npm run worker:dev      # wrangler dev — 자산과 Worker 를 함께 세운다
-
 # 4) 동일성 검증 — 여기가 붉으면 내보내지 않는다
 #    브라우저(WASM) 산출물을 데스크톱(확장) 산출물과 셀 단위로 대조하고,
 #    실제 Chromium 으로 받아 본 파일까지 같은 기준으로 본다
@@ -147,22 +139,8 @@ pytest ../quotation/web/tests -q
 
 | 대상 | 명령 | 올라가는 것 |
 |---|---|---|
-| 기본 (무료) | `bash web/scripts/cf_deploy.sh deploy` | 정적 자산 + 공시 중계 Worker 하나 |
+| 기본 (무료) | `bash web/scripts/cf_deploy.sh deploy` | 정적 자산만. Worker 스크립트 없음 |
 | 스테이징 (무료) | `... cf_deploy.sh deploy --env staging` | 위와 같음 |
-
-Worker 는 FIRE 계산기의 예적금 상품 추천이 쓰는 `/api/fire/products` 하나만
-맡는다 (결정 0013). 변환은 예전처럼 브라우저에서 돈다. 인증키는 배포물에 담기지
-않으므로 대상마다 한 번씩 넣어 둔다.
-
-```bash
-cd web
-npx wrangler secret put FSS_API_KEY                  # 프로덕션
-npx wrangler secret put FSS_API_KEY --env staging    # 스테이징
-```
-
-키는 금융감독원 금융상품 통합 비교공시(finlife.fss.or.kr)에서 받는다. 키가 없어도
-나머지 화면은 그대로 돌고, 상품 추천 칸만 "인증키가 설정되지 않았습니다" 안내로
-내려앉는다.
 
 `cf_deploy.sh` 가 대상을 보고 도구를 고른다. 무료 대상이면 `wrangler` 로 끝나고,
 
@@ -170,7 +148,7 @@ npx wrangler secret put FSS_API_KEY --env staging    # 스테이징
 
 ```bash
 cd web
-npx wrangler deploy --dry-run --env=""       # 무료 기본 — 공시 중계 Worker 하나만 잡혀야 한다
+npx wrangler deploy --dry-run --env=""       # 무료 기본 — Worker 스크립트가 없어야 한다
 ```
 
 CI 의 `bundle` 잡이 매 푸시마다 둘 다 돌린다.

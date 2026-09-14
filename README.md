@@ -58,21 +58,15 @@ quotation/              견적기 — 이 기능에 딸린 것은 전부 여기 
   tests/                공개 API 회귀 + 익명화 fixture
   tools/                이 기능의 개발 도구 (골든 비교, 내용 비교, 기동 실측)
 
-fire/                   FIRE 계산기
-  web/src/              계산 모델과 화면 (model.ts · view.ts · fire.css)
-                        예적금 상품 추천 (products.ts · recommend.ts · products-view.ts)
-  worker/               금융감독원 예적금 공시 창구 (셸의 Worker 가 세운다)
-
 converters/             문서 변환기 — HWPX 읽기가 돈다 (gong-go 의 converter/ 에서 이관)
   web/src/              화면과 파서 (panel.ts · hwpx.ts · zip.ts)
   desktop/              한글 COM 으로 .hwp → .hwpx (Windows 전용)
 
 web/                    셸 — 도구를 탭으로 세우는 틀. 도구 논리는 없다
   index.html  src/      탭·공통 색·진입점
-  worker/               길 안내만 하는 Worker (/api/fire/products → FIRE 기능)
   public/engine/        배포 직전 만드는 엔진 자산 (추적하지 않음)
   scripts/              Cloudflare 빌드·배포, wasm 도구 갖추기
-  wrangler.jsonc        정적 자산과 Worker 하나를 배포 (무료 계정)
+  wrangler.jsonc        정적 자산만 배포 (무료 계정)
 
 doc/                    성격별로 나눈 문서 — 명세·안내·계획·결정·사고·실측
 ```
@@ -80,7 +74,7 @@ doc/                    성격별로 나눈 문서 — 명세·안내·계획·�
 의존은 한 방향뿐입니다.
 
 ```text
-셸(web/) ──별명(@quotation, @fire, @converters)──▶ 기능
+셸(web/) ──별명(@quotation, @converters)──▶ 기능
 기능 ──▶ 기능                          금지
 ```
 
@@ -89,9 +83,9 @@ doc/                    성격별로 나눈 문서 — 명세·안내·계획·�
 두면 거기 생긴 문제 하나가 여러 기능의 장애로 번지기 때문입니다. 개발 도구
 (`quotation/tools/`)도 그래서 그 기능 폴더 안에 있습니다.
 
-별명은 셸의 `vite.config.ts` 에만 있습니다. 그래서 FIRE 계산기를 고쳐도 견적서
+별명은 셸의 `vite.config.ts` 에만 있습니다. 그래서 문서 변환기를 고쳐도 견적서
 변환은 빌드도 테스트도 그대로이고, 반대도 같습니다. 빌드 산출물도 기능마다
-따로 나갑니다 — 견적서만 쓰는 사람은 FIRE 계산기 코드를 내려받지 않습니다.
+따로 나갑니다 — 견적서만 쓰는 사람은 문서 변환기 코드를 내려받지 않습니다.
 
 **변환 규칙은 `quotation/rust/` 에 한 벌뿐입니다.** 데스크톱은 확장 모듈로,
 브라우저는 WASM 으로 같은 코어를 부릅니다.

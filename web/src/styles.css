@@ -1,7 +1,7 @@
 /* 셸 — 여러 도구가 같이 서는 틀과 공통 색·글꼴.
  *
  * 도구마다 제 스타일은 제 폴더에 있다 (quotation/web/src/quotation.css,
- * fire/web/src/fire.css). 여기에는 **어느 도구에도 딸리지 않는 것만** 둔다.
+ * converters/web/src/converters.css). 여기에는 **어느 도구에도 딸리지 않는 것만** 둔다.
  */
 
 :root {
@@ -31,7 +31,7 @@ body {
   font: 16px/1.6 "Malgun Gothic", "맑은 고딕", system-ui, -apple-system, sans-serif;
 }
 
-/* 도구가 여럿이다. 바깥 틀은 넓게 두고 (FIRE 계산기가 두 단으로 선다)
+/* 도구가 여럿이다. 바깥 틀은 넓게 두고
    견적서 화면만 읽기 좋은 너비로 가운데 세운다. */
 .shell {
   max-width: 76rem;

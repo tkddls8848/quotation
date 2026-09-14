@@ -15,7 +15,7 @@
 # Cloudflare 는 정적 자산만 내려 준다(결정 decisions/0002).
 #
 # web/ 은 **셸** 이다 — 탭과 공통 틀만 갖는다. 도구는 최상위 기능 폴더에 있고
-# (quotation/, fire/) 셸이 별명으로 부른다. 그래서 빌드 순서가 이렇다.
+# (quotation/, converters/) 셸이 별명으로 부른다. 그래서 빌드 순서가 이렇다.
 #
 #   1) 변환 엔진: 견적기의 Rust 코어를 wasm 으로 지어 web/public/engine 으로.
 #      빌드 이미지에 Rust 가 없으므로 도구부터 갖춘다 (ensure_wasm_toolchain.sh).

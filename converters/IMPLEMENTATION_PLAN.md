@@ -116,7 +116,7 @@ LibreOffice + H2Orestart로 대표 문서를 변환한다. 공식 headless PDF �
 
 ## 코드 배치와 검증 원칙
 
-- 기능 코드와 테스트는 `converters/` 안에 둔다. 다른 기능인 `quotation/`, `fire/`를 호출하지 않는다.
+- 기능 코드와 테스트는 `converters/` 안에 둔다. 다른 기능인 `quotation/`을 호출하지 않는다.
 - 셸은 기존 `mountConverters` 진입점을 통해 화면을 연결한다.
 - PDF 렌더러와 변환 의존성은 해당 기능을 사용할 때 불러오도록 구성한다.
 - 기존 HWPX 읽기와 PDF 편집 테스트, 기능 경계 검사, 타입 검사, 빌드를 유지한다.

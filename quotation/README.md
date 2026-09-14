@@ -25,7 +25,7 @@ quotation/
 
 ## 다른 기능과의 경계
 
-- 다른 기능(`fire/`, `converters/`)을 **부르지 않는다.** 반대도 마찬가지다.
+- 다른 기능(`converters/`)을 **부르지 않는다.** 반대도 마찬가지다.
 - 화면은 셸(`web/`)이 내주는 빈 칸 하나에 들어간다. 셸은 `@quotation` 별명으로
   `web/src/panel.ts` 만 부르며, 그 안의 구조는 이 폴더가 알아서 한다.
 - 화면 뼈대(`web/src/panel.html`)와 스타일(`web/src/quotation.css`)도 여기 있다.

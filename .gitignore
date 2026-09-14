@@ -32,9 +32,6 @@ launcher.spec
 node_modules/
 web/dist/
 .wrangler/
-# wrangler dev 가 읽는 지역 비밀 (FIRE 계산기의 공시 인증키 FSS_API_KEY).
-# 운영 키는 `wrangler secret put` 으로 넣는다 — 저장소에 두지 않는다.
-web/.dev.vars
 # 배포 전에 quotation/web/scripts/build_browser_engine.py 가 만드는 변환 엔진
 # (Rust→WASM 약 1 MiB. wasm-pack 산출물이라 소스로 재현한다)
 web/public/engine/

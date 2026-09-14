@@ -27,7 +27,8 @@
 | [`decisions/0001-template-in-bundle.md`](decisions/0001-template-in-bundle.md) | 템플릿을 R2 에서 번들로 |
 | [`decisions/0002-convert-in-browser.md`](decisions/0002-convert-in-browser.md) | 변환을 서버에서 브라우저로 |
 | [`decisions/0012-one-folder-per-feature.md`](decisions/0012-one-folder-per-feature.md) | 기능마다 최상위 폴더 하나 |
-| [`decisions/0013-deposit-products-from-fss.md`](decisions/0013-deposit-products-from-fss.md) | 예적금 상품은 공시에서, 창구 Worker 하나 |
+| [`decisions/0013-deposit-products-from-fss.md`](decisions/0013-deposit-products-from-fss.md) | 예적금 상품은 공시에서, 창구 Worker 하나 (결정 0014 가 뒤집음) |
+| [`decisions/0014-retire-the-fire-calculator.md`](decisions/0014-retire-the-fire-calculator.md) | FIRE 계산기를 내린다 |
 | [`incidents/0001-worker-rejected-everything.md`](incidents/0001-worker-rejected-everything.md) | Worker 가 모든 변환을 거절했다 |
 | [`incidents/0002-pyodide-lxml-euckr.md`](incidents/0002-pyodide-lxml-euckr.md) | Pyodide 의 libxml2 는 EUC-KR 을 모른다 |
 | [`measurements/runtime.md`](measurements/runtime.md) | CPU·판본·크기 실측 |
@@ -74,4 +75,4 @@
 | Cloudflare Access 로 접근 제어 | 적용하지 않음. 서버에 XML 이 가지 않는다 | [결정 0002](decisions/0002-convert-in-browser.md) |
 | 한 번에 화일 1개 | 화면에서 최대 50개, 변환은 한 건씩 | `web/frontend/src/batch.ts` |
 | Container fallback 검토 | 하지 않음. Paid 전제라 무료 계정 문제를 못 푼다 | [결정 0002](decisions/0002-convert-in-browser.md) |
-| Worker 스크립트 없음 (정적 자산만) | 공시 중계 창구 하나만 둔다. 변환은 그대로 브라우저 | [결정 0013](decisions/0013-deposit-products-from-fss.md) |
+| Worker 스크립트 없음 (정적 자산만) | 그대로다. 공시 중계 창구는 계산기와 함께 내렸다 | [결정 0013](decisions/0013-deposit-products-from-fss.md), [0014](decisions/0014-retire-the-fire-calculator.md) |
