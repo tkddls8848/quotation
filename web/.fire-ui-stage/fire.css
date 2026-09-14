@@ -134,8 +134,8 @@
   align-content: start;
 }
 
-@media (min-width: 62rem) {
-  .fire__result:not(:has(details[open])) {
+@media (min-width: 62rem) and (min-height: 54rem) {
+  .fire__result {
     order: 0;
     position: sticky;
     top: 1.25rem;
@@ -278,7 +278,6 @@
 .assets__label {
   font-size: 0.9rem;
   font-weight: 600;
-  white-space: nowrap;
 }
 
 .more {
@@ -352,7 +351,7 @@
 
 .stats {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(10.5rem, 1fr));
   gap: 0.7rem;
 }
 
