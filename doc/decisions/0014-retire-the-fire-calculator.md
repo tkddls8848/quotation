@@ -43,19 +43,20 @@ FIRE 계산기는 그것과 무관한 도구였다.
 CI 의 `bundle` 잡도 결정 0010 때의 물음으로 돌아간다 — "Worker 스크립트가
 잡히지 않는가". 여기 스크립트가 잡히면 전제가 깨진 것이다.
 
-## 배포 대상에서 손볼 것
+## 배포 대상에서 손볼 것은 없다
 
-인증키가 더는 쓰이지 않는다. 이미 넣어 둔 값은 배포물에 담기는 것이 아니라
-Cloudflare 쪽에 남아 있으므로, 대상마다 한 번씩 지워 둔다.
+인증키(`FSS_API_KEY`)는 **어느 대상에도 올라간 적이 없다.** 결정 0013 이 적어
+둔 `wrangler secret put` 은 상품 추천을 실제로 돌리려면 해야 할 일이었을 뿐이고,
+그 단계까지 간 적이 없다. 그래서 지울 비밀도 없다.
+
+혹시 나중에 넣어 둔 것이 있다면 그때 지운다 — 쓰지 않는 비밀을 남겨 두지 않는
+것이 원칙이다.
 
 ```bash
 cd web
-npx wrangler secret delete FSS_API_KEY                  # 프로덕션
-npx wrangler secret delete FSS_API_KEY --env staging    # 스테이징
+npx wrangler secret list                     # 대상마다 무엇이 있는지 먼저 본다
+npx wrangler secret delete FSS_API_KEY       # 있을 때만
 ```
-
-지우지 않아도 부르는 코드가 없어 새는 곳은 없다. 쓰지 않는 비밀을 남겨 두지
-않는 것이 원칙이라 적는다.
 
 ## 무엇을 잃는가
 
