@@ -1,21 +1,22 @@
 /**
- * 변환 배선 — 브라우저 엔진을 먼저 쓰고, 못 띄우면 서버 API 로 넘어간다.
+ * 변환 배선 — 변환은 브라우저 안에서만 한다.
  *
- * 왜 브라우저가 먼저인가: Cloudflare Workers Free 는 요청당 CPU 10 ms 이고
- * 견적서 한 건은 가장 작은 입력도 73 ms 가 든다(실측 measurements/runtime.md). 무료 계정에서
- * 서버 변환은 애초에 성립하지 않는다. 브라우저에서 도는 파이썬은 서버가 돌리던
- * 것과 같은 파일이므로 결과는 같다(`web/tests/test_browser_parity.py`).
+ * Cloudflare Workers Free 는 요청당 CPU 10 ms 이고 견적서 한 건은 가장 작은
+ * 입력도 73 ms 가 든다(실측 measurements/runtime.md). 무료 계정에서 서버 변환은
+ * 애초에 성립하지 않아 그 경로를 없앴다(결정 0010). 엔진을 못 띄우면 **그 사실을
+ * 그대로 알린다** — 받아 줄 곳도 없는데 파일을 내보내지 않는다.
  *
- * 서버로 넘어가는 경우는 하나뿐이다 — **엔진 자체를 못 띄웠을 때.** 변환이
- * 오류로 끝난 것은 넘어갈 이유가 아니다. 서버도 같은 코드라 같은 오류를 낸다.
+ * 여기서 도는 것은 데스크톱이 쓰는 것과 같은 Rust 코어이고, 결과가 같은지는
+ * `quotation/web/tests/test_browser_parity.py` 가 매번 대조한다.
  */
 
-import { ConvertError, Converted, convertOnServer } from './api';
+import { ConvertError, Converted } from './contract';
 import { filenameFromDisposition, outputNameFor } from './download';
 
 export type Stage = string;
 
 const DEFAULT_MESSAGE = '변환에 실패했습니다. 잠시 후 다시 시도하십시오.';
+const ENGINE_UNAVAILABLE = '이 브라우저에서는 변환 엔진을 띄우지 못했습니다.';
 
 type WorkerMessage =
   | { kind: 'stage'; stage: string }
@@ -55,24 +56,18 @@ export class Converter {
   }
 
   async convert(file: File, options: ConvertOptions): Promise<Converted> {
-    const deploymentVersion = __DEPLOYMENT_VERSION__;
-
-    if (this.state !== 'unavailable') {
-      try {
-        return await this.inBrowser(file, options, deploymentVersion);
-      } catch (error) {
-        // 변환이 판단해 낸 오류는 그대로 알린다. 서버도 같은 답을 낸다.
-        if (error instanceof ConvertError) throw error;
-        if (options.signal.aborted) throw error;
-        this.state = 'unavailable';
-      }
+    if (this.state === 'unavailable') throw new Error(ENGINE_UNAVAILABLE);
+    try {
+      return await this.inBrowser(file, options, __DEPLOYMENT_VERSION__);
+    } catch (error) {
+      // 변환이 판단해 낸 오류는 엔진 고장이 아니다. 상태를 내리지 않는다.
+      if (error instanceof ConvertError || options.signal.aborted) throw error;
+      this.state = 'unavailable';
+      throw error;
     }
-
-    options.onStage?.('서버로 변환하는 중…');
-    return convertOnServer(file, options.signal);
   }
 
-  /** 취소. Pyodide 는 도중에 끊을 수 없으므로 일꾼을 통째로 내린다. */
+  /** 취소. wasm 변환은 도중에 끊을 수 없으므로 일꾼을 통째로 내린다. */
   cancel(): void {
     if (!this.worker) return;
     this.worker.terminate();
@@ -169,7 +164,7 @@ export class Converter {
   }
 }
 
-/** 엔진 응답을 서버 응답과 같은 방식으로 읽는다 (같은 헤더, 같은 오류 본문). */
+/** 엔진 응답을 읽는다. 헤더와 오류 본문의 모양은 `rust/webapi` 가 정한다. */
 function toConverted(
   message: { status: number; headers: Record<string, string>; body: Uint8Array },
   fallbackName: string,

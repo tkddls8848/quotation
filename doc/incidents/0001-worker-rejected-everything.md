@@ -65,3 +65,7 @@ except Exception as exc:
 넘어가고 SPA 의 `index.html` 이 200 으로 돌아온다. 그것을 받아 `.xlsx` 로
 저장하면 HTML 이 든 견적서가 된다. 대비책 경로(`web/frontend/src/api.ts`)가
 응답의 `Content-Type` 을 확인하도록 했다.
+
+2026-09-15 덧: 그 대비책 경로 자체를 지웠다([결정 0010](../decisions/0010-retire-the-server-conversion-path.md)).
+엔진을 못 띄우면 서버로 넘어가지 않고 그 사실을 알리므로, 여기 적은 `Content-Type`
+검사도 함께 사라졌다. 막으려던 상황이 더는 생기지 않는다.

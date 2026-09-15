@@ -58,8 +58,10 @@ quotation/              견적기 — 이 기능에 딸린 것은 전부 여기 
   tests/                공개 API 회귀 + 익명화 fixture
   tools/                이 기능의 개발 도구 (골든 비교, 내용 비교, 기동 실측)
 
-converters/             문서 변환기 — HWPX 읽기가 돈다 (gong-go 의 converter/ 에서 이관)
-  web/src/              화면과 파서 (panel.ts · hwpx.ts · zip.ts)
+converters/             문서 변환기 — PDF 편집·PDF→HWPX·HWPX 읽기·HWP→PDF
+  web/src/              화면·파서·생성기 (panel.ts · pdf-*.ts · hwpx*.ts · zip.ts)
+  web/scripts/          실제 브라우저로 화면과 산출물을 검사한다
+  server/               HWP → PDF 변환 서버 (이 기능 전용, 배포 안 함)
   desktop/              한글 COM 으로 .hwp → .hwpx (Windows 전용)
 
 web/                    셸 — 도구를 탭으로 세우는 틀. 도구 논리는 없다

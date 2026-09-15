@@ -117,25 +117,6 @@
   border-radius: 8px;
 }
 
-.conv-roadmap dl {
-  margin: 0;
-}
-
-.conv-roadmap dt {
-  margin-top: 0.9rem;
-  font-weight: 600;
-}
-
-.conv-roadmap dt:first-child {
-  margin-top: 0;
-}
-
-.conv-roadmap dd {
-  margin: 0.2rem 0 0;
-  color: var(--muted);
-  font-size: 0.92rem;
-}
-
 .pdf-controls {
   min-width: 0;
   margin: 1rem 0;
@@ -188,6 +169,14 @@
   font: inherit;
 }
 .pdf-outputs a { color: var(--accent); overflow-wrap: anywhere; }
+.conv-tool select { max-width: 100%; padding: 0.4rem; color: var(--text); background: var(--bg); border: 1px solid var(--line); border-radius: 6px; }
+.pdf-hwpx-warnings { max-height: 12rem; overflow: auto; color: var(--muted); font-size: 0.9rem; }
+.pdf-hwpx-warnings:empty { display: none; }
+.conv-hwp-pdf .hwp-consent { display: block; margin: 1rem 0; }
+.hwp-key input { max-width: 100%; }
+.hwp-result { display: inline-block; margin-top: 0.75rem; color: var(--accent); }
+.hwp-result[hidden] { display: none; }
+.conv-tool button:disabled { opacity: 0.5; cursor: default; }
 @media (max-width: 480px) {
   .pdf-pages li { flex-wrap: wrap; }
   .pdf-pages label { flex-basis: 100%; }

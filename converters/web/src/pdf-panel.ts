@@ -32,7 +32,22 @@ export function pdfTool(): HTMLElement {
         <button type="button" data-action="split">범위별 분할</button>
       </div>
       <p class="conv-note">쉼표(,)로 쪽을 묶고 세미콜론(;)으로 파일을 나눕니다. 예: 1-3; 4,6 → PDF 2개.</p>
+      <h3>PDF → HWPX</h3>
+      <p class="conv-note">현재 순서·회전을 반영합니다. 선택한 쪽이 있으면 선택 쪽만, 없으면 전체를 변환합니다. 최대 100쪽·출력 64MB. 최신 한글에서의 호환성 검증은 진행 중입니다.</p>
+      <div class="conv-actions">
+        <label>이미지 해상도 <select id="pdf-hwpx-dpi"><option value="150">150 DPI</option><option value="200" selected>200 DPI</option><option value="300">300 DPI</option></select></label>
+        <button type="button" data-action="hwpx-image">HWPX 이미지로 저장</button>
+      </div>
+      <p class="conv-note">이미지 방식은 쪽을 그림으로 넣습니다. 글자·표를 직접 편집할 수 없으며 해상도에 따라 품질이 달라집니다.</p>
+      <div class="conv-actions">
+        <label>텍스트 없는 쪽 <select id="pdf-hwpx-empty"><option value="error">중단하고 알림</option><option value="image">이미지로 저장</option><option value="skip">제외</option></select></label>
+        <label><input type="checkbox" id="pdf-hwpx-tables"> 단순 표 추정</label>
+        <button type="button" data-action="hwpx-text">HWPX 텍스트로 저장</button>
+      </div>
+      <p class="conv-note">텍스트 방식은 편집 가능한 문단과 단순 표를 재구성합니다. 그림·수식·원본 배치는 보존하지 않습니다. 다단·병합 표·회전 글자는 결과 확인이 필요하며 OCR은 지원하지 않습니다.</p>
     </fieldset>
+    <button type="button" class="pdf-hwpx-cancel" hidden>HWPX 변환 취소</button>
+    <ul class="pdf-hwpx-warnings" aria-label="변환 확인 사항"></ul>
     <div class="pdf-outputs conv-actions" aria-label="저장 결과"></div>
     <p class="conv-note">쪽의 글·그림을 PDF로 복사합니다. 책갈피·양식·전자서명 보존은 지원하지 않습니다. 암호화된 PDF는 보안을 해제한 사본을 사용하세요.</p>
   `;
@@ -44,6 +59,10 @@ export function pdfTool(): HTMLElement {
   const summary = tool.querySelector<HTMLElement>('.pdf-summary')!;
   const ranges = tool.querySelector<HTMLInputElement>('#pdf-ranges')!;
   const outputs = tool.querySelector<HTMLElement>('.pdf-outputs')!;
+  const cancel = tool.querySelector<HTMLButtonElement>('.pdf-hwpx-cancel')!;
+  const warnings = tool.querySelector<HTMLElement>('.pdf-hwpx-warnings')!;
+  let conversion: AbortController | undefined;
+  cancel.addEventListener('click', () => conversion?.abort());
   let pages: PdfPageRef[] = [];
   const selected = new Set<PdfPageRef>();
   let busy = false;
@@ -56,6 +75,7 @@ export function pdfTool(): HTMLElement {
     urls.forEach(url => URL.revokeObjectURL(url));
     urls = [];
     outputs.replaceChildren();
+    warnings.replaceChildren();
   };
   const render = (): void => {
     controls.disabled = busy || !pages.length;
@@ -150,6 +170,39 @@ export function pdfTool(): HTMLElement {
   controls.addEventListener('click', event => {
     const action = (event.target as HTMLElement).closest<HTMLButtonElement>('button[data-action]')?.dataset['action'];
     if (!action || busy) return;
+    if (action === 'hwpx-image' || action === 'hwpx-text') {
+      void run(async () => {
+        clearOutputs();
+        conversion = new AbortController();
+        cancel.hidden = false;
+        try {
+          const refs = selected.size ? pages.filter(page => selected.has(page)) : pages;
+          if (refs.length > 100) throw new Error('HWPX는 한 번에 100쪽까지 변환할 수 있습니다.');
+          message('PDF 쪽 준비 중…');
+          const source = await savePdf(refs);
+          conversion.signal.throwIfAborted();
+          const { pdfToHwpx } = await import('./pdf-hwpx');
+          const result = await pdfToHwpx(source, {
+            mode: action === 'hwpx-image' ? 'image' : 'text', rotation: 0,
+            dpi: Number(tool.querySelector<HTMLSelectElement>('#pdf-hwpx-dpi')!.value) as 150 | 200 | 300,
+            emptyText: tool.querySelector<HTMLSelectElement>('#pdf-hwpx-empty')!.value as 'error' | 'image' | 'skip',
+            tables: tool.querySelector<HTMLInputElement>('#pdf-hwpx-tables')!.checked,
+            signal: conversion.signal, progress: text => message(text),
+          });
+          const url = URL.createObjectURL(new Blob([new Uint8Array(result.bytes)], { type: 'application/hwp+zip' }));
+          urls.push(url);
+          const link = document.createElement('a'); link.href = url;
+          link.download = `converted-${action === 'hwpx-image' ? 'image' : 'text'}.hwpx`;
+          link.textContent = `${link.download} 내려받기 (${result.pages}쪽)`;
+          outputs.append(link);
+          for (const text of result.warnings) { const li = document.createElement('li'); li.textContent = text; warnings.append(li); }
+          message(`${result.pages}쪽 HWPX 생성 완료. 아래 링크에서 내려받으세요.`);
+        } catch (error) {
+          if (conversion.signal.aborted) message('HWPX 변환을 취소했습니다.'); else throw error;
+        } finally { conversion = undefined; cancel.hidden = true; }
+      });
+      return;
+    }
     if (action === 'save') { void run(() => exportGroups([pages], 'edited')); return; }
     if (action === 'extract') {
       if (!selected.size) { message('저장할 쪽을 선택하세요.', true); return; }

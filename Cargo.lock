@@ -977,7 +977,6 @@ version = "0.1.0"
 dependencies = [
  "getrandom 0.4.3",
  "js-sys",
- "quotation-core",
  "quotation-webapi",
  "wasm-bindgen",
 ]

@@ -130,38 +130,6 @@ pub fn size_bucket(size: usize) -> &'static str {
     ">10MiB"
 }
 
-/// `GET /api/v1/config` — 클라이언트가 1차 검사에 쓸 공개 설정.
-pub fn config_response(request_id: &str) -> ApiResponse {
-    json_response(
-        200,
-        limits::public_config(),
-        request_id,
-        vec![
-            ("outcome".to_owned(), LogValue::Text("ok".to_owned())),
-            ("status".to_owned(), LogValue::Int(200)),
-        ],
-    )
-}
-
-/// `GET /api/v1/status` — 배포 판본과 모드별 활성 템플릿 판본.
-pub fn status_response(request_id: &str, deployment_version: &str) -> ApiResponse {
-    let payload = format!(
-        "{{\"deployment_version\": {}, \"template_versions\": {{\"unix\": {}, \"integrated\": {}}}}}",
-        json::string(deployment_version),
-        json::string(&templates::version(quotation_core::modes::Mode::Unix)),
-        json::string(&templates::version(quotation_core::modes::Mode::Integrated)),
-    );
-    json_response(
-        200,
-        payload,
-        request_id,
-        vec![
-            ("outcome".to_owned(), LogValue::Text("ok".to_owned())),
-            ("status".to_owned(), LogValue::Int(200)),
-        ],
-    )
-}
-
 /// 한 요청에 파일 하나. 형식과 크기를 여기서 1차로 거른다.
 fn pick_upload(upload: &Upload) -> Result<String, ApiError> {
     let name = names::safe_source_name(&upload.filename);

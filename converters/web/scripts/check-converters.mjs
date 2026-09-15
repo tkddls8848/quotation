@@ -1,0 +1,84 @@
+import { createRequire } from 'node:module';
+import { fileURLToPath } from 'node:url';
+import { mkdir } from 'node:fs/promises';
+import assert from 'node:assert/strict';
+const require = createRequire(new URL('../../../web/package.json', import.meta.url));
+const { chromium } = require('playwright');
+const { PDFDocument, rgb } = require('pdf-lib');
+const { unzipSync, strFromU8 } = require('fflate');
+const base = process.env.HWPX_TEST_URL ?? 'http://127.0.0.1:18574';
+const out = new URL('../../../.cache/hwpx-validation/', import.meta.url);
+await mkdir(out, { recursive: true });
+const browser = await chromium.launch({ headless: true });
+try {
+  const page = await browser.newPage();
+  const errors = [];
+  page.on('pageerror', error => errors.push(error.message));
+  await page.goto(`${base}/#converters`);
+  await page.getByRole('heading', { name: 'PDF 편집기', exact: true }).waitFor();
+  const doc = await PDFDocument.create();
+  const first = doc.addPage([400, 500]);
+  first.drawText('Title < & >', { x: 30, y: 450, size: 12 });
+  for (const [text, x, y] of [['A',30,400],['B',200,400],['C',30,375],['D',200,375]]) first.drawText(text, { x, y, size: 10 });
+  doc.addPage([500, 300]).drawText('Second page', { x: 20, y: 100, size: 12 });
+  doc.addPage([300, 400]).drawRectangle({ x: 0, y: 0, width: 300, height: 400, color: rgb(0.2,0.4,0.9) });
+  await page.locator('#conv-pdf-file').setInputFiles({ name: 'synthetic.pdf', mimeType: 'application/pdf', buffer: Buffer.from(await doc.save()) });
+  await page.getByText('1개 파일에서 3쪽을 추가했습니다.', { exact: true }).waitFor();
+  const result = page.locator('.pdf-outputs a');
+  const save = async name => {
+    await result.waitFor();
+    const pending = page.waitForEvent('download'); await result.click();
+    await (await pending).saveAs(fileURLToPath(new URL(name, out)));
+    return unzipSync(Uint8Array.from(await result.evaluate(async link => Array.from(new Uint8Array(await (await fetch(link.href)).arrayBuffer())))));
+  };
+  await page.getByRole('button', { name: 'HWPX 이미지로 저장', exact: true }).click();
+  const images = await save('multi-image.hwpx');
+  assert.equal(Object.keys(images).filter(n => /section\d+.xml$/.test(n)).length, 3);
+  assert.equal(Object.keys(images).filter(n => n.startsWith('BinData/')).length, 3);
+  assert.match(strFromU8(images['Contents/header.xml']), /secCnt="3"/);
+  await page.getByRole('button', { name: 'HWPX 텍스트로 저장', exact: true }).click();
+  await page.waitForFunction(() => document.querySelector('.conv-pdf .conv-status').textContent.includes('3쪽에서 텍스트를 찾지 못했습니다'));
+  assert.equal(await result.count(), 0);
+  await page.locator('#pdf-hwpx-empty').selectOption('image');
+  await page.locator('#pdf-hwpx-tables').check();
+  await page.getByRole('button', { name: 'HWPX 텍스트로 저장', exact: true }).click();
+  const text = await save('multi-text.hwpx');
+  const xml = strFromU8(text['Contents/section0.xml']);
+  assert.match(xml, /Title &lt; &amp; &gt;/);
+  assert.match(xml, /<hp:tbl/);
+  assert.match(xml, /rowCnt="2" colCnt="2"/);
+  assert.equal(Object.keys(text).filter(n => n.startsWith('BinData/')).length, 1);
+  assert.match(await page.locator('.pdf-hwpx-warnings').innerText(), /3쪽: 텍스트 없음 → 이미지로 저장/);
+  await page.locator('#pdf-hwpx-empty').selectOption('skip');
+  await page.getByRole('button', { name: 'HWPX 텍스트로 저장', exact: true }).click();
+  assert.match(strFromU8((await save('skip-text.hwpx'))['Contents/header.xml']), /secCnt="2"/);
+
+  await page.locator('.pdf-pages input').nth(1).check();
+  await page.getByRole('button', { name: '선택 쪽 ↻ 90°', exact: true }).click();
+  await page.getByRole('button', { name: 'HWPX 이미지로 저장', exact: true }).click();
+  const selected = await save('selected-image.hwpx');
+  assert.match(strFromU8(selected['Contents/section0.xml']), /width="30000" height="50000"/);
+  assert.match(strFromU8(selected['Contents/header.xml']), /secCnt="1"/);
+  await page.getByRole('button', { name: 'HWPX 이미지로 저장', exact: true }).click();
+  await page.getByRole('button', { name: 'HWPX 변환 취소', exact: true }).click();
+  await page.getByText('HWPX 변환을 취소했습니다.', { exact: true }).waitFor();
+
+  if (process.env.HWP_TEST_FILE) {
+    const hwp = page.locator('.conv-hwp-pdf');
+    await hwp.getByText('변환 서버가 준비되었습니다.', { exact: true }).waitFor();
+    await hwp.locator('input[type=file]').setInputFiles(process.env.HWP_TEST_FILE);
+    assert.equal(await hwp.locator('.hwp-convert').isDisabled(), true);
+    await hwp.locator('input[type=checkbox]').check();
+    await hwp.locator('.hwp-convert').click();
+    await hwp.locator('.hwp-result').waitFor({ state: 'visible', timeout: 150000 });
+    const pending = page.waitForEvent('download'); await hwp.locator('.hwp-result').click();
+    await (await pending).saveAs(fileURLToPath(new URL('hwp-result.pdf', out)));
+    const pdf = await hwp.locator('.hwp-result').evaluate(async link => Array.from(new Uint8Array(await (await fetch(link.href)).arrayBuffer())));
+    assert.ok((await PDFDocument.load(Uint8Array.from(pdf))).getPageCount() > 0);
+  }
+  await page.setViewportSize({ width: 375, height: 812 });
+  assert.equal(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth), true);
+  await page.screenshot({ path: fileURLToPath(new URL('converters-mobile.png', out)), fullPage: true });
+  assert.deepEqual(errors, []);
+  console.log('PASS: production UI image/text exports, tables, mixed page sizes, scanned-page error/image/skip, selection/rotation, cancellation, mobile layout' + (process.env.HWP_TEST_FILE ? ', real HWP upload and PDF download.' : '.'));
+} finally { await browser.close(); }

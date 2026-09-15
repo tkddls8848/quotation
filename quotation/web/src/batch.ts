@@ -6,7 +6,7 @@
  * "무엇을 받아들이고 무엇을 거를 것인가" 와 "결과를 어떻게 알릴 것인가" 뿐이다.
  */
 
-import type { AppConfig } from './api';
+import type { AppConfig } from './contract';
 
 const MiB = 1024 * 1024;
 

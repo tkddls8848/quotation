@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { APP_CONFIG } from './api';
+import { APP_CONFIG } from './contract';
 import { progressLabel, rejectReason, selectFiles, summarize } from './batch';
 
 const file = (name: string, size = 1024): File =>

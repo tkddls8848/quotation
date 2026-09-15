@@ -102,7 +102,7 @@ quotation/web/             견적서 탭
   e2e/browser_smoke.mjs    실제 브라우저 스모크
   tests/                   브라우저↔데스크톱 동일성, 실제 Chromium E2E
 
-converters/web/src/        문서 변환기 탭 (panel.ts · converters.css)
+converters/web/src/        문서 변환기 탭 (panel.ts · converters.css · 변환기들)
   hwpx.ts  zip.ts          HWPX 읽기 (zip 은 제 안에 둔다)
   pdf.ts  pdf-panel.ts     브라우저 PDF 편집기
 ```
@@ -153,15 +153,16 @@ npx wrangler deploy --dry-run --env=""       # 무료 기본 — Worker 스크�
 
 CI 의 `bundle` 잡이 매 푸시마다 둘 다 돌린다.
 
-## 배포 경로는 하나만 켠다
+## 배포하는 것은 Workers Builds 하나다
 
-같은 Worker 에 배포하는 길이 둘 있다. 둘을 함께 켜두면 두 번 배포되며 서로를
-덮어쓴다. 하나를 골라 반대쪽은 끈다.
+배포는 **Cloudflare Workers Builds** 가 한다 — 대시보드에 연결한 저장소를 보고
+짓고 올린다. GitHub Actions 는 **검사만** 한다. 배포 잡을 두면 같은 Worker 에 두 번
+배포되며 서로를 덮어쓰므로 두지 않았다
+([결정 0017](../doc/decisions/0017-cloudflare-builds-owns-deploys.md)).
 
-| 경로 | 트리거 | 끄는 방법 |
-|---|---|---|
-| Cloudflare Workers Builds | 대시보드에 연결한 Git 저장소 | Worker → Settings → Build → Git 연결 해제 |
-| GitHub Actions | main 푸시 | 저장소 변수 `CLOUDFLARE_DEPLOY` 삭제 |
+그래서 테스트는 배포를 **막지 못한다.** 막고 싶으면 `main` 브랜치 보호에서 CI 의
+검사 잡들을 필수 상태 검사로 걸어 통과한 커밋만 `main` 에 들어오게 한다. 그 설정이
+없으면 푸시한 것이 그대로 프로덕션으로 나간다.
 
 ## Cloudflare Workers Builds 설정
 
@@ -251,16 +252,19 @@ Root directory 값이 무엇이든 똑같이 동작한다. 이 장치가 없으�
   **Workers Builds 전용 빌드 토큰** 문제다. Settings → Build → Build token 에서
   갱신하고 재시도한다.
 
-## GitHub Actions 배포 켜기
+## 손으로 배포할 때 쓰는 API 토큰
 
-배포 잡은 Cloudflare 준비가 끝날 때까지 건너뜁니다. 아래를 등록하면 켜집니다.
+평소 배포는 Workers Builds 가 하지만, 손으로 올릴 때는 `wrangler` 가 토큰을 찾는다.
 
-| 종류 | 이름 | 값 |
-|---|---|---|
-| Variable | `CLOUDFLARE_DEPLOY` | `true` |
-| Secret | `CLOUDFLARE_API_TOKEN` | 아래 권한을 가진 **API 토큰** |
-| Secret | `CLOUDFLARE_ACCOUNT_ID` | 계정 ID |
-| Variable | `STAGING_BASE_URL` | 스모크 테스트용 주소 (선택) |
+```bash
+export CLOUDFLARE_API_TOKEN="<토큰>"    # 셸에만 둔다. 파일에 적지 않는다
+export CLOUDFLARE_ACCOUNT_ID="<계정 ID>"
+bash web/scripts/cf_build.sh
+bash web/scripts/cf_deploy.sh deploy
+```
+
+이 토큰은 대시보드의 **빌드 토큰과 다른 것**이다. 빌드 토큰은 Workers Builds 가
+저장소를 짓고 올릴 때 쓰는 것으로 Settings → Build 에서 관리한다.
 
 ### API 토큰 권한
 
@@ -300,8 +304,8 @@ curl -sS https://api.cloudflare.com/client/v4/user/tokens/verify \
 # 정상이면 "status": "active"
 ```
 
-CI 의 배포 잡은 업로드 전에 `wrangler whoami` 를 돌려 토큰이 무엇을 볼 수 있는지
-로그에 남깁니다(실패해도 배포는 시도하며, 판정은 실제 배포가 합니다).
+올리기 전에 `npx wrangler whoami` 를 한 번 돌리면 그 토큰이 무엇을 볼 수 있는지
+먼저 확인할 수 있습니다.
 
 ## 템플릿 운영
 
@@ -420,6 +424,12 @@ python -m pytest -q
 무료 계정 배포에서는 **XML 이 서버로 가지 않습니다.** 변환이 브라우저 안에서
 끝나므로 올린 XML 도 만들어진 견적서도 네트워크를 타지 않고, 서버에는 남길
 것도 없습니다.
+
+이 성질은 견적서 변환의 것입니다. 문서 변환기의 **HWP → PDF 만** 파일을 별도
+변환 서버로 보내며, 그 서버는 이 배포에 들어 있지 않고 따로 돕니다 —
+전송 전에 동의를 받고 결과는 15분 뒤 지웁니다
+([결정 0016](../doc/decisions/0016-a-server-only-for-hwp-to-pdf.md),
+[변환기 README](../converters/README.md)).
 
 변환은 브라우저 안에서만 일어나며 업로드한 XML 은 밖으로 나가지 않습니다.
 요청을 처리하는 동안만 메모리에 두었다가 응답과 함께 버리고, 로그에는 요청 ID,

@@ -2,7 +2,7 @@
  * 변환기 탭.
  *
  * HWPX 읽기와 PDF 쪽 편집.
- * 파일은 브라우저 밖으로 나가지 않는다.
+ * PDF/HWPX 처리는 브라우저에서, HWP→PDF는 별도 변환 서버에서 실행한다.
  *
  * 화면에 "안 되는 것"까지 적는 이유는 이 도구의 신뢰가 거기서 갈리기 때문이다.
  * 한글 문서를 100% 그대로 옮겨 준다고 믿고 규격서를 맡겼다가 표 한 줄이 조용히
@@ -12,12 +12,13 @@ import './converters.css';
 
 import { hwpxToMarkdown, type HwpxResult } from './hwpx';
 import { pdfTool } from './pdf-panel';
+import { hwpPdfTool } from './hwp-pdf-panel';
 
 const MAX_BYTES = 64 * 1024 * 1024;
 
 export function mountConverters(root: HTMLElement): void {
   root.innerHTML = '';
-  root.append(header(), pdfTool(), hwpxTool(), roadmap());
+  root.append(header(), pdfTool(), hwpPdfTool(), hwpxTool());
 }
 
 function header(): HTMLElement {
@@ -26,7 +27,8 @@ function header(): HTMLElement {
   section.innerHTML = `
     <h1>문서 변환기</h1>
     <p>
-      고른 파일은 <strong>이 브라우저 안에서만</strong> 열립니다. 어디로도 올라가지 않습니다.
+      PDF 편집·HWPX 생성·읽기는 <strong>브라우저 안에서</strong> 처리합니다.
+      HWP → PDF만 파일을 변환 서버로 전송하며, 전송 전에 확인합니다.
     </p>
   `;
   return section;
@@ -150,34 +152,4 @@ function describe({ stats }: HwpxResult): string {
 
 function mb(bytes: number): string {
   return `${(bytes / 1024 / 1024).toFixed(1)}MB`;
-}
-
-// --- 아직 없는 것 ------------------------------------------------------------
-
-/**
- * 없는 기능을 숨기지 않고 적는다. 탭을 열어 본 사람이 "이건 되겠지" 하고
- * 기다리는 것보다, 왜 아직 없는지 아는 편이 낫다.
- */
-function roadmap(): HTMLElement {
-  const section = document.createElement('section');
-  section.className = 'conv-tool conv-roadmap';
-  section.innerHTML = `
-    <h2>아직 없는 것</h2>
-    <dl>
-      <dt>PDF → HWPX</dt>
-      <dd>
-        쪽을 그림으로 심으면 보이는 그대로 옮길 수 있지만 편집은 안 됩니다.
-        글자를 다시 짜 맞추는 쪽은 원리상 <strong>추정</strong>이라 표가 어긋날 수 있습니다.
-        둘 중 무엇을 만들지 정하지 않았습니다.
-      </dd>
-
-      <dt>HWP(5.0) → PDF</dt>
-      <dd>
-        브라우저만으로는 확실하게 되지 않습니다. 공개된 파서는 포맷의 일부만 읽고,
-        한글 기본 글꼴이 없으면 줄바꿈 위치가 달라집니다.
-        확실한 길은 서버 하나(LibreOffice + H2Orestart)뿐이라 도입 여부를 정해야 합니다.
-      </dd>
-    </dl>
-  `;
-  return section;
 }

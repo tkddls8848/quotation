@@ -1,11 +1,18 @@
 // vitest 의 defineConfig 는 vite 의 것을 그대로 넓힌 것이다. test 항목까지 타입이 선다.
 import { defineConfig } from 'vitest/config';
 import { fileURLToPath } from 'node:url';
+import { readFileSync, readdirSync } from 'node:fs';
 
 // 설정 파일은 Node 에서 돈다. @types/node 를 끌어오지 않기 위해 여기서만 알린다.
 declare const process: { env: Record<string, string | undefined> };
 
 const at = (path: string) => fileURLToPath(new URL(path, import.meta.url));
+const pdfAssets = new Map<string, string>();
+for (const dir of ['cmaps', 'standard_fonts', 'wasm', 'iccs']) {
+  for (const name of readdirSync(at(`./node_modules/pdfjs-dist/${dir}`))) {
+    pdfAssets.set(`/pdf-assets/${dir}/${name}`, at(`./node_modules/pdfjs-dist/${dir}/${name}`));
+  }
+}
 
 /**
  * 셸의 빌드 설정.
@@ -23,11 +30,28 @@ const at = (path: string) => fileURLToPath(new URL(path, import.meta.url));
  * 때문이다.
  */
 export default defineConfig({
+  plugins: [{
+    name: 'converter-pdf-assets',
+    configureServer(server) {
+      server.middlewares.use((request, response, next) => {
+        const path = pdfAssets.get((request.url ?? '').split('?')[0]!);
+        if (!path) { next(); return; }
+        response.setHeader('Content-Type', path.endsWith('.wasm') ? 'application/wasm' : 'application/octet-stream');
+        response.end(readFileSync(path));
+      });
+    },
+    generateBundle() {
+      for (const [name, path] of pdfAssets) this.emitFile({ type: 'asset', fileName: name.slice(1), source: readFileSync(path) });
+    },
+  }],
+  optimizeDeps: { exclude: ['pdfjs-dist'] },
   resolve: {
     alias: {
       '@quotation': at('../quotation/web/src'),
       '@converters': at('../converters/web/src'),
       'pdf-lib': at('./node_modules/pdf-lib/es/index.js'),
+      'pdfjs-dist': at('./node_modules/pdfjs-dist'),
+      'fflate': at('./node_modules/fflate/esm/browser.js'),
     },
   },
   define: {

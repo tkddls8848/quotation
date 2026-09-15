@@ -5,7 +5,6 @@ use crate::money::{Amount, Decimal, to_decimal};
 
 pub const HARDWARE: &str = "Hardware";
 pub const SOFTWARE: &str = "Software";
-pub const SERVICES: &str = "Services";
 
 /// 증설 견적에서 견적 대상이 아닌 TransactionType.
 /// BASE 는 기존 구성, PROPOSED 는 증설 후 구성이다. 둘 다 참조용이다.

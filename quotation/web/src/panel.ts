@@ -16,7 +16,7 @@
 import './quotation.css';
 import panelHtml from './panel.html?raw';
 
-import { APP_CONFIG, AppConfig, ConvertError } from './api';
+import { APP_CONFIG, AppConfig, ConvertError } from './contract';
 import { Tally, progressLabel, selectFiles, summarize } from './batch';
 import { Converter } from './converter';
 import { saveBlob } from './download';

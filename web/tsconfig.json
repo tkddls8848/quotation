@@ -14,7 +14,10 @@
       "@converters/*": ["../converters/web/src/*"],
       // 도구의 테스트는 제 폴더에 있지만 vitest 는 셸에 깔린다. 그 자리를 알려 준다.
       "vitest": ["./node_modules/vitest"],
-      "pdf-lib": ["./node_modules/pdf-lib"]
+      "pdf-lib": ["./node_modules/pdf-lib"],
+      "pdfjs-dist": ["./node_modules/pdfjs-dist"],
+      "pdfjs-dist/*": ["./node_modules/pdfjs-dist/*"],
+      "fflate": ["./node_modules/fflate"]
     },
     "strict": true,
     "noUnusedLocals": true,

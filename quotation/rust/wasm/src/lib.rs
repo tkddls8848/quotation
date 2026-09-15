@@ -8,11 +8,7 @@
 //! 나가지 않는다 ([결정 0002](../../../doc/decisions/0002-convert-in-browser.md)).
 
 use js_sys::{Object, Reflect, Uint8Array};
-use quotation_core::modes;
-use quotation_webapi::{
-    ApiResponse, LogValue, Upload, config_response, convert_response, seoul_today, status_response,
-    templates,
-};
+use quotation_webapi::{ApiResponse, LogValue, Upload, convert_response, seoul_today};
 use wasm_bindgen::prelude::*;
 
 /// 업로드 한 건을 견적서로 바꾼다. 서버의 `POST /api/v1/convert` 와 같다.
@@ -51,28 +47,6 @@ pub fn convert(
 #[wasm_bindgen]
 pub fn today(now_ms: f64) -> String {
     seoul_today(now_ms as i64).iso()
-}
-
-/// `GET /api/v1/config` 와 같은 응답.
-#[wasm_bindgen]
-pub fn config(request_id: &str) -> Object {
-    to_js(config_response(request_id), 0)
-}
-
-/// `GET /api/v1/status` 와 같은 응답.
-#[wasm_bindgen]
-pub fn status(request_id: &str, deployment_version: &str) -> Object {
-    to_js(status_response(request_id, deployment_version), 0)
-}
-
-/// 모드별 활성 템플릿 판본. 자산 목록(`engine.json`)을 만들 때 쓴다.
-#[wasm_bindgen]
-pub fn template_version(mode: &str) -> String {
-    let mode = match mode {
-        "integrated" => modes::Mode::Integrated,
-        _ => modes::Mode::Unix,
-    };
-    templates::version(mode)
 }
 
 /// `{status, headers, body, log}` — 파이썬 `entry.convert` 가 돌려주던 모양.
