@@ -15,11 +15,33 @@
  *     읽지 않는다. 브라우저에서는 디스크에 쓰지 않지만, 같은 함수를 데스크톱
  *     경로에서도 쓰게 되면 그때 바로 구멍이 된다.
  *   - 압축 폭탄을 막는다. 항목 수와 푼 뒤 전체 크기에 한도를 둔다.
+ *
+ * 항목 **이름**은 UTF-8 이 아닐 수 있다. 윈도우 탐색기가 만든 ZIP 은 한글 이름을
+ * CP949 로 적으면서 그렇다고 표시하지 않는다 — `decodeName` 이 그것을 가린다.
  */
 
 const EOCD = 0x06054b50;
 const CENTRAL = 0x02014b50;
 const LOCAL = 0x04034b50;
+/** general purpose flag bit 11 — 이름이 UTF-8 이라고 적어 둔 표식. */
+const UTF8_NAMES = 0x800;
+
+const utf8Strict = new TextDecoder('utf-8', { fatal: true });
+const utf8 = new TextDecoder();
+const cp949 = new TextDecoder('euc-kr');
+
+/**
+ * 항목 이름을 읽는다.
+ *
+ * 윈도우 탐색기가 만든 ZIP 은 한글 이름을 CP949 로 적으면서 UTF-8 표식을 달지
+ * 않는다. 그것을 UTF-8 로 읽으면 이름이 깨진 채 화면에 나온다 — 조용히 틀리는
+ * 쪽이라 고친다. 표식이 있으면 그 말을 믿고, 없으면 UTF-8 로 엄격하게 읽어 본 뒤
+ * 어긋날 때만 CP949 로 본다 (ASCII 이름은 어느 쪽이든 같다).
+ */
+function decodeName(bytes: Uint8Array, flags: number): string {
+  if (flags & UTF8_NAMES) return utf8.decode(bytes);
+  try { return utf8Strict.decode(bytes); } catch { return cp949.decode(bytes); }
+}
 
 export interface ZipLimits {
   /** 중앙 디렉터리에 적힌 항목 수 상한. */
@@ -42,7 +64,6 @@ export async function readZip(bytes: Uint8Array, limits: Partial<ZipLimits> = {}
   if (count > maxEntries) throw new Error(`ZIP 항목 수가 한도를 넘습니다: ${count}`);
 
   const entries: ZipEntries = new Map();
-  const decoder = new TextDecoder();
   let offset = directoryOffset;
   let total = 0;
 
@@ -50,6 +71,7 @@ export async function readZip(bytes: Uint8Array, limits: Partial<ZipLimits> = {}
     if (offset + 46 > view.byteLength || view.getUint32(offset, true) !== CENTRAL) {
       throw new Error('ZIP 중앙 디렉터리가 손상됐습니다.');
     }
+    const flags = view.getUint16(offset + 8, true);
     const method = view.getUint16(offset + 10, true);
     const compressedSize = view.getUint32(offset + 20, true);
     const size = view.getUint32(offset + 24, true);
@@ -57,7 +79,7 @@ export async function readZip(bytes: Uint8Array, limits: Partial<ZipLimits> = {}
     const extraLength = view.getUint16(offset + 30, true);
     const commentLength = view.getUint16(offset + 32, true);
     const localOffset = view.getUint32(offset + 42, true);
-    const name = decoder.decode(bytes.subarray(offset + 46, offset + 46 + nameLength));
+    const name = decodeName(bytes.subarray(offset + 46, offset + 46 + nameLength), flags);
     offset += 46 + nameLength + extraLength + commentLength;
 
     if (!isSafePath(name)) continue;

@@ -18,6 +18,17 @@ describe('readZip', () => {
     expect(text(entries.get('Contents/section0.xml')!)).toBe('<hp:sec>한글</hp:sec>');
   });
 
+  it('윈도우가 만든 ZIP 의 CP949 이름을 바로 읽는다', async () => {
+    // 탐색기는 한글 이름을 CP949 로 적으면서 UTF-8 표식(bit 11)을 달지 않는다.
+    // UTF-8 로 읽으면 이름만 깨진 채 내용은 멀쩡해서, 조용히 틀리는 쪽이 된다.
+    const zip = await makeZip([
+      { name: new Uint8Array([0xc7, 0xd1, 0xb1, 0xdb, 0x2e, 0x74, 0x78, 0x74]), content: 'x' },
+      { name: '\uc0ac\uc6a9\uc790.txt', content: 'y', flags: 0x800 },
+      { name: 'ascii.txt', content: 'z' },
+    ]);
+    expect([...(await readZip(zip)).keys()]).toEqual(['\ud55c\uae00.txt', '\uc0ac\uc6a9\uc790.txt', 'ascii.txt']);
+  });
+
   it('경로가 바깥으로 나가는 항목은 읽지 않는다', async () => {
     // zip-slip. 브라우저에서는 디스크에 쓰지 않지만, 같은 함수를 데스크톱 경로에
     // 쓰는 순간 구멍이 된다. 읽는 단계에서 떨군다.

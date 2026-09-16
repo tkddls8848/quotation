@@ -12,11 +12,14 @@
 const encoder = new TextEncoder();
 
 export interface ZipFile {
-  name: string;
+  /** 이름. Uint8Array 면 그 바이트 그대로 적는다 (CP949 이름을 흉내 낼 때 쓴다). */
+  name: string | Uint8Array;
   /** 넣을 내용. 문자열이면 UTF-8 로 적는다. */
   content: string | Uint8Array;
   /** true 면 deflate 로 압축해 넣는다(method 8). */
   deflate?: boolean;
+  /** general purpose flag. bit 11(0x800)이 서면 이름이 UTF-8 이라는 뜻이다. */
+  flags?: number;
 }
 
 export async function makeZip(files: ZipFile[]): Promise<Uint8Array> {
@@ -26,7 +29,8 @@ export async function makeZip(files: ZipFile[]): Promise<Uint8Array> {
 
   for (const file of files) {
     const raw = typeof file.content === 'string' ? encoder.encode(file.content) : file.content;
-    const name = encoder.encode(file.name);
+    const name = typeof file.name === 'string' ? encoder.encode(file.name) : file.name;
+    const flags = file.flags ?? 0;
     const method = file.deflate ? 8 : 0;
     const body = file.deflate ? await deflateRaw(raw) : raw;
 
@@ -34,6 +38,7 @@ export async function makeZip(files: ZipFile[]): Promise<Uint8Array> {
     const localView = new DataView(local.buffer);
     localView.setUint32(0, 0x04034b50, true);
     localView.setUint16(4, 20, true);
+    localView.setUint16(6, flags, true);
     localView.setUint16(8, method, true);
     localView.setUint32(18, body.byteLength, true);
     localView.setUint32(22, raw.byteLength, true);
@@ -45,6 +50,7 @@ export async function makeZip(files: ZipFile[]): Promise<Uint8Array> {
     centralView.setUint32(0, 0x02014b50, true);
     centralView.setUint16(4, 20, true);
     centralView.setUint16(6, 20, true);
+    centralView.setUint16(8, flags, true);
     centralView.setUint16(10, method, true);
     centralView.setUint32(20, body.byteLength, true);
     centralView.setUint32(24, raw.byteLength, true);

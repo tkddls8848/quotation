@@ -1,8 +1,9 @@
 /**
  * 변환기 탭.
  *
- * HWPX 읽기와 PDF 쪽 편집.
- * PDF/HWPX 처리는 브라우저에서, HWP→PDF는 별도 변환 서버에서 실행한다.
+ * PDF 쪽 편집, 이미지 ↔ PDF, HWPX 짓기와 읽기, 인코딩 변환, ZIP.
+ * **전부 브라우저 안에서 끝난다** — 고른 파일은 이 컴퓨터를 벗어나지 않는다
+ * (결정 0018).
  *
  * 화면에 "안 되는 것"까지 적는 이유는 이 도구의 신뢰가 거기서 갈리기 때문이다.
  * 한글 문서를 100% 그대로 옮겨 준다고 믿고 규격서를 맡겼다가 표 한 줄이 조용히
@@ -10,15 +11,18 @@
  */
 import './converters.css';
 
+import { encodingTool } from './encoding-panel';
 import { hwpxToMarkdown, type HwpxResult } from './hwpx';
+import { imagesPdfTool } from './images-pdf-panel';
 import { pdfTool } from './pdf-panel';
-import { hwpPdfTool } from './hwp-pdf-panel';
+import { textHwpxTool } from './text-hwpx-panel';
+import { zipTool } from './zip-panel';
 
 const MAX_BYTES = 64 * 1024 * 1024;
 
 export function mountConverters(root: HTMLElement): void {
   root.innerHTML = '';
-  root.append(header(), pdfTool(), hwpPdfTool(), hwpxTool());
+  root.append(header(), pdfTool(), imagesPdfTool(), textHwpxTool(), hwpxTool(), encodingTool(), zipTool());
 }
 
 function header(): HTMLElement {
@@ -27,8 +31,12 @@ function header(): HTMLElement {
   section.innerHTML = `
     <h1>문서 변환기</h1>
     <p>
-      PDF 편집·HWPX 생성·읽기는 <strong>브라우저 안에서</strong> 처리합니다.
-      HWP → PDF만 파일을 변환 서버로 전송하며, 전송 전에 확인합니다.
+      <strong>고른 파일은 이 컴퓨터를 벗어나지 않습니다.</strong>
+      모든 변환이 브라우저 안에서 끝나며, 어디로도 올려 보내지 않습니다.
+    </p>
+    <p>
+      <code>.hwp</code>(한글 5.0 바이너리)는 ZIP 이 아니라 OLE 복합 문서라 브라우저에서 열지 못합니다.
+      한글이 설치된 PC 에서 <code>converters/desktop/hwp-to-hwpx.ps1</code> 로 HWPX 로 바꾼 뒤 올려 주세요.
     </p>
   `;
   return section;

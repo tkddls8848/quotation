@@ -172,12 +172,77 @@
 .conv-tool select { max-width: 100%; padding: 0.4rem; color: var(--text); background: var(--bg); border: 1px solid var(--line); border-radius: 6px; }
 .pdf-hwpx-warnings { max-height: 12rem; overflow: auto; color: var(--muted); font-size: 0.9rem; }
 .pdf-hwpx-warnings:empty { display: none; }
-.conv-hwp-pdf .hwp-consent { display: block; margin: 1rem 0; }
-.hwp-key input { max-width: 100%; }
-.hwp-result { display: inline-block; margin-top: 0.75rem; color: var(--accent); }
-.hwp-result[hidden] { display: none; }
 .conv-tool button:disabled { opacity: 0.5; cursor: default; }
+.conv-tool h3 { margin: 1.25rem 0 0.35rem; font-size: 0.98rem; }
+
+/* 새 변환기들도 PDF 편집기와 같은 단추·목록 모양을 쓴다. 규칙을 한곳에 둔다. */
+.conv-images-pdf button, .conv-text-hwpx button, .conv-encoding button, .conv-zip button,
+.img-outputs a, .text-outputs a, .enc-outputs a, .zip-pack-outputs a, .zip-open-list a {
+  padding: 0.5rem 0.75rem;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  font: inherit;
+  cursor: pointer;
+}
+.conv-images-pdf button:not(.conv-download), .conv-text-hwpx button:not(.conv-download),
+.conv-encoding button:not(.conv-download), .conv-zip button:not(.conv-download) {
+  background: var(--bg);
+  color: var(--text);
+}
+.img-outputs a, .text-outputs a, .enc-outputs a, .zip-pack-outputs a, .zip-open-list a {
+  color: var(--accent);
+  overflow-wrap: anywhere;
+}
+.conv-images-pdf :focus-visible, .conv-text-hwpx :focus-visible,
+.conv-encoding :focus-visible, .conv-zip :focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+.img-controls, .enc-controls { min-width: 0; margin: 1rem 0; padding: 0; border: 0; }
+.img-controls legend, .enc-controls legend { font-weight: 600; }
+.img-list, .zip-pack-list, .zip-open-list {
+  list-style: none;
+  max-height: 22rem;
+  overflow: auto;
+  padding: 0;
+  margin: 0.5rem 0;
+}
+.img-list li, .zip-pack-list li, .zip-open-list li {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 0;
+  border-bottom: 1px solid var(--line);
+}
+.img-list span, .zip-pack-list li, .zip-open-list li { min-width: 0; overflow-wrap: anywhere; }
+.img-list span { flex: 1; }
+.zip-pack-list li { justify-content: space-between; }
+
+/* 붙여 넣는 칸. 미리보기(.conv-preview)와 같은 글꼴이라 줄이 흐트러지지 않는다. */
+.conv-label { display: block; margin: 1rem 0 0.35rem; font-size: 0.92rem; color: var(--muted); }
+.conv-input {
+  display: block;
+  width: 100%;
+  box-sizing: border-box;
+  padding: 0.75rem;
+  resize: vertical;
+  font: 13px/1.5 ui-monospace, "D2Coding", Consolas, monospace;
+  color: var(--text);
+  background: var(--bg);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+}
+.text-notes { max-height: 12rem; overflow: auto; color: var(--muted); font-size: 0.9rem; }
+.text-notes:empty { display: none; }
+
+.enc-detected { margin: 0.5rem 0; font-size: 0.92rem; }
+.enc-replace { display: block; margin: 0.5rem 0; }
+.enc-replace[hidden] { display: none; }
+.enc-preview { margin-top: 0.75rem; }
+
 @media (max-width: 480px) {
   .pdf-pages li { flex-wrap: wrap; }
   .pdf-pages label { flex-basis: 100%; }
+  .img-list li, .zip-pack-list li { flex-wrap: wrap; }
 }

@@ -172,9 +172,8 @@ jobs:
         run: npx playwright install --with-deps chromium
         working-directory: web
       - name: 화면과 산출물 검사
-        # 실제 Chromium 으로 변환기 탭을 조작해 내려받은 HWPX 를 뜯어 본다.
-        # HWP → PDF 는 830MB 짜리 변환 컨테이너가 있어야 해서 여기서 돌리지 않는다.
-        # 그 경로는 converters/server/smoke.py 로 손으로 잰다 (결정 0016).
+        # 실제 Chromium 으로 변환기 탭을 조작해 내려받은 산출물을 뜯어 본다.
+        # 변환기에 서버가 필요한 경로는 없다 — 전부 브라우저에서 끝난다 (결정 0018).
         run: |
           npm --prefix web run dev -- --host 127.0.0.1 --port 18574 &
           for _ in $(seq 1 60); do
@@ -200,8 +199,6 @@ jobs:
       - name: 배포 검사 (Worker 스크립트 없음)
         # 여기 Worker 스크립트가 잡히면 무료 계정 전제가 깨진 것이다.
         # 변환은 브라우저의 Rust→WASM 엔진이 한다 (결정 0002, 0010, 0014).
-        # 문서 변환기의 HWP → PDF 서버는 Worker 가 아니라 따로 도는 컨테이너라
-        # 이 배포에 들어오지 않는다 (결정 0016).
         #
         # 배포 자체는 여기서 하지 않는다. Cloudflare Workers Builds 가 저장소를
         # 보고 짓고 올린다 (결정 0017). 이 잡은 "올라갈 것이 정적 자산뿐인가"만 본다.

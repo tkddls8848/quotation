@@ -1,35 +1,38 @@
 # 변환기 검증 기록
 
-측정일: 2026-09-15.
+측정일: 2026-09-15 (HWP → PDF), 2026-09-16 (그 밖).
 
 | 경로 | 상태 |
 |---|---|
 | PDF → HWPX (이미지·텍스트) | 실제 화면·실제 브라우저에서 통과. **한글에서 열어 본 검증은 남아 있다** |
-| HWP(5.0) → PDF | 공개 문서 36건 중 30건 변환, 2건 접수 거절, 4건 변환 실패. 알려진 손실 1종 |
+| PDF → 이미지 | 실제 화면·실제 브라우저에서 통과 (ZIP·낱장, PNG·JPEG 서명 확인) |
+| 이미지 → PDF | 실제 화면·실제 브라우저에서 통과 (원본 크기·A4). 단위 테스트 8건 |
+| 텍스트·Markdown → HWPX | 실제 화면·실제 브라우저에서 통과 (표·제목·그림 없음 확인). 단위 테스트 12건. **한글에서 열어 본 검증은 남아 있다** |
+| 인코딩 변환 | 실제 화면·실제 브라우저에서 통과 (CP949 판별, UTF-8 BOM 출력, 담을 수 없는 글자에서 멈춤). 단위 테스트 12건 |
+| ZIP 묶기·풀기 | 실제 화면·실제 브라우저에서 통과. CP949 이름 읽기는 단위 테스트 |
+| ~~HWP(5.0) → PDF~~ | **내렸다** ([결정 0018](../doc/decisions/0018-browser-only-converters.md)). 아래 측정값은 다시 열 사람을 위해 남긴다 |
 
-두 경로 모두 실제 업무 문서로는 아직 재 보지 않았다.
+어느 경로도 실제 업무 문서로는 아직 재 보지 않았다.
 
 ## 구현 파일
 
 브라우저:
 
-- `web/src/pdf-hwpx.ts`: PDF.js 렌더링·텍스트 추출, 회전·해상도, 쪽 한도, 취소와 자원 해제.
+- `web/src/pdf-render.ts`: PDF.js 로 쪽을 여닫고 그린다. HWPX·이미지 두 경로가 함께 쓴다.
+- `web/src/pdf-hwpx.ts`: 렌더링·텍스트 추출, 회전·해상도, 쪽 한도, 취소와 자원 해제.
+- `web/src/pdf-images.ts`: 쪽을 PNG·JPEG 로 그리고 여러 장이면 ZIP 으로 묶는다.
 - `web/src/pdf-text.ts`: 글자 좌표에서 읽는 순서·문단·단순 표를 추정한다.
 - `web/src/hwpx-writer.ts`: 쪽마다 구역 하나를 만들어 HWPX 패키지로 묶는다.
-- `web/src/pdf-panel.ts`: PDF 편집기의 쪽 선택·순서·회전을 그대로 HWPX 저장에 연결한다.
-- `web/src/hwp-pdf-panel.ts`: 전송 동의, 작업 접수·상태·내려받기·취소·삭제.
+- `web/src/pdf-panel.ts`: PDF 편집기의 쪽 선택·순서·회전을 그대로 HWPX·이미지 저장에 연결한다.
+- `web/src/images-pdf.ts`: 그림 여러 장을 PDF 로 묶는다. PNG·JPEG 를 다시 압축하지 않는다.
+- `web/src/markdown.ts`: Markdown·텍스트를 문단과 표로 나눈다. DOM 을 쓰지 않아 Node 에서도 같은 결과가 나온다.
+- `web/src/encoding.ts`: CP949 ↔ UTF-8 판별·변환. 쓰기 표는 브라우저 디코더를 뒤집어 만든다.
+- `web/src/zip.ts`: ZIP 읽기. zip-slip·압축 폭탄 방어와 CP949 이름 판별.
 - `web/probe.html`, `web/src/hwpx-probe.ts`: 한 쪽짜리 최소 HWPX 생성기. 개발 검증 전용이며 배포 빌드에 들어가지 않는다.
-
-변환 서버:
-
-- `server/app.py`: 접수·상태·결과·삭제 API. HWP 5.0 헤더 검사, 작업별 토큰, 격리 컨테이너 실행, 보관 기한.
-- `server/Dockerfile`, `server/convert.py`: LibreOffice + H2Orestart 0.7.14 컨테이너와 그 진입점.
-- `server/hwptext.py`: HWP 본문 글자만 읽는 최소 판독기. 검증에만 쓰고 변환 경로는 부르지 않는다.
-- `server/smoke.py`: 실제 API·엔진으로 변환하고 **본문 글자가 살아남았는지** 대조한다.
 
 검사 스크립트:
 
-- `web/scripts/check-converters.mjs`: 실제 Chromium 으로 공개 화면을 조작한다(이미지·텍스트 저장, 표, 혼합 쪽 크기, 스캔 쪽 처리, 선택·회전, 취소, 모바일 폭).
+- `web/scripts/check-converters.mjs`: 실제 Chromium 으로 공개 화면을 조작한다(HWPX 이미지·텍스트 저장, 표, 혼합 쪽 크기, 스캔 쪽 처리, 선택·회전, 취소, PDF → 이미지, 이미지 → PDF, 텍스트 → HWPX, 인코딩, ZIP, 모바일 폭).
 - `web/scripts/check-hwpx.mjs`: 한 쪽짜리 HWPX 를 만들어 패키지 구조·쪽 크기·PNG 픽셀을 확인한다.
 - `desktop/verify-hwpx.ps1`: 한글 자동화로 HWPX 를 열어 본다.
 
@@ -52,24 +55,10 @@ node converters/web/scripts/check-converters.mjs
 node converters/web/scripts/check-hwpx.mjs
 ```
 
-HWP → PDF 는 Docker 와 파이썬 의존성이 필요하다.
+산출물은 `.cache/hwpx-validation/` 에 생성되며 저장소에는 커밋하지 않는다.
 
-```powershell
-docker build -t quotation-hwp-converter:local converters/server
-python -m venv .cache/converter-venv
-.cache\converter-venv\Scripts\python.exe -m pip install -r converters/server/requirements.txt
-.cache\converter-venv\Scripts\python.exe converters/server/app.py
-```
-
-또 다른 터미널에서 (검증용 문서를 직접 지정한다):
-
-```powershell
-.cache\converter-venv\Scripts\python.exe converters/server/smoke.py <문서.hwp> ...
-$env:HWP_TEST_FILE = "<문서.hwp>"; node converters/web/scripts/check-converters.mjs
-```
-
-산출물은 `.cache/hwpx-validation/`, `.cache/hwp-validation/` 에 생성되며 저장소에는 커밋하지 않는다.
-`smoke.py` 는 콘솔 코드 페이지와 무관하게 `report.txt` 를 UTF-8 로 남긴다.
+아래 HWP → PDF 절의 재현 명령은 더 이상 없다 — `converters/server/` 를 지웠기 때문이다
+([결정 0018](../doc/decisions/0018-browser-only-converters.md)).
 
 ## PDF → HWPX
 
@@ -116,7 +105,11 @@ powershell.exe -NoProfile -ExecutionPolicy Bypass -File converters/desktop/verif
 확인할 것: 복구 경고 없음, 쪽 수·쪽 크기 일치, 그림 잘림과 빈 쪽 없음, 텍스트 방식의 문단·표를
 실제로 고쳐 다시 저장할 수 있는지.
 
-## HWP(5.0) → PDF
+## HWP(5.0) → PDF — 내린 경로의 측정 기록
+
+**이 기능은 지금 없다** ([결정 0018](../doc/decisions/0018-browser-only-converters.md)).
+아래는 내리기 전에 실제로 잰 값이다. 이 길을 다시 열 사람이 같은 것을 두 번 재지
+않도록 남긴다.
 
 엔진은 Debian trixie 의 LibreOffice Writer 에 H2Orestart 0.7.14(GPLv3) 를 얹은 컨테이너다.
 작업마다 새 컨테이너를 만들고 `--network none --read-only --cap-drop=ALL`,

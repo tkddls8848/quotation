@@ -1,10 +1,12 @@
 # 결정 0016 — HWP → PDF 에만 서버를 다시 들인다
 
 - 날짜: 2026-09-15
-- 상태: **구현·검증 완료, 배포 안 함**
+- 상태: **뒤집혔다** — [결정 0018](0018-browser-only-converters.md)이 2026-09-16 에
+  이 기능과 `converters/server/` 를 지웠다. 아래는 그때의 판단 그대로 둔다.
 - 관련 결정: [결정 0002](0002-convert-in-browser.md),
   [결정 0010](0010-retire-the-server-conversion-path.md),
-  [결정 0012](0012-one-folder-per-feature.md)
+  [결정 0012](0012-one-folder-per-feature.md),
+  [결정 0018](0018-browser-only-converters.md)
 - 검증 기록: [converters/VALIDATION.md](../../converters/VALIDATION.md)
 
 ## 결론
@@ -78,3 +80,6 @@ Cloudflare Worker 도 아니다. 무료 계정의 정적 자산 배포는 그대
   H2Orestart 가 GPLv3 라는 사실에 따른 배포 형태 검토.
 
 셋 중 하나라도 답이 없으면 공개하지 않는다. 그때도 데스크톱 경로는 남는다.
+
+**셋 다 답이 없었다.** 그래서 기능을 내렸다 — [결정 0018](0018-browser-only-converters.md).
+데스크톱 경로(`converters/desktop/hwp-to-hwpx.ps1`)는 예고한 대로 남아 있다.

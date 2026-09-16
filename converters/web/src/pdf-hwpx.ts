@@ -1,11 +1,9 @@
-import { getDocument, GlobalWorkerOptions, type PDFPageProxy } from 'pdfjs-dist';
-import workerUrl from 'pdfjs-dist/build/pdf.worker.min.mjs?url';
 import templateUrl from './assets/Skeleton.hwpx?url';
 import { documentToHwpx, type DocumentPage, type ImagePage } from './hwpx-writer';
+import { openPdf, pixelCount, rasterize, RENDER_LIMITS } from './pdf-render';
 import { reconstructText } from './pdf-text';
 
-GlobalWorkerOptions.workerSrc = workerUrl;
-export const IMAGE_LIMITS = { inputBytes: 64 * 1024 * 1024, pixels: 20_000_000, totalPixels: 120_000_000, pages: 100, outputBytes: 64 * 1024 * 1024 };
+export const IMAGE_LIMITS = { ...RENDER_LIMITS, pages: 100 };
 export interface ImageOptions {
   page: number; dpi: 150 | 200 | 300; rotation: number;
   signal: AbortSignal; progress: (message: string) => void;
@@ -17,29 +15,12 @@ export interface HwpxOptions extends Omit<ImageOptions, 'page'> {
   tables: boolean;
 }
 
-async function raster(page: PDFPageProxy, rotation: number, dpi: number, signal: AbortSignal): Promise<ImagePage> {
-  const size = page.getViewport({ scale: 1, rotation });
-  const viewport = page.getViewport({ scale: dpi / 72, rotation });
-  const canvas = document.createElement('canvas');
-  canvas.width = Math.ceil(viewport.width); canvas.height = Math.ceil(viewport.height);
-  try {
-    const task = page.render({ canvas, viewport, background: 'rgb(255,255,255)' });
-    const cancel = (): void => task.cancel();
-    signal.addEventListener('abort', cancel, { once: true });
-    try { await task.promise; } finally { signal.removeEventListener('abort', cancel); }
-    signal.throwIfAborted();
-    const blob = await new Promise<Blob>((resolve, reject) => canvas.toBlob(value => value ? resolve(value) : reject(new Error('PNG 생성 실패')), 'image/png'));
-    return { png: new Uint8Array(await blob.arrayBuffer()), width: size.width, height: size.height };
-  } finally { canvas.width = 0; canvas.height = 0; }
-}
-
 export async function pdfToHwpx(bytes: Uint8Array, options: HwpxOptions): Promise<{ bytes: Uint8Array; warnings: string[]; pages: number }> {
   options.signal.throwIfAborted();
   if (!bytes.length || bytes.length > IMAGE_LIMITS.inputBytes) throw new Error('PDF 입력은 64MB까지 지원합니다.');
   if (![150, 200, 300].includes(options.dpi) || !Number.isInteger(options.rotation / 90)) throw new Error('해상도 또는 회전값이 올바르지 않습니다.');
   options.progress('PDF 읽는 중…');
-  const assets = new URL(`${import.meta.env.BASE_URL}pdf-assets/`, location.origin).href;
-  const task = getDocument({ data: bytes.slice(), stopAtErrors: true, cMapUrl: `${assets}cmaps/`, cMapPacked: true, standardFontDataUrl: `${assets}standard_fonts/`, wasmUrl: `${assets}wasm/`, iccUrl: `${assets}iccs/` });
+  const task = openPdf(bytes);
   const cancel = (): void => { void task.destroy().catch(() => {}); };
   options.signal.addEventListener('abort', cancel, { once: true });
   try {
@@ -76,14 +57,14 @@ export async function pdfToHwpx(bytes: Uint8Array, options: HwpxOptions): Promis
           }
         }
         if (image) {
-          const renderSize = page.getViewport({ scale: options.dpi / 72, rotation });
-          const count = Math.ceil(renderSize.width) * Math.ceil(renderSize.height);
+          const count = pixelCount(page, rotation, options.dpi);
           pixels += count;
           if (count > IMAGE_LIMITS.pixels || pixels > IMAGE_LIMITS.totalPixels) throw new Error('렌더링 픽셀 한도를 초과했습니다. 쪽 수 또는 해상도를 낮춰 주세요.');
-          const rendered = await raster(page, rotation, options.dpi, options.signal);
-          size += rendered.png.length;
+          // HWPX 의 그림은 PNG 로 넣는다. `hwpx-writer` 가 PNG 서명을 확인한다.
+          const rendered = await rasterize(page, rotation, options.dpi, 'image/png', options.signal);
+          size += rendered.bytes.length;
           if (size > IMAGE_LIMITS.outputBytes) throw new Error('그림 합계가 64MB를 초과했습니다. 쪽 수 또는 해상도를 낮춰 주세요.');
-          output.push(rendered);
+          output.push({ png: rendered.bytes, width: rendered.width, height: rendered.height } satisfies ImagePage);
         }
       } finally { page.cleanup(); }
       await new Promise<void>(resolve => setTimeout(resolve, 0));

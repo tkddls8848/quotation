@@ -45,8 +45,16 @@ export function pdfTool(): HTMLElement {
         <button type="button" data-action="hwpx-text">HWPX 텍스트로 저장</button>
       </div>
       <p class="conv-note">텍스트 방식은 편집 가능한 문단과 단순 표를 재구성합니다. 그림·수식·원본 배치는 보존하지 않습니다. 다단·병합 표·회전 글자는 결과 확인이 필요하며 OCR은 지원하지 않습니다.</p>
+      <h3>PDF → 이미지</h3>
+      <p class="conv-note">현재 순서·회전을 반영합니다. 선택한 쪽이 있으면 선택 쪽만, 없으면 전체를 그립니다. 최대 200쪽·출력 64MB. 여러 장이면 ZIP 하나로 묶습니다.</p>
+      <div class="conv-actions">
+        <label>해상도 <select id="pdf-image-dpi"><option value="150">150 DPI</option><option value="200" selected>200 DPI</option><option value="300">300 DPI</option></select></label>
+        <label>형식 <select id="pdf-image-format"><option value="png" selected>PNG (또렷함·큼)</option><option value="jpeg">JPEG (작음·사진용)</option></select></label>
+        <button type="button" data-action="images">이미지로 저장</button>
+      </div>
+      <p class="conv-note">보이는 그대로 그리지만 <strong>글자가 그림이 되어</strong> 검색·복사·편집이 되지 않습니다. 편집이 필요하면 위의 HWPX 텍스트 방식을 쓰세요.</p>
     </fieldset>
-    <button type="button" class="pdf-hwpx-cancel" hidden>HWPX 변환 취소</button>
+    <button type="button" class="pdf-hwpx-cancel" hidden>변환 취소</button>
     <ul class="pdf-hwpx-warnings" aria-label="변환 확인 사항"></ul>
     <div class="pdf-outputs conv-actions" aria-label="저장 결과"></div>
     <p class="conv-note">쪽의 글·그림을 PDF로 복사합니다. 책갈피·양식·전자서명 보존은 지원하지 않습니다. 암호화된 PDF는 보안을 해제한 사본을 사용하세요.</p>
@@ -199,6 +207,44 @@ export function pdfTool(): HTMLElement {
           message(`${result.pages}쪽 HWPX 생성 완료. 아래 링크에서 내려받으세요.`);
         } catch (error) {
           if (conversion.signal.aborted) message('HWPX 변환을 취소했습니다.'); else throw error;
+        } finally { conversion = undefined; cancel.hidden = true; }
+      });
+      return;
+    }
+    if (action === 'images') {
+      void run(async () => {
+        clearOutputs();
+        conversion = new AbortController();
+        cancel.hidden = false;
+        try {
+          const refs = selected.size ? pages.filter(page => selected.has(page)) : pages;
+          message('PDF 쪽 준비 중…');
+          // 편집기의 순서·회전을 먼저 PDF 로 굳힌 뒤 그린다 — HWPX 쪽과 같은 길이다.
+          const source = await savePdf(refs);
+          conversion.signal.throwIfAborted();
+          const { packImages, pdfToImages } = await import('./pdf-images');
+          const format = tool.querySelector<HTMLSelectElement>('#pdf-image-format')!.value as 'png' | 'jpeg';
+          const images = await pdfToImages(source, {
+            format, rotation: 0,
+            dpi: Number(tool.querySelector<HTMLSelectElement>('#pdf-image-dpi')!.value) as 150 | 200 | 300,
+            signal: conversion.signal, progress: text => message(text),
+          });
+          conversion.signal.throwIfAborted();
+          const single = images.length === 1;
+          if (!single) message('ZIP 으로 묶는 중…');
+          const blob = single
+            ? new Blob([new Uint8Array(images[0]!.bytes)], { type: `image/${format}` })
+            : new Blob([new Uint8Array(packImages(images))], { type: 'application/zip' });
+          const url = URL.createObjectURL(blob);
+          urls.push(url);
+          const link = document.createElement('a');
+          link.href = url;
+          link.download = single ? images[0]!.name : 'pages.zip';
+          link.textContent = `${link.download} 내려받기 (${images.length}장)`;
+          outputs.append(link);
+          message(`${images.length}장을 만들었습니다. 아래 링크에서 내려받으세요.`);
+        } catch (error) {
+          if (conversion.signal.aborted) message('이미지 변환을 취소했습니다.'); else throw error;
         } finally { conversion = undefined; cancel.hidden = true; }
       });
       return;
