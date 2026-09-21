@@ -513,9 +513,7 @@ export function pdfEditTool(): HTMLElement {
       undo.type = 'button';
       undo.textContent = '되돌리기';
       undo.addEventListener('click', () => {
-        edits.splice(index, 1);
-        clearOutputs();
-        run(refresh);
+        changeEdits(() => { edits.splice(index, 1); }, `${edit.page}쪽의 “${edit.original}” 을 되돌렸습니다.`);
       });
       row.append(label, undo);
       list.append(row);
@@ -567,6 +565,24 @@ export function pdfEditTool(): HTMLElement {
     void work().catch(error => say(`${message(error)}`, 'error'));
   };
 
+  /**
+   * 고친 목록을 바꾼다.
+   *
+   * 목록은 `edits` 만 보면 되므로 **바로** 다시 그린다. 미리보기는 PDF 를 다시
+   * 지어 그리느라 시간이 걸리고, 끝난 뒤에야 알린다 — 다 됐다고 먼저 말해 놓고
+   * 화면에는 지운 것이 아직 남아 있으면 그 말을 믿을 수 없게 된다.
+   */
+  const changeEdits = (mutate: () => void, done: string): void => {
+    mutate();
+    warnings.replaceChildren();
+    clearOutputs();
+    renderList();
+    run(async () => {
+      await refresh();
+      say(done, 'ok');
+    });
+  };
+
   zoom.addEventListener('change', () => run(refresh));
   tool.addEventListener('click', event => {
     const action = (event.target as HTMLElement).closest<HTMLButtonElement>('button[data-action]')?.dataset['action'];
@@ -577,11 +593,8 @@ export function pdfEditTool(): HTMLElement {
     if (action === 'dismiss') hideForm();
     if (action === 'save') void save();
     if (action === 'reset') {
-      edits.length = 0;
-      warnings.replaceChildren();
-      clearOutputs();
-      run(refresh);
-      say('고친 자리를 모두 되돌렸습니다.', 'ok');
+      if (!edits.length) { say('되돌릴 자리가 없습니다.'); return; }
+      changeEdits(() => { edits.length = 0; }, '고친 자리를 모두 되돌렸습니다.');
     }
   });
 
