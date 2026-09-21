@@ -1,8 +1,68 @@
 /* 변환기 탭 전용 스타일. 색과 글꼴은 셸이 정한 변수를 그대로 쓴다
    (web/src/styles.css). 여기에는 이 탭에만 있는 것만 둔다. */
 
+/* 본문은 읽기 좋은 너비로 **가운데** 세운다. 셸(.shell)은 76rem 까지 넓어서
+   auto 여백이 없으면 이 칸이 왼쪽에 붙어 버린다. */
 .converters {
   max-width: 54rem;
+  margin: 0 auto;
+}
+
+/* 변환 고르기 — 여섯을 한꺼번에 펼치지 않고 여기서 하나를 고른다.
+   칸 수는 화면 너비가 정한다. 좁은 화면에서는 저절로 한 줄에 하나가 된다. */
+.conv-choices {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr));
+  gap: 0.75rem;
+  margin: 0 0 1.5rem;
+}
+
+.conv-choice {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.25rem;
+  padding: 0.9rem 1rem;
+  text-align: left;
+  color: var(--text);
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+}
+
+.conv-choice:hover {
+  border-color: var(--accent);
+}
+
+.conv-choice[aria-pressed='true'] {
+  border-color: var(--accent);
+  background: color-mix(in srgb, var(--accent) 10%, var(--surface));
+}
+
+.conv-choice__title {
+  font-weight: 600;
+}
+
+/* 단추의 굵은 글씨를 물려받지 않게 제 굵기를 적는다. */
+.conv-choice__summary {
+  color: var(--muted);
+  font-size: 0.88rem;
+  font-weight: 400;
+  line-height: 1.45;
+}
+
+.conv-choice[aria-pressed='true'] .conv-choice__summary {
+  color: var(--text);
+}
+
+/* 아직 고르지 않았을 때. 빈 칸만 두면 고장으로 보인다. */
+.conv-empty {
+  margin: 0;
+  padding: 2.5rem 1rem;
+  text-align: center;
+  color: var(--muted);
+  border: 1px dashed var(--line);
+  border-radius: 12px;
 }
 
 .conv-intro h1 {

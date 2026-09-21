@@ -5,6 +5,18 @@
  * **전부 브라우저 안에서 끝난다** — 고른 파일은 이 컴퓨터를 벗어나지 않는다
  * (결정 0018).
  *
+ * 여섯을 한 화면에 늘어놓지 않는다. 먼저 **무엇을 변환할지 고르게 하고**, 고른
+ * 것 하나만 아래에 세운다. 이유는 둘이다.
+ *
+ *   - 쓰는 사람은 한 번에 한 가지를 한다. 나머지 다섯의 한도·주의사항까지
+ *     읽어 가며 제 자리를 찾을 이유가 없다
+ *   - 도구마다 고정된 id(`#conv-pdf-file`, `#pdf-ranges` …)를 쓴다. 한 번에
+ *     하나만 붙어 있으면 그 id 가 화면에서 언제나 하나다
+ *
+ * 고른 도구는 **처음 고를 때 한 번** 만들고 그대로 들고 있는다. 다른 것을
+ * 보다 돌아와도 올려 둔 파일과 고쳐 둔 설정이 그대로다 — 떼었다 붙일 뿐
+ * 다시 만들지 않기 때문이다.
+ *
  * 화면에 "안 되는 것"까지 적는 이유는 이 도구의 신뢰가 거기서 갈리기 때문이다.
  * 한글 문서를 100% 그대로 옮겨 준다고 믿고 규격서를 맡겼다가 표 한 줄이 조용히
  * 빠지면, 그 뒤로는 아무것도 믿을 수 없게 된다.
@@ -20,9 +32,82 @@ import { zipTool } from './zip-panel';
 
 const MAX_BYTES = 64 * 1024 * 1024;
 
+/** 고를 수 있는 변환. `id` 는 화면에서 그 단추를 찾는 이름이라 바뀌면 안 된다. */
+interface Choice {
+  id: string;
+  title: string;
+  /** 한 줄로 "이걸 고르면 무엇을 하는가". 한도와 주의는 고른 뒤 도구가 적는다. */
+  summary: string;
+  build: () => HTMLElement;
+}
+
+// 이름은 고른 뒤 열리는 도구의 제목과 **같은 글자**다. 고르고 나서 "내가 이걸
+// 골랐나" 를 되짚게 만들지 않기 위함이다.
+const CHOICES: Choice[] = [
+  { id: 'pdf', title: 'PDF 편집기', summary: '병합·쪽 삭제·회전·분할, HWPX·이미지로 저장', build: pdfTool },
+  { id: 'images-pdf', title: '이미지 → PDF', summary: '사진·스캔 여러 장을 고른 순서대로 한 PDF 로', build: imagesPdfTool },
+  { id: 'text-hwpx', title: '텍스트·Markdown → HWPX', summary: '붙여 넣은 글과 표를 한글에서 열리는 문서로', build: textHwpxTool },
+  { id: 'hwpx-markdown', title: 'HWPX → Markdown', summary: '한글 문서의 글 순서와 표 구조를 그대로 옮긴다', build: hwpxTool },
+  { id: 'encoding', title: '인코딩 변환 (CSV·텍스트)', summary: 'CP949 ↔ UTF-8, BOM 과 줄바꿈까지 맞춘다', build: encodingTool },
+  { id: 'zip', title: 'ZIP 묶기·풀기', summary: '윈도우가 만든 ZIP 의 한글 이름도 그대로 읽는다', build: zipTool },
+];
+
 export function mountConverters(root: HTMLElement): void {
   root.innerHTML = '';
-  root.append(header(), pdfTool(), imagesPdfTool(), textHwpxTool(), hwpxTool(), encodingTool(), zipTool());
+
+  const stage = document.createElement('div');
+  stage.className = 'conv-stage';
+  stage.id = 'conv-stage';
+  stage.append(placeholder());
+
+  // 만든 도구는 버리지 않고 들고 있는다. 떼었다 붙여도 안에 든 것이 남는다.
+  const built = new Map<string, HTMLElement>();
+  const buttons = new Map<string, HTMLButtonElement>();
+
+  const chooser = document.createElement('nav');
+  chooser.className = 'conv-choices';
+  chooser.setAttribute('aria-label', '변환 고르기');
+
+  const select = (choice: Choice): void => {
+    for (const [id, button] of buttons) button.setAttribute('aria-pressed', String(id === choice.id));
+    let tool = built.get(choice.id);
+    if (!tool) {
+      tool = choice.build();
+      built.set(choice.id, tool);
+    }
+    stage.replaceChildren(tool);
+  };
+
+  for (const choice of CHOICES) {
+    const button = document.createElement('button');
+    button.type = 'button';
+    button.className = 'conv-choice';
+    button.dataset['choice'] = choice.id;
+    button.setAttribute('aria-pressed', 'false');
+    button.setAttribute('aria-controls', stage.id);
+
+    const title = document.createElement('span');
+    title.className = 'conv-choice__title';
+    title.textContent = choice.title;
+    const summary = document.createElement('span');
+    summary.className = 'conv-choice__summary';
+    summary.textContent = choice.summary;
+    button.append(title, summary);
+
+    button.addEventListener('click', () => select(choice));
+    buttons.set(choice.id, button);
+    chooser.append(button);
+  }
+
+  root.append(header(), chooser, stage);
+}
+
+/** 아직 아무것도 고르지 않았을 때. 빈 칸만 두면 고장으로 보인다. */
+function placeholder(): HTMLElement {
+  const empty = document.createElement('p');
+  empty.className = 'conv-empty';
+  empty.textContent = '위에서 하려는 변환을 고르세요. 고른 것만 여기에 열립니다.';
+  return empty;
 }
 
 function header(): HTMLElement {

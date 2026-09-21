@@ -9,7 +9,7 @@
 ```text
 converters/
   web/src/
-    panel.ts          탭 화면 — mountConverters 하나만 셸에 내준다
+    panel.ts          탭 화면 — 변환 고르기와 HWPX→Markdown. 고른 하나만 아래에 세운다
     pdf-panel.ts      PDF 파일 추가·쪽 선택·순서·회전·분할·다운로드, HWPX 저장
     pdf.ts            pdf-lib 기반 PDF 읽기·쪽 복사·저장·범위 검증
     pdf.test.ts       저장한 PDF 를 다시 열어 병합·분할·순서·회전 확인

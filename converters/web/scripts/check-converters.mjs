@@ -15,6 +15,15 @@ try {
   const errors = [];
   page.on('pageerror', error => errors.push(error.message));
   await page.goto(`${base}/#converters`);
+  // 이제 여섯이 한꺼번에 서 있지 않다. 고르기 전에는 도구가 하나도 없어야 한다.
+  await page.locator('.conv-empty').waitFor();
+  assert.equal(await page.locator('.conv-tool').count(), 0);
+  /** 변환을 고른다. 고른 것 하나만 화면에 남는다. */
+  const choose = async id => {
+    await page.locator(`.conv-choice[data-choice="${id}"]`).click();
+    await page.waitForFunction(() => document.querySelectorAll('.conv-tool').length === 1);
+  };
+  await choose('pdf');
   await page.getByRole('heading', { name: 'PDF 편집기', exact: true }).waitFor();
   const doc = await PDFDocument.create();
   const first = doc.addPage([400, 500]);
@@ -81,6 +90,7 @@ try {
   assert.match(await page.locator('.conv-pdf .conv-status').innerText(), /1장을 만들었습니다/);
 
   // 이미지 → PDF: 방금 만든 PNG 두 장을 도로 PDF 로 묶는다.
+  await choose('images-pdf');
   const imgTool = page.locator('.conv-images-pdf');
   await imgTool.locator('#conv-img-file').setInputFiles([
     { name: 'a.png', mimeType: 'image/png', buffer: Buffer.from(pack['page-1.png']) },
@@ -98,6 +108,7 @@ try {
   assert.equal(Math.round(a4.getPage(0).getSize().width), 595);
 
   // 텍스트 → HWPX: 표와 제목이 든 Markdown 을 한글 문서로 짓는다.
+  await choose('text-hwpx');
   const textTool = page.locator('.conv-text-hwpx');
   await textTool.locator('#conv-text-input').fill('# 과업 내용\n\n| 품목 | 수량 |\n| --- | --- |\n| 볼펜 | 3 |');
   await textTool.getByRole('button', { name: 'HWPX 로 저장', exact: true }).click();
@@ -112,6 +123,7 @@ try {
   assert.match(await textTool.locator('.text-notes').innerText(), /제목은 문단으로 들어갑니다/);
 
   // 인코딩: CP949 CSV 를 읽어 UTF-8 로 내보낸다.
+  await choose('encoding');
   const enc = page.locator('.conv-encoding');
   const cp949 = Buffer.from([0xc7, 0xd1, 0xb1, 0xdb, 0x2c, 0x31, 0x0d, 0x0a]); // "한글,1\r\n"
   await enc.locator('#conv-enc-file').setInputFiles({ name: '명부.csv', mimeType: 'text/csv', buffer: cp949 });
@@ -132,6 +144,7 @@ try {
   assert.equal(await enc.locator('.enc-outputs a').count(), 0);
 
   // ZIP: 묶고, 그것을 도로 풀어 같은 내용인지 본다.
+  await choose('zip');
   const zip = page.locator('.conv-zip');
   await zip.locator('#conv-zip-pack').setInputFiles([
     { name: '보고서.txt', mimeType: 'text/plain', buffer: Buffer.from('내용', 'utf8') },
@@ -148,9 +161,15 @@ try {
   await zip.getByText('2개 파일을 풀었습니다. 이름을 눌러 하나씩 내려받으세요.', { exact: true }).waitFor();
   assert.deepEqual(await zip.locator('.zip-open-list a').allInnerTexts(), ['doc/메모.txt (7B)', 'bin.dat (3B)']);
 
+  // 다시 PDF 편집기로 돌아오면 아까 올린 3쪽이 그대로 있어야 한다.
+  await choose('pdf');
+  assert.equal(await page.locator('.pdf-pages li').count(), 3);
+  assert.equal(await page.locator('.conv-choice[data-choice="pdf"]').getAttribute('aria-pressed'), 'true');
+  assert.equal(await page.locator('.conv-choice[data-choice="zip"]').getAttribute('aria-pressed'), 'false');
+
   await page.setViewportSize({ width: 375, height: 812 });
   assert.equal(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth), true);
   await page.screenshot({ path: fileURLToPath(new URL('converters-mobile.png', out)), fullPage: true });
   assert.deepEqual(errors, []);
-  console.log('PASS: HWPX image/text exports, tables, mixed page sizes, scanned-page error/image/skip, selection/rotation, cancellation, PDF→image (zip/single), image→PDF (native/A4), text→HWPX, encoding detect/convert/refuse, ZIP pack/unpack, mobile layout.');
+  console.log('PASS: chooser (one tool at a time, state kept), HWPX image/text exports, tables, mixed page sizes, scanned-page error/image/skip, selection/rotation, cancellation, PDF→image (zip/single), image→PDF (native/A4), text→HWPX, encoding detect/convert/refuse, ZIP pack/unpack, mobile layout.');
 } finally { await browser.close(); }
