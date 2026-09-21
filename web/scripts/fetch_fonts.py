@@ -182,4 +182,12 @@ def main() -> int:
 
 
 if __name__ == "__main__":
-    sys.exit(main())
+    try:
+        sys.exit(main())
+    except Exception as error:  # noqa: BLE001 - 무엇이 터지든 배포를 막지 않는다
+        # 글꼴은 있으면 좋은 것이다. 디스크가 찼든 패키지 모양이 바뀌었든,
+        # 그것 때문에 사이트가 안 올라가서는 안 된다. 화면은 라틴 기본 글꼴로
+        # 물러나고 빌드는 계속한다.
+        print(f"    글꼴을 담지 못했습니다 ({type(error).__name__}: {error}). "
+              "화면은 라틴 기본 글꼴로 물러납니다.")
+        sys.exit(0)

@@ -52,7 +52,11 @@ bash scripts/fetch_desktop_app.sh
 
 echo "=== 3/4 글꼴 가져오기"
 # 못 받아도 빌드는 계속한다 (화면이 PDF 기본 라틴 글꼴로 물러난다).
-python3 scripts/fetch_fonts.py
+#
+# `|| true` 가 그 말을 **코드로** 지킨다. 이 파일은 set -e 아래에서 돌기 때문에,
+# 이것이 없으면 글꼴 한 단계가 0 아닌 값으로 끝나는 순간 아래 빌드와 배포가
+# 통째로 죽는다 — 있으면 좋은 것 하나 때문에 사이트 전체가 안 올라간다.
+python3 scripts/fetch_fonts.py || echo "    글꼴 단계가 실패했습니다. 라틴 기본 글꼴로 물러난 채 계속합니다."
 
 echo "=== 4/4 정적 자산 빌드"
 npm ci
