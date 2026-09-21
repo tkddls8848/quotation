@@ -5,6 +5,7 @@
  * PNG 로 바꾼다. `images-pdf.ts` 는 브라우저 없이도 돌아야 하므로 그 일을 맡지
  * 않는다. 바꿀 수 없는 파일은 이름을 대고 멈춘다.
  */
+import { reason } from './errors';
 import { imageKind, imagesToPdf, IMAGES_PDF_LIMITS, type ImageInput, type PageFit } from './images-pdf';
 
 interface Picked { name: string; file: File }
@@ -181,7 +182,7 @@ export function imagesPdfTool(): HTMLElement {
         message(`${images.length}쪽 PDF 를 만들었습니다. 아래 링크를 눌러 내려받으세요.`);
       } catch (error) {
         clearOutputs();
-        message(error instanceof Error ? error.message : String(error), true);
+        message(reason(error), true);
       } finally { busy = false; render(); }
     })();
   });

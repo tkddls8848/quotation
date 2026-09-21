@@ -8,6 +8,7 @@
  * 쓰기 모듈은 `DOMParser` 를 쓰므로 단추를 누른 사람만 받는다 — 견적서만 쓰는
  * 사람이 HWPX 뼈대까지 내려받을 이유가 없다.
  */
+import { reason } from './errors';
 import { parseMarkdown } from './markdown';
 
 const MAX_CHARS = 2_000_000;
@@ -131,7 +132,7 @@ export function textHwpxTool(): HTMLElement {
         message('HWPX 를 만들었습니다. 한글에서 열어 확인해 주세요.');
       } catch (error) {
         clearOutputs();
-        message(error instanceof Error ? error.message : String(error), true);
+        message(reason(error), true);
       } finally { busy = false; save.disabled = false; }
     })();
   });

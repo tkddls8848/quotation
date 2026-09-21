@@ -1,3 +1,4 @@
+import { reason } from './errors';
 import { pdfPageToHwpx, IMAGE_LIMITS } from './pdf-hwpx';
 
 const file = document.querySelector<HTMLInputElement>('#file')!;
@@ -31,6 +32,6 @@ convert.addEventListener('click', async () => {
     download.hidden = false;
     status.textContent = '검증 파일 생성 완료. 한글에서 쪽 크기·그림 잘림·빈 쪽 여부를 확인하세요.';
   } catch (error) {
-    status.textContent = controller.signal.aborted ? '취소했습니다.' : `실패: ${error instanceof Error ? error.message : String(error)}`;
+    status.textContent = controller.signal.aborted ? '취소했습니다.' : `실패: ${reason(error)}`;
   } finally { convert.disabled = false; cancel.disabled = true; }
 });

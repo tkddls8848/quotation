@@ -8,6 +8,7 @@ import {
   decodeText, encodeText, ENCODING_LIMITS, ENCODING_NAMES,
   type Newline, type WriteEncoding,
 } from './encoding';
+import { reason } from './errors';
 
 export function encodingTool(): HTMLElement {
   const tool = document.createElement('section');
@@ -104,7 +105,7 @@ export function encodingTool(): HTMLElement {
         message(`${file.name} 를 읽었습니다.`);
       } catch (error) {
         controls.disabled = true;
-        message(error instanceof Error ? error.message : String(error), true);
+        message(reason(error), true);
       }
     })();
   };
@@ -151,7 +152,7 @@ export function encodingTool(): HTMLElement {
         : '변환했습니다. 아래 링크를 눌러 내려받으세요.', result.missing.length > 0);
     } catch (error) {
       clearOutputs();
-      message(error instanceof Error ? error.message : String(error), true);
+      message(reason(error), true);
     }
   });
 

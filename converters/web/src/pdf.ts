@@ -1,5 +1,7 @@
 import { PDFDocument, degrees, EncryptedPDFError } from 'pdf-lib';
 
+import { reason } from './errors';
+
 export interface PdfSource { name: string; document: PDFDocument; size: number }
 export interface PdfPageRef { source: PdfSource; index: number; rotation: number }
 export const MAX_PDF_BYTES = 64 * 1024 * 1024;
@@ -14,7 +16,7 @@ export async function readPdf(bytes: Uint8Array, name: string): Promise<PdfSourc
     return { name, document, size: bytes.length };
   } catch (error) {
     if (error instanceof EncryptedPDFError) throw new Error('암호화된 PDF입니다. 암호와 보안을 해제한 사본을 추가해 주세요.');
-    throw new Error(`PDF를 열지 못했습니다: ${error instanceof Error ? error.message : String(error)}`);
+    throw new Error(`PDF를 열지 못했습니다: ${reason(error)}`);
   }
 }
 

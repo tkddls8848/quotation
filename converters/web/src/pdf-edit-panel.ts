@@ -16,6 +16,7 @@
  */
 import { PDFDocument, StandardFonts } from 'pdf-lib';
 
+import { reason } from './errors';
 import { loadCatalog, loadFont, mb, STANDARD_FONTS, type CatalogFont } from './fonts';
 import {
   applyTextEdits, EDIT_LIMITS, shrinkToFit, sourceFontId, sourceFontResource,
@@ -283,7 +284,7 @@ export function pdfEditTool(): HTMLElement {
       say(`${file.name} 글꼴을 불러왔습니다.`, 'ok');
       updateFit();
     } catch (error) {
-      say(`글꼴을 읽지 못했습니다: ${message(error)}`, 'error');
+      say(`글꼴을 읽지 못했습니다: ${reason(error)}`, 'error');
     } finally {
       fontFile.value = '';
     }
@@ -312,7 +313,7 @@ export function pdfEditTool(): HTMLElement {
       say(`${file.name} · ${originalPdf.document.numPages}쪽. 고칠 글자를 누르세요.`, 'ok');
     } catch (error) {
       controls.disabled = true;
-      say(`PDF를 열지 못했습니다: ${message(error)}`, 'error');
+      say(`PDF를 열지 못했습니다: ${reason(error)}`, 'error');
     }
   };
 
@@ -599,7 +600,7 @@ export function pdfEditTool(): HTMLElement {
       }
       say('고쳤습니다. 아래 미리보기가 저장될 모습입니다.', 'ok');
     } catch (error) {
-      say(`고치지 못했습니다: ${message(error)}`, 'error');
+      say(`고치지 못했습니다: ${reason(error)}`, 'error');
     }
   }
 
@@ -678,7 +679,7 @@ export function pdfEditTool(): HTMLElement {
       outputs.append(link);
       say(`${edits.length}자리를 고쳤습니다. 아래 링크로 내려받으세요.`, 'ok');
     } catch (error) {
-      say(`저장하지 못했습니다: ${message(error)}`, 'error');
+      say(`저장하지 못했습니다: ${reason(error)}`, 'error');
     }
   }
 
@@ -700,7 +701,7 @@ export function pdfEditTool(): HTMLElement {
 
   /** 눌러서 도는 일은 실패해도 조용히 사라지면 안 된다. 상태 줄에 남긴다. */
   const run = (work: () => Promise<void>): void => {
-    void work().catch(error => say(`${message(error)}`, 'error'));
+    void work().catch(error => say(`${reason(error)}`, 'error'));
   };
 
   /**
@@ -749,6 +750,3 @@ function hex(r: number, g: number, b: number): string {
   return `#${[r, g, b].map(part => part.toString(16).padStart(2, '0')).join('')}`;
 }
 
-function message(error: unknown): string {
-  return error instanceof Error ? error.message : String(error);
-}

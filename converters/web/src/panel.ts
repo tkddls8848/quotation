@@ -23,6 +23,7 @@
  */
 import './converters.css';
 
+import { reason } from './errors';
 import { encodingTool } from './encoding-panel';
 import { hwpxToMarkdown, type HwpxResult } from './hwpx';
 import { imagesPdfTool } from './images-pdf-panel';
@@ -200,7 +201,7 @@ function hwpxTool(): HTMLElement {
       status.textContent = `${file.name} 변환 완료`;
       status.dataset['tone'] = 'ok';
     } catch (error) {
-      fail(`읽지 못했습니다: ${error instanceof Error ? error.message : String(error)}`);
+      fail(`읽지 못했습니다: ${reason(error)}`);
     }
   };
 

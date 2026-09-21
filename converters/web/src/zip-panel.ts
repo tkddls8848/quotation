@@ -9,6 +9,7 @@
  */
 import { zipSync, type Zippable } from 'fflate';
 
+import { reason } from './errors';
 import { readZip } from './zip';
 
 const MAX_TOTAL = 64 * 1024 * 1024;
@@ -132,7 +133,7 @@ function packing(tool: HTMLElement): void {
         message('묶었습니다. 아래 링크를 눌러 내려받으세요.');
       } catch (error) {
         clearOutputs();
-        message(error instanceof Error ? error.message : String(error), true);
+        message(reason(error), true);
       } finally { save.disabled = !files.length; }
     })();
   });
@@ -180,7 +181,7 @@ function unpacking(tool: HTMLElement): void {
           : 'ZIP 안에 내려받을 파일이 없습니다.', !count);
       } catch (error) {
         // 암호가 걸린 ZIP 은 압축 방식이 아니라 항목 크기에서 어긋난다. 무엇이든 그대로 알린다.
-        message(`열지 못했습니다: ${error instanceof Error ? error.message : String(error)}`, true);
+        message(`열지 못했습니다: ${reason(error)}`, true);
       }
     })();
   };

@@ -16,6 +16,7 @@
  */
 import { PDFDocument, EncryptedPDFError, StandardFonts, rgb, type PDFFont, type PDFPage } from 'pdf-lib';
 
+import { reason } from './errors';
 import { drawWithSourceFont, readSourceFonts, type SourceFont } from './pdf-source-font';
 import { stripLayoutTables } from './sfnt';
 
@@ -137,7 +138,7 @@ export async function applyTextEdits(source: Uint8Array, edits: TextEdit[], font
       // 배치 테이블을 떼는 이유는 sfnt.ts 에 적혀 있다.
       embedded.set(font.id, await document.embedFont(stripLayoutTables(font.bytes), { subset: true }));
     } catch (error) {
-      throw new Error(`${font.label}: 심지 못했습니다 — ${error instanceof Error ? error.message : String(error)}`);
+      throw new Error(`${font.label}: 심지 못했습니다 — ${reason(error)}`);
     }
   }
 
@@ -186,7 +187,7 @@ export async function applyTextEdits(source: Uint8Array, edits: TextEdit[], font
       try {
         width = Math.max(...lines.map((line) => font.widthOfTextAtSize(line, edit.size)));
       } catch (error) {
-        throw new Error(`${where}: 고른 글꼴에 없는 글자가 있습니다 — ${error instanceof Error ? error.message : String(error)}`);
+        throw new Error(`${where}: 고른 글꼴에 없는 글자가 있습니다 — ${reason(error)}`);
       }
       write = (line, x, y) => page.drawText(line, {
         x, y, size: edit.size, font, color: rgb(edit.color.r, edit.color.g, edit.color.b),

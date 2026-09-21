@@ -44,6 +44,8 @@ converters/
     hwpx.test.ts      실제 규격서에서 겪은 것들(ID 잘림·병합 칸 밀림)을 고정
     zip.ts            ZIP 읽기 — HWPX 가 ZIP 이다. zip-slip·압축폭탄 방어 포함
     zip.test.ts
+    errors.ts         오류를 화면에 보일 말로. 낡은 화면의 조각 오류를 알아본다
+    errors.test.ts    브라우저 셋의 말투를 고정
     zip-fixture.ts    테스트용 ZIP 조립기(화면은 부르지 않는다)
     assets/           HWPX 뼈대 파일과 그 출처·라이선스
     hwpx-probe.ts     한 쪽짜리 최소 HWPX 생성기 (probe.html, 개발 검증용)

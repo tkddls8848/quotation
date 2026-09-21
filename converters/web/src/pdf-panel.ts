@@ -1,3 +1,4 @@
+import { reason } from './errors';
 import { MAX_PDF_BYTES, MAX_PDF_PAGES, readPdf, savePdf, splitRanges, type PdfPageRef } from './pdf';
 
 export function pdfTool(): HTMLElement {
@@ -126,7 +127,7 @@ export function pdfTool(): HTMLElement {
     controls.disabled = true;
     input.disabled = true;
     try { await work(); }
-    catch (error) { message(error instanceof Error ? error.message : String(error), true); }
+    catch (error) { message(reason(error), true); }
     finally { busy = false; render(); }
   };
   const add = (files: File[]): void => {
