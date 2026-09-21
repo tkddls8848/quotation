@@ -14,8 +14,9 @@
  * 글자를 그린다. 이것이 화면에 그대로 적혀야 하는 약속이다 — 덮은 글자는 파일
  * 안에 남아 있어서 글자를 뽑아 보면 나온다. 보안 목적의 가림이 아니다.
  */
-import { PDFDocument, EncryptedPDFError, StandardFonts, rgb, type PDFFont } from 'pdf-lib';
+import { PDFDocument, EncryptedPDFError, StandardFonts, rgb, type PDFFont, type PDFPage } from 'pdf-lib';
 
+import { drawWithSourceFont, readSourceFonts, type SourceFont } from './pdf-source-font';
 import { stripLayoutTables } from './sfnt';
 
 export const EDIT_LIMITS = {
@@ -52,6 +53,16 @@ export interface TextEdit {
   /** 원래 글자 — 목록에 보여 주기 위한 것이고 계산에는 쓰지 않는다. */
   original: string;
 }
+
+/**
+ * 원본 PDF 가 이미 갖고 있는 글꼴을 가리키는 표. `fontId` 에 이 꼴로 적는다.
+ *
+ * 심는 글꼴과 한 칸에서 다루기 위해 같은 `fontId` 를 쓴다 — 목록에서 고르는 것도,
+ * 고친 자리에 적히는 것도 하나뿐이어야 되돌리기와 다시 그리기가 갈리지 않는다.
+ */
+export const sourceFontId = (resource: string): string => `원본:${resource}`;
+export const sourceFontResource = (fontId: string): string | null =>
+  (fontId.startsWith('원본:') ? fontId.slice(3) : null);
 
 /** 심을 글꼴 하나. `bytes` 가 없으면 PDF 가 이미 아는 기본 글꼴이다. */
 export interface FontSource {
@@ -109,7 +120,8 @@ export async function applyTextEdits(source: Uint8Array, edits: TextEdit[], font
   const embedded = new Map<string, PDFFont>();
   let fontkitRegistered = false;
   for (const font of fonts) {
-    if (!used.has(font.id)) continue;
+    // 원본 글꼴은 심을 것이 없다. 이미 그 쪽 안에 있고 우리는 가리키기만 한다.
+    if (!used.has(font.id) || sourceFontResource(font.id)) continue;
     if (font.standard) {
       embedded.set(font.id, await document.embedFont(StandardFonts[font.standard]));
       continue;
@@ -129,6 +141,17 @@ export async function applyTextEdits(source: Uint8Array, edits: TextEdit[], font
     }
   }
 
+  // 쪽마다 한 번만 읽는다. 자원 목록을 훑는 일을 고친 자리 수만큼 되풀이할 이유가 없다.
+  const onPage = new Map<number, SourceFont[]>();
+  const sourceFontOn = (page: PDFPage, number: number, resource: string): SourceFont | undefined => {
+    let found = onPage.get(number);
+    if (!found) {
+      found = readSourceFonts(page);
+      onPage.set(number, found);
+    }
+    return found.find((font) => font.resource === resource);
+  };
+
   const warnings: string[] = [];
   for (const [index, edit] of edits.entries()) {
     const where = `${index + 1}번째(${edit.page}쪽)`;
@@ -138,19 +161,38 @@ export async function applyTextEdits(source: Uint8Array, edits: TextEdit[], font
       throw new Error(`${where}: 글자 크기는 ${EDIT_LIMITS.minSize}~${EDIT_LIMITS.maxSize} 사이여야 합니다.`);
     }
     if (!Number.isInteger(edit.page) || edit.page < 1 || edit.page > count) throw new Error(`${where}: 쪽 번호가 1~${count} 밖입니다.`);
-    const font = embedded.get(edit.fontId);
-    if (!font) throw new Error(`${where}: 고른 글꼴을 찾지 못했습니다.`);
+    const page = document.getPage(edit.page - 1);
 
     // 줄바꿈이 든 글자는 여러 줄로 그린다. PDF 에는 문단이 없으니 우리가 줄 간격을 정한다.
     const lines = edit.text.split('\n');
+    const resource = sourceFontResource(edit.fontId);
     let width: number;
-    try {
+    let write: (line: string, x: number, y: number) => void;
+
+    if (resource !== null) {
+      const font = sourceFontOn(page, edit.page, resource);
+      if (!font) throw new Error(`${where}: 원본 글꼴을 찾지 못했습니다. 다른 글꼴을 골라 주세요.`);
+      // 원본 글꼴은 그 문서에 쓰인 글자의 모양만 갖고 있다. 없는 글자를 넘기면
+      // 빈칸이 찍히므로 여기서 멈춘다 — 조용히 사라지게 두지 않는다.
+      const missing = font.missing(edit.text);
+      if (missing.length) {
+        throw new Error(`${where}: 원본 글꼴에 없는 글자가 있습니다 — ${missing.join(' ')}. 다른 글꼴을 골라 주세요.`);
+      }
       width = Math.max(...lines.map((line) => font.widthOfTextAtSize(line, edit.size)));
-    } catch (error) {
-      throw new Error(`${where}: 고른 글꼴에 없는 글자가 있습니다 — ${error instanceof Error ? error.message : String(error)}`);
+      write = (line, x, y) => drawWithSourceFont(page, font, line, { x, y, size: edit.size, color: edit.color });
+    } else {
+      const font = embedded.get(edit.fontId);
+      if (!font) throw new Error(`${where}: 고른 글꼴을 찾지 못했습니다.`);
+      try {
+        width = Math.max(...lines.map((line) => font.widthOfTextAtSize(line, edit.size)));
+      } catch (error) {
+        throw new Error(`${where}: 고른 글꼴에 없는 글자가 있습니다 — ${error instanceof Error ? error.message : String(error)}`);
+      }
+      write = (line, x, y) => page.drawText(line, {
+        x, y, size: edit.size, font, color: rgb(edit.color.r, edit.color.g, edit.color.b),
+      });
     }
 
-    const page = document.getPage(edit.page - 1);
     const box = coverBox(edit, width);
     if (edit.cover) {
       const height = box.height + (lines.length - 1) * edit.size * 1.35;
@@ -160,13 +202,7 @@ export async function applyTextEdits(source: Uint8Array, edits: TextEdit[], font
         color: rgb(edit.cover.r, edit.cover.g, edit.cover.b),
       });
     }
-    lines.forEach((line, row) => {
-      page.drawText(line, {
-        x: edit.x, y: edit.y - row * edit.size * 1.35,
-        size: edit.size, font,
-        color: rgb(edit.color.r, edit.color.g, edit.color.b),
-      });
-    });
+    lines.forEach((line, row) => write(line, edit.x, edit.y - row * edit.size * 1.35));
 
     if (width > edit.width + 0.5) {
       const percent = Math.round((width / Math.max(edit.width, 1) - 1) * 100);

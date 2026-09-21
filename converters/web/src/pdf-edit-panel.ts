@@ -17,7 +17,11 @@
 import { PDFDocument, StandardFonts } from 'pdf-lib';
 
 import { loadCatalog, loadFont, mb, STANDARD_FONTS, type CatalogFont } from './fonts';
-import { applyTextEdits, EDIT_LIMITS, shrinkToFit, type Rgb, type FontSource, type TextEdit } from './pdf-edit';
+import {
+  applyTextEdits, EDIT_LIMITS, shrinkToFit, sourceFontId, sourceFontResource,
+  type Rgb, type FontSource, type TextEdit,
+} from './pdf-edit';
+import { closestFont, readSourceFonts, type SourceFont } from './pdf-source-font';
 import { readTables, stripLayoutTables } from './sfnt';
 
 import type { PageViewport, PDFDocumentLoadingTask, PDFDocumentProxy } from 'pdfjs-dist';
@@ -29,6 +33,10 @@ interface Span {
   pdf: { x: number; y: number; width: number; height: number };
   /** 캔버스 위 자리. 상자를 놓는 데 쓴다. */
   view: { left: number; top: number; width: number; height: number };
+  /** 원본이 이 조각을 그릴 때 쓴 크기. 조각 높이보다 이쪽이 정확하다. */
+  size: number;
+  /** 원본이 이 조각에 쓴 글꼴. 다시 쓸 수 없는 글꼴이면 없다. */
+  font?: SourceFont | undefined;
 }
 
 const ZOOMS = [1, 1.5, 2, 3];
@@ -46,10 +54,10 @@ export function pdfEditTool(): HTMLElement {
   tool.className = 'conv-tool conv-pdf-edit';
   tool.innerHTML = `
     <h2>PDF 글자 고치기</h2>
-    <p class="conv-note">쪽 위의 글자를 눌러 다른 글자로 바꿉니다. 원하는 글꼴과 크기를 고를 수 있습니다. 최대 64MB.</p>
+    <p class="conv-note">쪽 위의 글자를 눌러 다른 글자로 바꿉니다. <strong>원본과 같은 글꼴</strong>로 쓰는 것이 기본이고, 다른 글꼴과 크기도 고를 수 있습니다. 최대 64MB.</p>
     <ul class="conv-note edit-caveats">
       <li><strong>원래 글자는 지워지지 않습니다.</strong> 그 자리를 덮고 위에 새로 쓰는 방식이라, 덮인 글자는 파일 안에 남아 글자를 뽑아 보면 나옵니다 — <strong>가려야 할 내용을 감추는 용도로 쓰면 안 됩니다.</strong></li>
-      <li>원본과 <strong>같은 글꼴을 쓸 수 없습니다.</strong> PDF 는 쓰인 글자의 모양만 담고 있어서, 새 글자를 그 글꼴로 그릴 수 없습니다.</li>
+      <li><strong>원본 글꼴을 그대로 쓸 수 있습니다</strong> — 다만 <strong>원본 문서에 이미 나온 글자</strong>만 됩니다. PDF 는 쓰인 글자의 모양만 담고 있어서, 한 번도 나오지 않은 글자는 그 글꼴로 그릴 수 없습니다. 그런 글자가 있으면 화면이 짚어 주고 닮은 글꼴로 물러납니다.</li>
       <li>덮을 자리의 배경이 단색이 아니면(무늬·그림·표선 위) <strong>덮은 자국이 보입니다.</strong></li>
     </ul>
     <label class="conv-drop" for="conv-edit-file">
@@ -150,6 +158,14 @@ export function pdfEditTool(): HTMLElement {
   let spans: Span[] = [];
   let picked: Span | null = null;
   const edits: TextEdit[] = [];
+  /**
+   * 원본을 pdf-lib 으로도 한 번 연다.
+   *
+   * PDF.js 는 쪽을 그리고 글자를 뽑는 데 쓰고, 원본이 **어떤 글꼴을 갖고 있는지**
+   * 는 pdf-lib 쪽에서 읽는다. 자원 목록과 ToUnicode 를 다루는 데는 그쪽이 맞다.
+   */
+  let sourceDoc: PDFDocument | null = null;
+  const sourceFonts = new Map<number, SourceFont[]>();
   /** 목록에서 고를 수 있는 글꼴. 기본 라틴 글꼴이 먼저 서고 받아 온 것이 뒤에 선다. */
   const fonts = new Map<string, FontSource>(STANDARD_FONTS.map(font => [font.id, font]));
   const catalog = new Map<string, CatalogFont>();
@@ -174,6 +190,14 @@ export function pdfEditTool(): HTMLElement {
 
   function buildFontOptions(found: CatalogFont[]): void {
     fontSelect.replaceChildren();
+    // 원본 글꼴 자리는 늘 맨 위에 둔다. 무엇을 고르든 이것이 첫째 선택지다 —
+    // 고른 조각에 따라 `pick` 이 이름을 채우고, 못 쓰면 감춘다.
+    const origin = document.createElement('optgroup');
+    origin.label = '원본 글꼴';
+    origin.dataset['origin'] = 'yes';
+    origin.hidden = true;
+    fontSelect.append(origin);
+
     const standard = document.createElement('optgroup');
     standard.label = '내려받기 없음 (라틴 전용 · 한글 불가)';
     for (const font of STANDARD_FONTS) standard.append(option(font.id, font.label));
@@ -196,6 +220,31 @@ export function pdfEditTool(): HTMLElement {
     node.value = value;
     node.textContent = label;
     return node;
+  }
+
+  /**
+   * 고른 조각의 원본 글꼴을 목록 맨 위에 세운다.
+   *
+   * 쓸 수 있으면 그것을 기본값으로 둔다 — 고치기 전과 후의 글꼴이 같은 것이
+   * 사람이 바라는 기본이다. 쓸 수 없으면 자리를 감추고 고르던 글꼴을 그대로 둔다.
+   */
+  function offerSourceFont(span: Span): void {
+    const origin = fontSelect.querySelector<HTMLOptGroupElement>('optgroup[data-origin]');
+    if (!origin) return;
+    origin.replaceChildren();
+    origin.hidden = !span.font;
+    if (!span.font) return;
+    const id = sourceFontId(span.font.resource);
+    const label = `원본 그대로 · ${span.font.label}`;
+    // 심을 것이 없으니 바이트도 없다. 목록에 이름만 있으면 고친 자리에 적힌다.
+    fonts.set(id, { id, label });
+    origin.append(option(id, label));
+    fontSelect.value = id;
+  }
+
+  /** 원본 글꼴로 쓸 수 없을 때 물러날 글꼴. 세리프와 굵기를 보고 닮은 것을 고른다. */
+  function fallbackFor(font: SourceFont): CatalogFont | undefined {
+    return closestFont(font, [...catalog.values()]);
   }
 
   /** 고른 글꼴을 쓸 수 있게 만든다. 받아야 하면 받고, 한 번 받은 것은 다시 받지 않는다. */
@@ -254,6 +303,9 @@ export function pdfEditTool(): HTMLElement {
       pageNumber = 1;
       clearOutputs();
       warnings.replaceChildren();
+      sourceFonts.clear();
+      // 원본이 가진 글꼴을 읽는 쪽. 못 읽어도 화면은 선다 — 목록의 글꼴로 고치면 된다.
+      sourceDoc = await PDFDocument.load(source, { updateMetadata: false }).catch(() => null);
       originalPdf = await load(source);
       controls.disabled = false;
       await refresh();
@@ -315,8 +367,15 @@ export function pdfEditTool(): HTMLElement {
     spans = [];
     overlay.replaceChildren();
     if (!originalPdf) return;
+    // 이 쪽이 가진 글꼴은 한 번만 읽어 둔다.
+    if (sourceDoc && !sourceFonts.has(pageNumber)) {
+      sourceFonts.set(pageNumber, readSourceFonts(sourceDoc.getPage(pageNumber - 1)));
+    }
     const page = await originalPdf.document.getPage(pageNumber);
     try {
+      // 조각마다 어떤 글꼴을 썼는지는 글꼴 객체가 있어야 알 수 있고, 그 객체는
+      // 쪽을 한 번 훑어야 채워진다. 글자만 뽑아서는 채워지지 않는다.
+      const named = await fontNames(page);
       const content = await page.getTextContent();
       for (const item of content.items) {
         if (!('str' in item) || !item.str.trim()) continue;
@@ -334,6 +393,9 @@ export function pdfEditTool(): HTMLElement {
             left: Math.min(ax!, bx!), top: Math.min(ay!, by!),
             width: Math.max(Math.abs(bx! - ax!), 2), height: Math.max(Math.abs(by! - ay!), 2),
           },
+          // 가로 배율이 그릴 때 쓴 글자 크기다. 조각 높이는 글자 모양에 따라 들쭉날쭉하다.
+          size: Math.max(1, Math.round(Math.abs(item.transform[0] as number) * 10) / 10) || height,
+          font: matchSourceFont(named.get(item.fontName), item.str),
         });
       }
     } finally { page.cleanup(); }
@@ -355,16 +417,58 @@ export function pdfEditTool(): HTMLElement {
     }
   }
 
+  /**
+   * PDF.js 가 조각에 붙인 글꼴 이름을 **PDF 안의 글꼴 이름**으로 바꾼다.
+   *
+   * 조각이 들고 있는 이름은 PDF.js 안에서만 통하는 것(`g_d0_f1`)이라 자원
+   * 목록과 곧바로 이어지지 않는다. 쪽을 한 번 훑으면 글꼴 객체가 채워지고,
+   * 거기에 원래 이름(BaseFont)이 들어 있다.
+   */
+  async function fontNames(page: Awaited<ReturnType<PDFDocumentProxy['getPage']>>): Promise<Map<string, string>> {
+    const names = new Map<string, string>();
+    try {
+      await page.getOperatorList();
+    } catch {
+      // 훑지 못하면 원본 글꼴을 고르지 못할 뿐이다. 나머지는 그대로 돈다.
+      return names;
+    }
+    const content = await page.getTextContent();
+    for (const item of content.items) {
+      if (!('str' in item) || names.has(item.fontName)) continue;
+      try {
+        const object = page.commonObjs.get(item.fontName) as { name?: string } | null;
+        if (object?.name) names.set(item.fontName, object.name);
+      } catch { /* 아직 안 채워진 글꼴은 건너뛴다 */ }
+    }
+    return names;
+  }
+
+  /**
+   * 이름이 같은 원본 글꼴을 찾는다.
+   *
+   * 서브셋 접두사(ABCDEF+)는 같은 글꼴에도 문서마다 다르게 붙으므로 떼고 견준다.
+   * 같은 이름이 여럿이면 **그 조각의 원래 글자를 쓸 수 있는** 쪽을 고른다 —
+   * 그 글자를 담고 있는 서브셋이 실제로 쓰인 것이다.
+   */
+  function matchSourceFont(base: string | undefined, text: string): SourceFont | undefined {
+    const found = sourceFonts.get(pageNumber);
+    if (!found?.length || !base) return undefined;
+    const bare = (value: string): string => value.replace(/^[A-Z]{6}\+/, '');
+    const named = found.filter(font => bare(font.label) === bare(base));
+    return named.find(font => !font.missing(text).length) ?? named[0];
+  }
+
   // --- 한 자리 고치기 -------------------------------------------------------
 
   function pick(span: Span): void {
     picked = span;
     original.textContent = `원래 글자: ${span.text}`;
     text.value = span.text;
-    sizeInput.value = String(Math.max(1, Math.round(span.pdf.height * 10) / 10));
+    sizeInput.value = String(span.size);
     dx.value = '0';
     dy.value = '0';
     if (autoCover.checked) coverInput.value = sampleBackground(span) ?? '#ffffff';
+    offerSourceFont(span);
     form.hidden = false;
     updateFit();
     text.focus();
@@ -413,11 +517,29 @@ export function pdfEditTool(): HTMLElement {
     return best;
   }
 
-  /** 새 글자가 원래 자리에 들어가는지 재어 알려 준다. 저장하고 나서 알면 늦다. */
+  /** 지금 고른 글꼴이 원본 글꼴이면 그것을, 아니면 없음을 돌려준다. */
+  function chosenSourceFont(): SourceFont | undefined {
+    const resource = sourceFontResource(fontSelect.value);
+    return resource === null ? undefined : sourceFonts.get(pageNumber)?.find(font => font.resource === resource);
+  }
+
+  /**
+   * 새 글자가 원래 자리에 들어가는지, **원본 글꼴로 쓸 수 있는지** 재어 알린다.
+   *
+   * 저장하고 나서 알면 늦다. 특히 원본 글꼴은 그 문서에 쓰인 글자만 갖고 있어서,
+   * 없는 글자를 넘기면 빈칸이 찍힌다 — 그 글자를 치는 동안 바로 짚어 준다.
+   */
   function updateFit(): void {
     if (!picked) return;
     const chars = [...text.value].length;
     const size = Number(sizeInput.value) || 0;
+    const missing = chosenSourceFont()?.missing(text.value) ?? [];
+    if (missing.length) {
+      fit.textContent = `원본 글꼴에 없는 글자: ${missing.join(' ')} — 원본 문서에 한 번도 나오지 않은 글자입니다. 다른 글꼴을 고르세요.`;
+      fit.dataset['tone'] = 'error';
+      return;
+    }
+    delete fit.dataset['tone'];
     // 정확한 폭은 글꼴을 심어야 나온다. 여기서는 글자 수로 가늠만 하고 실제 폭은
     // 저장할 때 pdf-lib 이 재어 경고를 남긴다.
     fit.textContent = chars > [...picked.text].length
@@ -426,18 +548,34 @@ export function pdfEditTool(): HTMLElement {
   }
 
   for (const node of [text, sizeInput, shrink]) node.addEventListener('input', updateFit);
+  fontSelect.addEventListener('change', updateFit);
 
   async function applyOne(): Promise<void> {
     if (!picked) return;
     if (!text.value.length) { say('새 글자를 입력하세요.', 'error'); return; }
+    const source = chosenSourceFont();
+    // 원본 글꼴에 없는 글자는 그려 봐야 빈칸이다. 그리기 전에 멈추고, 닮은 글꼴을
+    // 골라 둔 채로 알린다 — 다시 누르면 그 글꼴로 고쳐진다.
+    const missing = source?.missing(text.value) ?? [];
+    if (source && missing.length) {
+      const fallback = fallbackFor(source);
+      if (fallback) fontSelect.value = fallback.id;
+      updateFit();
+      say(`원본 글꼴에 없는 글자가 있습니다 — ${missing.join(' ')}.`
+        + (fallback ? ` 닮은 글꼴 ‘${fallback.label}’ 로 바꿔 두었습니다. 다시 누르면 그 글꼴로 고칩니다.` : ' 다른 글꼴을 고르세요.'), 'error');
+      return;
+    }
     try {
-      const font = await ensureFont(fontSelect.value);
+      const font = source ? fonts.get(fontSelect.value)! : await ensureFont(fontSelect.value);
       let size = Number(sizeInput.value);
       if (!Number.isFinite(size) || size < EDIT_LIMITS.minSize || size > EDIT_LIMITS.maxSize) {
         throw new Error(`글자 크기는 ${EDIT_LIMITS.minSize}~${EDIT_LIMITS.maxSize} 사이여야 합니다.`);
       }
       if (shrink.checked) {
-        const measured = await measurer(font);
+        // 원본 글꼴은 그 글꼴의 너비 표로 잰다. 심어서 재는 길보다 정확하고 빠르다.
+        const measured = source
+          ? (value: string, at: number) => Math.max(...value.split('\n').map(line => source.widthOfTextAtSize(line, at)))
+          : await measurer(font);
         size = shrinkToFit(at => measured(text.value, at), picked.pdf.width, size);
       }
       edits.push({

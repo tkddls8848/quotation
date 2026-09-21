@@ -152,6 +152,39 @@ try {
   // 덮어쓰기는 원래 글자를 지우지 않는다. 화면이 그렇게 약속했으니 그대로여야 한다.
   assert.match(backTitles, /BEFORE/, '덮인 원래 글자가 사라졌습니다 — 화면의 설명과 어긋납니다.');
 
+  // 원본 글꼴 그대로 고치기. 방금 저장한 PDF 는 한글 글꼴을 갖고 있으므로,
+  // 그 글꼴을 **다시 심지 않고 가리켜** 같은 글꼴로 고칠 수 있어야 한다.
+  const koreanSpan = await edit.locator('.edit-span').evaluateAll(nodes => nodes.findIndex(node => node.title.includes('고친 글자')));
+  await edit.locator('.edit-span').nth(koreanSpan).click();
+  const origin = edit.locator('.edit-font optgroup[data-origin] option');
+  assert.equal(await origin.count(), 1, '원본 글꼴을 고를 수 없습니다.');
+  assert.match(await edit.locator('.edit-font').inputValue(), /^원본:/, '원본 글꼴이 기본값이 아닙니다.');
+  assert.match(await origin.innerText(), /NanumGothic/);
+
+  // 원본에 없는 글자는 그리기 전에 막고, 닮은 글꼴로 바꿔 둔다.
+  await edit.locator('#conv-edit-text').fill('없던글자');
+  assert.match(await edit.locator('.edit-fit').innerText(), /원본 글꼴에 없는 글자/);
+  await edit.getByRole('button', { name: '이 자리 고치기', exact: true }).click();
+  await edit.getByText(/원본 글꼴에 없는 글자가 있습니다/).waitFor();
+  assert.match(await edit.locator('.edit-list').innerText(), /아직 고친 자리가 없습니다/, '막아야 할 고치기가 들어갔습니다.');
+  assert.doesNotMatch(await edit.locator('.edit-font').inputValue(), /^원본:/, '닮은 글꼴로 바꾸지 않았습니다.');
+
+  // 원본에 있는 글자만 쓰면 그대로 들어간다. 글꼴을 심지 않으므로 파일이 거의 그대로다.
+  await edit.locator('.edit-span').nth(koreanSpan).click();
+  await edit.locator('#conv-edit-text').fill('고친 자');
+  await edit.getByRole('button', { name: '이 자리 고치기', exact: true }).click();
+  await edit.getByText('고쳤습니다. 아래 미리보기가 저장될 모습입니다.', { exact: true }).waitFor();
+  assert.match(await edit.locator('.edit-list li').first().innerText(), /원본 그대로 · \S*NanumGothic/);
+  await edit.getByRole('button', { name: '고친 PDF 저장', exact: true }).click();
+  const reused = await grab(edit.locator('.edit-outputs a'), 'edited-source-font.pdf');
+  assert.ok(reused.length < editedBytes.length + 4096,
+    `원본 글꼴을 가리키지 않고 새로 심었습니다 (${editedBytes.length} → ${reused.length}).`);
+  // 그 글자가 정말 그려졌는지 — 저장한 것을 도로 열어 글자를 뽑는다.
+  await edit.locator('#conv-edit-file').setInputFiles({ name: 'reused.pdf', mimeType: 'application/pdf', buffer: Buffer.from(reused) });
+  await edit.getByText('reused.pdf · 1쪽. 고칠 글자를 누르세요.', { exact: true }).waitFor();
+  const reusedTitles = await edit.locator('.edit-span').evaluateAll(nodes => nodes.map(node => node.title).join('|'));
+  assert.match(reusedTitles, /고친 자/, `원본 글꼴로 쓴 글자를 찾지 못했습니다: ${reusedTitles}`);
+
   await choose('images-pdf');
   const imgTool = page.locator('.conv-images-pdf');
   await imgTool.locator('#conv-img-file').setInputFiles([
@@ -233,5 +266,5 @@ try {
   assert.equal(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth), true);
   await page.screenshot({ path: fileURLToPath(new URL('converters-mobile.png', out)), fullPage: true });
   assert.deepEqual(errors, []);
-  console.log('PASS: chooser (one tool at a time, state kept), PDF text overwrite (Korean font embed + extract-back), HWPX image/text exports, tables, mixed page sizes, scanned-page error/image/skip, selection/rotation, cancellation, PDF→image (zip/single), image→PDF (native/A4), text→HWPX, encoding detect/convert/refuse, ZIP pack/unpack, mobile layout.');
+  console.log('PASS: chooser (one tool at a time, state kept), PDF text overwrite (Korean font embed + extract-back, source-font reuse + missing-glyph refusal), HWPX image/text exports, tables, mixed page sizes, scanned-page error/image/skip, selection/rotation, cancellation, PDF→image (zip/single), image→PDF (native/A4), text→HWPX, encoding detect/convert/refuse, ZIP pack/unpack, mobile layout.');
 } finally { await browser.close(); }
