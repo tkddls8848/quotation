@@ -5,7 +5,7 @@
  * 쪽을 열고 그린다. 두 벌이 되면 한쪽만 고쳐져 결과가 갈리므로 여기 한 벌만 둔다
  * (공유는 이 폴더 안에서만 한다 — 결정 0012).
  */
-import { getDocument, GlobalWorkerOptions, type PDFDocumentLoadingTask, type PDFPageProxy } from 'pdfjs-dist';
+import { getDocument, GlobalWorkerOptions, type PageViewport, type PDFDocumentLoadingTask, type PDFPageProxy } from 'pdfjs-dist';
 import workerUrl from 'pdfjs-dist/build/pdf.worker.min.mjs?url';
 
 GlobalWorkerOptions.workerSrc = workerUrl;
@@ -57,6 +57,18 @@ export async function rasterize(
       canvas.toBlob(value => value ? resolve(value) : reject(new Error('그림 생성에 실패했습니다.')), type, 0.92));
     return { bytes: new Uint8Array(await blob.arrayBuffer()), width: size.width, height: size.height };
   } finally { canvas.width = 0; canvas.height = 0; }
+}
+
+/**
+ * 쪽을 화면의 캔버스에 그대로 그린다.
+ *
+ * `rasterize` 와 달리 바이트를 만들지 않는다. 글자 고치기 화면이 쪽을 보여 주고
+ * 그 위에서 자리를 고르는 데 쓴다 — 그리는 방법이 두 벌이 되지 않게 여기 둔다.
+ */
+export async function renderToCanvas(page: PDFPageProxy, canvas: HTMLCanvasElement, viewport: PageViewport): Promise<void> {
+  canvas.width = Math.ceil(viewport.width);
+  canvas.height = Math.ceil(viewport.height);
+  await page.render({ canvas, viewport, background: 'rgb(255,255,255)' }).promise;
 }
 
 /** 쪽 하나를 그릴 때 나올 픽셀 수. 한도 검사에 쓴다. */

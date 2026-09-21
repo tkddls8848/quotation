@@ -306,3 +306,80 @@
   .pdf-pages label { flex-basis: 100%; }
   .img-list li, .zip-pack-list li { flex-wrap: wrap; }
 }
+
+/* --- PDF 글자 고치기 -------------------------------------------------------
+   쪽 그림 위에 글자 조각 상자를 겹친다. 상자가 그림을 가리면 무엇을 고치는지
+   볼 수 없으므로, 평소에는 테두리만 흐리게 두고 손이 닿을 때만 드러낸다. */
+
+.conv-pdf-edit button, .edit-outputs a {
+  padding: 0.5rem 0.75rem;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  font: inherit;
+  cursor: pointer;
+}
+.conv-pdf-edit button:not(.conv-download) { background: var(--bg); color: var(--text); }
+.conv-pdf-edit :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.edit-outputs a { color: var(--accent); overflow-wrap: anywhere; }
+
+.edit-caveats { margin: 0 0 1rem; padding-left: 1.1rem; }
+.edit-caveats li { margin-bottom: 0.35rem; }
+
+.edit-controls { min-width: 0; margin: 1rem 0; padding: 0; border: 0; }
+.edit-controls legend { font-weight: 600; }
+.edit-controls:disabled button { opacity: 0.45; cursor: default; }
+.edit-page { font-variant-numeric: tabular-nums; }
+
+/* 쪽 그림. 좁은 화면에서도 가로로 흐르지 않게 칸 안에서 스크롤한다. */
+.edit-stage {
+  position: relative;
+  max-height: 34rem;
+  margin: 0.75rem 0 0;
+  overflow: auto;
+  background: var(--bg);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+}
+.edit-stage canvas { display: block; }
+.edit-spans { position: absolute; inset: 0; }
+
+.edit-span {
+  position: absolute;
+  margin: 0;
+  padding: 0;
+  background: transparent;
+  border: 1px solid color-mix(in srgb, var(--accent) 35%, transparent);
+  border-radius: 2px;
+  cursor: pointer;
+}
+.edit-span:hover, .edit-span:focus-visible {
+  background: color-mix(in srgb, var(--accent) 22%, transparent);
+  border-color: var(--accent);
+}
+/* 이미 고친 자리는 한눈에 구분된다 — 같은 곳을 두 번 고치면 겹쳐 쓰인다. */
+.edit-span[data-done='yes'] {
+  background: color-mix(in srgb, var(--ok) 20%, transparent);
+  border-color: var(--ok);
+}
+
+.edit-hint { margin: 0.5rem 0 0; }
+.edit-form { margin: 1rem 0; padding: 1rem; background: var(--bg); border: 1px solid var(--line); border-radius: 10px; }
+.edit-form h3 { margin-top: 0; }
+.edit-form input[type='number'] { width: 5.5rem; padding: 0.4rem; color: var(--text); background: var(--surface); border: 1px solid var(--line); border-radius: 6px; font: inherit; }
+.edit-form input[type='color'] { width: 2.75rem; height: 2rem; padding: 0; background: none; border: 1px solid var(--line); border-radius: 6px; cursor: pointer; }
+.edit-original { margin: 0 0 0.25rem; overflow-wrap: anywhere; }
+.edit-fit { margin: 0.5rem 0 0; }
+
+.edit-list { max-height: 16rem; overflow: auto; margin: 0.5rem 0; padding-left: 1.4rem; }
+.edit-list li { display: flex; align-items: center; gap: 0.5rem; padding: 0.4rem 0; border-bottom: 1px solid var(--line); }
+.edit-list li span { flex: 1; min-width: 0; overflow-wrap: anywhere; }
+.edit-list li button { flex-shrink: 0; }
+
+.edit-font-add { margin-top: 1rem; }
+.edit-warnings { max-height: 12rem; overflow: auto; }
+.edit-warnings:empty { display: none; }
+
+@media (max-width: 480px) {
+  .edit-list li { flex-wrap: wrap; }
+  .edit-form input[type='number'] { width: 4.5rem; }
+}

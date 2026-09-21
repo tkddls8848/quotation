@@ -90,6 +90,46 @@ try {
   assert.match(await page.locator('.conv-pdf .conv-status').innerText(), /1장을 만들었습니다/);
 
   // 이미지 → PDF: 방금 만든 PNG 두 장을 도로 PDF 로 묶는다.
+  // PDF 글자 고치기: 글자를 눌러 한글로 바꾸고, 저장한 PDF 에서 그 글자를 다시 뽑는다.
+  await choose('pdf-edit');
+  const edit = page.locator('.conv-pdf-edit');
+  const source = await PDFDocument.create();
+  source.addPage([400, 300]).drawText('BEFORE', { x: 40, y: 200, size: 18 });
+  await edit.locator('#conv-edit-file').setInputFiles({ name: 'edit.pdf', mimeType: 'application/pdf', buffer: Buffer.from(await source.save()) });
+  await edit.getByText('edit.pdf · 1쪽. 고칠 글자를 누르세요.', { exact: true }).waitFor();
+
+  // 쪽 위의 글자 상자를 누르면 그 자리의 원래 글자가 칸에 들어온다.
+  await edit.locator('.edit-span').first().click();
+  await edit.getByText('원래 글자: BEFORE', { exact: true }).waitFor();
+
+  // 한글을 고르면 글꼴을 받아 심는다. 목록이 있어야 이 길을 지난다.
+  const korean = await edit.locator('.edit-font option[value="nanum-gothic"]').count();
+  assert.equal(korean, 1, '글꼴 목록을 읽지 못했습니다 (web/scripts/fetch_fonts.py 를 먼저 돌리세요)');
+  await edit.locator('.edit-font').selectOption('nanum-gothic');
+  await edit.locator('#conv-edit-text').fill('고친 글자');
+  await edit.getByRole('button', { name: '이 자리 고치기', exact: true }).click();
+  await edit.getByText('고쳤습니다. 아래 미리보기가 저장될 모습입니다.', { exact: true }).waitFor();
+  assert.match(await edit.locator('.edit-list li').first().innerText(), /1쪽 · “BEFORE” → “고친 글자” · 나눔고딕/);
+
+  await edit.getByRole('button', { name: '고친 PDF 저장', exact: true }).click();
+  const editedBytes = await grab(edit.locator('.edit-outputs a'), 'edited.pdf');
+  const edited = await PDFDocument.load(editedBytes);
+  assert.equal(edited.getPageCount(), 1);
+  // 되돌리면 고친 자리가 사라진다.
+  await edit.getByRole('button', { name: '모두 되돌리기', exact: true }).click();
+  await edit.getByText('고친 자리를 모두 되돌렸습니다.', { exact: true }).waitFor();
+  assert.match(await edit.locator('.edit-list').innerText(), /아직 고친 자리가 없습니다/);
+
+  // 심은 한글이 정말 글자로 들어갔는지 — 저장한 PDF 를 이 도구에 도로 넣어 본다.
+  // 글자 상자는 PDF.js 가 뽑은 글자로 만들어지므로, 상자에 그 글자가 보이면
+  // 그림이 아니라 **찾고 복사할 수 있는 글자** 로 들어간 것이다.
+  await edit.locator('#conv-edit-file').setInputFiles({ name: 'edited.pdf', mimeType: 'application/pdf', buffer: Buffer.from(editedBytes) });
+  await edit.getByText('edited.pdf · 1쪽. 고칠 글자를 누르세요.', { exact: true }).waitFor();
+  const backTitles = await edit.locator('.edit-span').evaluateAll(nodes => nodes.map(node => node.title).join('|'));
+  assert.match(backTitles, /고친 글자/, `저장한 PDF 에서 고친 글자를 찾지 못했습니다: ${backTitles}`);
+  // 덮어쓰기는 원래 글자를 지우지 않는다. 화면이 그렇게 약속했으니 그대로여야 한다.
+  assert.match(backTitles, /BEFORE/, '덮인 원래 글자가 사라졌습니다 — 화면의 설명과 어긋납니다.');
+
   await choose('images-pdf');
   const imgTool = page.locator('.conv-images-pdf');
   await imgTool.locator('#conv-img-file').setInputFiles([
@@ -171,5 +211,5 @@ try {
   assert.equal(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth), true);
   await page.screenshot({ path: fileURLToPath(new URL('converters-mobile.png', out)), fullPage: true });
   assert.deepEqual(errors, []);
-  console.log('PASS: chooser (one tool at a time, state kept), HWPX image/text exports, tables, mixed page sizes, scanned-page error/image/skip, selection/rotation, cancellation, PDF→image (zip/single), image→PDF (native/A4), text→HWPX, encoding detect/convert/refuse, ZIP pack/unpack, mobile layout.');
+  console.log('PASS: chooser (one tool at a time, state kept), PDF text overwrite (Korean font embed + extract-back), HWPX image/text exports, tables, mixed page sizes, scanned-page error/image/skip, selection/rotation, cancellation, PDF→image (zip/single), image→PDF (native/A4), text→HWPX, encoding detect/convert/refuse, ZIP pack/unpack, mobile layout.');
 } finally { await browser.close(); }

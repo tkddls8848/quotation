@@ -171,6 +171,12 @@ jobs:
         # playwright 는 셸(web/)의 devDependency 다. 스크립트는 거기서 찾는다.
         run: npx playwright install --with-deps chromium
         working-directory: web
+      - name: 글꼴 갖추기
+        # PDF 글자 고치기는 한글 글꼴을 심는다. 글꼴은 저장소에 담지 않으므로
+        # (web/scripts/fetch_fonts.py) 여기서도 배포와 같은 방법으로 받는다 —
+        # 글꼴 없이 검사하면 정작 한글을 심는 길을 한 번도 지나지 않는다.
+        run: python3 scripts/fetch_fonts.py
+        working-directory: web
       - name: 화면과 산출물 검사
         # 실제 Chromium 으로 변환기 탭을 조작해 내려받은 산출물을 뜯어 본다.
         # 변환기에 서버가 필요한 경로는 없다 — 전부 브라우저에서 끝난다 (결정 0018).

@@ -11,6 +11,13 @@ converters/
   web/src/
     panel.ts          탭 화면 — 변환 고르기와 HWPX→Markdown. 고른 하나만 아래에 세운다
     pdf-panel.ts      PDF 파일 추가·쪽 선택·순서·회전·분할·다운로드, HWPX 저장
+    pdf-edit-panel.ts PDF 글자 고치기 화면 — 쪽 위 글자 상자를 눌러 고친다
+    pdf-edit.ts       덮고 다시 쓰기. 글꼴 심기·덮을 자리·자리에 맞게 줄이기
+    pdf-edit.test.ts  덮는 자리·줄이기·경고·한도를 고정
+    sfnt.ts           글꼴에서 배치 테이블을 뗀다 (fontkit 이 거기서 죽는다)
+    sfnt.test.ts      떼기·내용 보존·검사합 재계산·못 쓰는 글꼴 거절
+    fonts.ts          심을 수 있는 글꼴 목록. 고른 하나만 받아서 붙든다
+    fonts.test.ts     받아 온 글꼴 전부를 실제로 심어 한글을 되읽는다
     pdf.ts            pdf-lib 기반 PDF 읽기·쪽 복사·저장·범위 검증
     pdf.test.ts       저장한 PDF 를 다시 열어 병합·분할·순서·회전 확인
     pdf-render.ts     PDF.js 로 쪽을 여닫고 그린다 — 아래 둘이 함께 쓴다
@@ -44,6 +51,21 @@ converters/
     hwp-to-hwpx.ps1   한글 COM 으로 .hwp → .hwpx (Windows + 한글 설치 필요)
     verify-hwpx.ps1   만든 HWPX 를 한글에서 열어 본다
 ```
+
+## 글꼴은 저장소에 없다
+
+PDF 글자 고치기가 심는 한글 글꼴은 여덟 종 39MB 라 담지 않는다. 배포할 때
+`web/scripts/fetch_fonts.py` 가 npm 에서 받아 `web/public/fonts/` 로 넣는다
+([결정 0019](../doc/decisions/0019-overwrite-not-inplace-pdf-text.md)).
+
+개발 중에 한글 글꼴이 필요하면 한 번 돌려 두면 된다.
+
+```bash
+python3 web/scripts/fetch_fonts.py
+```
+
+받아 두지 않아도 화면은 선다 — PDF 기본 라틴 글꼴과 "내 글꼴 불러오기" 로
+물러나고, `fonts.test.ts` 는 건너뛴다.
 
 ## 어디서 왔나
 

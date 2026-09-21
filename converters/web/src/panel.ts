@@ -26,6 +26,7 @@ import './converters.css';
 import { encodingTool } from './encoding-panel';
 import { hwpxToMarkdown, type HwpxResult } from './hwpx';
 import { imagesPdfTool } from './images-pdf-panel';
+import { pdfEditTool } from './pdf-edit-panel';
 import { pdfTool } from './pdf-panel';
 import { textHwpxTool } from './text-hwpx-panel';
 import { zipTool } from './zip-panel';
@@ -45,6 +46,7 @@ interface Choice {
 // 골랐나" 를 되짚게 만들지 않기 위함이다.
 const CHOICES: Choice[] = [
   { id: 'pdf', title: 'PDF 편집기', summary: '병합·쪽 삭제·회전·분할, HWPX·이미지로 저장', build: pdfTool },
+  { id: 'pdf-edit', title: 'PDF 글자 고치기', summary: '쪽 위의 글자를 눌러 원하는 글꼴·크기로 바꾼다', build: pdfEditTool },
   { id: 'images-pdf', title: '이미지 → PDF', summary: '사진·스캔 여러 장을 고른 순서대로 한 PDF 로', build: imagesPdfTool },
   { id: 'text-hwpx', title: '텍스트·Markdown → HWPX', summary: '붙여 넣은 글과 표를 한글에서 열리는 문서로', build: textHwpxTool },
   { id: 'hwpx-markdown', title: 'HWPX → Markdown', summary: '한글 문서의 글 순서와 표 구조를 그대로 옮긴다', build: hwpxTool },

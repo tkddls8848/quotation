@@ -42,6 +42,7 @@
 | [`decisions/0016-a-server-only-for-hwp-to-pdf.md`](decisions/0016-a-server-only-for-hwp-to-pdf.md) | HWP → PDF 에만 서버를 다시 들인다 (결정 0018 이 뒤집음) |
 | [`decisions/0017-cloudflare-builds-owns-deploys.md`](decisions/0017-cloudflare-builds-owns-deploys.md) | 배포는 Cloudflare Workers Builds 가 갖는다 |
 | [`decisions/0018-browser-only-converters.md`](decisions/0018-browser-only-converters.md) | HWP → PDF 를 내리고 변환기를 브라우저 안으로 되돌린다 |
+| [`decisions/0019-overwrite-not-inplace-pdf-text.md`](decisions/0019-overwrite-not-inplace-pdf-text.md) | PDF 글자는 제자리에서 고치지 않고 덮어쓴다 |
 | [`incidents/0001-worker-rejected-everything.md`](incidents/0001-worker-rejected-everything.md) | Worker 가 모든 변환을 거절했다 |
 | [`incidents/0002-pyodide-lxml-euckr.md`](incidents/0002-pyodide-lxml-euckr.md) | Pyodide 의 libxml2 는 EUC-KR 을 모른다 |
 | [`measurements/runtime.md`](measurements/runtime.md) | CPU·판본·크기 실측 |
