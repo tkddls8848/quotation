@@ -13,7 +13,7 @@ import { existsSync, readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 
 import fontkit from '@pdf-lib/fontkit';
-import { PDFDocument, StandardFonts } from 'pdf-lib';
+import { decodePDFRawStream, PDFDocument, PDFRawStream, StandardFonts } from 'pdf-lib';
 import { describe, expect, it } from 'vitest';
 
 import { readTables, stripLayoutTables } from './sfnt';
@@ -47,6 +47,11 @@ describe.skipIf(!fonts.length)('받아 온 글꼴', () => {
     // 서브셋이 깨지면 5.9MB 글꼴이 통째로 들어간다. 받는 사람이 그것을 떠안는다.
     expect(bytes.length).toBeLessThan(raw.length / 4);
     expect(await extract(bytes)).toBe(SAMPLE);
+    // 글자를 되읽을 수 있어도 **모양** 이 깨질 수 있다. 되읽기는 ToUnicode 만 보기
+    // 때문이다 — 심긴 글꼴에서 글리프를 직접 열어 본다.
+    const found = await contours(bytes);
+    expect(found.length).toBeGreaterThan(10);
+    expect(found.filter(count => count < -1 || count > 64), '심긴 글꼴의 글리프가 밀렸습니다').toEqual([]);
   }, 60_000);
 
   it.each(fonts.map(font => [font.label, font] as const))('%s 의 라이선스 고지가 함께 있다', (_label, font) => {
@@ -66,6 +71,44 @@ describe('PDF 기본 글꼴', () => {
     expect(() => helvetica.widthOfTextAtSize('한글', 12)).toThrow(/encode/i);
   });
 });
+
+/**
+ * 저장한 PDF 에 심긴 글꼴을 꺼내 글리프마다 윤곽선 수를 읽는다.
+ *
+ * 윤곽선 수는 글리프 첫 두 바이트다. 자리표(loca)가 한 바이트라도 밀리면 엉뚱한
+ * 자리를 읽어 2048·22784 같은 값이 나온다 — 화면에서는 글자가 빈칸이 된다.
+ * 합성 글리프는 -1 이고, 획이 가장 많은 한글도 윤곽선이 수십 개를 넘지 않는다.
+ */
+async function contours(pdf: Uint8Array): Promise<number[]> {
+  const font = await fontProgram(pdf);
+  const tables = readTables(font);
+  const find = (tag: string): { offset: number; length: number } => tables.find(table => table.tag === tag)!;
+  const view = new DataView(font.buffer, font.byteOffset, font.byteLength);
+  const count = view.getUint16(find('maxp').offset + 4);
+  const long = view.getInt16(find('head').offset + 50) === 1;
+  const loca = find('loca').offset;
+  const glyf = find('glyf').offset;
+  const at = (index: number): number => (long ? view.getUint32(loca + index * 4) : view.getUint16(loca + index * 2) * 2);
+
+  const found: number[] = [];
+  for (let index = 0; index < count; index++) {
+    // 빈 글리프(띄어쓰기)는 자리를 차지하지 않는다. 볼 것이 없다.
+    if (at(index + 1) - at(index) > 0) found.push(view.getInt16(glyf + at(index)));
+  }
+  return found;
+}
+
+/** PDF 안의 글꼴 파일(FontFile2)을 찾아 푼다. 심은 글꼴이 이 문서의 유일한 sfnt 다. */
+async function fontProgram(pdf: Uint8Array): Promise<Uint8Array> {
+  const document = await PDFDocument.load(pdf);
+  for (const [, object] of document.context.enumerateIndirectObjects()) {
+    if (!(object instanceof PDFRawStream)) continue;
+    const bytes = decodePDFRawStream(object).decode();
+    const tag = String.fromCharCode(...bytes.subarray(0, 4));
+    if (tag === '\0\u0001\0\0' || tag === 'true' || tag === 'OTTO') return bytes;
+  }
+  throw new Error('심긴 글꼴을 찾지 못했습니다.');
+}
 
 /** 저장한 PDF 에서 글자를 도로 뽑는다. 그림이 아니라 글자로 들어갔다는 증거다. */
 async function extract(bytes: Uint8Array): Promise<string> {

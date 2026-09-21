@@ -14,8 +14,9 @@ converters/
     pdf-edit-panel.ts PDF 글자 고치기 화면 — 쪽 위 글자 상자를 눌러 고친다
     pdf-edit.ts       덮고 다시 쓰기. 글꼴 심기·덮을 자리·자리에 맞게 줄이기
     pdf-edit.test.ts  덮는 자리·줄이기·경고·한도를 고정
-    sfnt.ts           글꼴에서 배치 테이블을 뗀다 (fontkit 이 거기서 죽는다)
-    sfnt.test.ts      떼기·내용 보존·검사합 재계산·못 쓰는 글꼴 거절
+    sfnt.ts           글꼴 손질 — 배치 테이블 떼기(fontkit 이 거기서 죽는다)와
+                      글리프 짝수 맞추기(서브셋 loca 가 홀수 자리를 못 담는다)
+    sfnt.test.ts      떼기·자리 맞추기·내용 보존·검사합 재계산·못 쓰는 글꼴 거절
     fonts.ts          심을 수 있는 글꼴 목록. 고른 하나만 받아서 붙든다
     fonts.test.ts     받아 온 글꼴 전부를 실제로 심어 한글을 되읽는다
     pdf.ts            pdf-lib 기반 PDF 읽기·쪽 복사·저장·범위 검증

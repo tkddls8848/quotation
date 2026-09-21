@@ -24,6 +24,8 @@ export const EDIT_LIMITS = {
   /** 한 번에 고칠 자리. 이보다 많으면 도구가 아니라 다른 것이 필요하다. */
   edits: 500,
   chars: 500,
+  /** 이보다 작으면 종이에서 읽기 어렵다. 막지는 않고 그렇다고 적는다. */
+  legibleSize: 6,
   fontBytes: 32 * 1024 * 1024,
   minSize: 1,
   maxSize: 400,
@@ -171,6 +173,11 @@ export async function applyTextEdits(source: Uint8Array, edits: TextEdit[], font
       warnings.push(`${where}: 새 글자가 원래 자리보다 ${percent}% 넓어 옆 내용을 덮을 수 있습니다.`);
     }
     if (lines.length > 1) warnings.push(`${where}: 여러 줄은 글자 크기의 1.35배 간격으로 내려 씁니다. 아래 내용과 겹치는지 확인하세요.`);
+    // 자리에 맞추려고 줄이다 보면 읽을 수 없는 크기가 된다. 줄여 넣고 아무 말도
+    // 하지 않으면 화면에서는 글자가 사라진 것처럼 보인다.
+    if (edit.size < EDIT_LIMITS.legibleSize) {
+      warnings.push(`${where}: 글자 크기가 ${edit.size}pt 라 읽기 어렵습니다. 자리에 맞추려면 글자를 줄이거나 자동 줄임을 끄고 옮겨 보세요.`);
+    }
   }
 
   const bytes = await document.save();

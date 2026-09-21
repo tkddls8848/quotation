@@ -98,6 +98,22 @@ try {
   await edit.locator('#conv-edit-file').setInputFiles({ name: 'edit.pdf', mimeType: 'application/pdf', buffer: Buffer.from(await source.save()) });
   await edit.getByText('edit.pdf · 1쪽. 고칠 글자를 누르세요.', { exact: true }).waitFor();
 
+  // 글자 상자는 **비어 있어야** 한다. 상자에 바탕색이 깔리면 조각마다 불투명한
+  // 판이 얹혀 쪽이 통째로 먹칠된 것처럼 보인다 — 무엇을 고치는지 보이지 않는다.
+  const spanBackground = await edit.locator('.edit-span').first()
+    .evaluate(node => getComputedStyle(node).backgroundColor);
+  assert.match(spanBackground, /rgba\(0, 0, 0, 0\)|transparent/, `글자 상자가 쪽을 가립니다: ${spanBackground}`);
+
+  // 고치기 전의 쪽 그림. 아래에서 "고친 뒤에 글자가 남았는지" 를 재는 잣대가 된다.
+  const ink = () => edit.locator('.edit-canvas').evaluate(canvas => {
+    const { data } = canvas.getContext('2d').getImageData(0, 0, canvas.width, canvas.height);
+    let dark = 0;
+    for (let at = 0; at < data.length; at += 4) if (data[at] < 128 && data[at + 1] < 128 && data[at + 2] < 128) dark++;
+    return dark;
+  });
+  const before = await ink();
+  assert.ok(before > 0, '쪽이 그려지지 않았습니다.');
+
   // 쪽 위의 글자 상자를 누르면 그 자리의 원래 글자가 칸에 들어온다.
   await edit.locator('.edit-span').first().click();
   await edit.getByText('원래 글자: BEFORE', { exact: true }).waitFor();
@@ -110,6 +126,12 @@ try {
   await edit.getByRole('button', { name: '이 자리 고치기', exact: true }).click();
   await edit.getByText('고쳤습니다. 아래 미리보기가 저장될 모습입니다.', { exact: true }).waitFor();
   assert.match(await edit.locator('.edit-list li').first().innerText(), /1쪽 · “BEFORE” → “고친 글자” · 나눔고딕/);
+
+  // 고친 자리에 **글자가 남아 있어야** 한다. 심은 글꼴의 글리프가 밀리면(서브셋
+  // loca, sfnt.ts 참고) 원래 글자는 덮이고 새 글자는 그려지지 않아 자리가 빈다.
+  // 글자를 뽑아 보는 검사로는 이것을 잡지 못한다 — ToUnicode 는 멀쩡하기 때문이다.
+  const after = await ink();
+  assert.ok(after > before * 0.5, `고친 자리에 글자가 그려지지 않았습니다 (먹 ${before} → ${after}).`);
 
   await edit.getByRole('button', { name: '고친 PDF 저장', exact: true }).click();
   const editedBytes = await grab(edit.locator('.edit-outputs a'), 'edited.pdf');

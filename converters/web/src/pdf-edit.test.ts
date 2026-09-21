@@ -79,6 +79,13 @@ describe('글자 고쳐 저장하기', () => {
     expect(warnings.join(' ')).toMatch(/넓어/);
   });
 
+  it('읽을 수 없이 작아진 글자를 그냥 넘기지 않는다', async () => {
+    // 자동 줄임이 바닥까지 내려가면 글자는 있는데 보이지 않는다. 말하지 않으면
+    // 고친 자리가 사라진 것으로 보인다.
+    const { warnings } = await applyTextEdits(await blankPdf(), [edit({ size: 4 })], HELVETICA);
+    expect(warnings.join(' ')).toMatch(/읽기 어렵습니다/);
+  });
+
   it('여러 줄이면 겹칠 수 있다고 알린다', async () => {
     const { warnings } = await applyTextEdits(await blankPdf(), [edit({ text: 'first line\nsecond line' })], HELVETICA);
     expect(warnings.join(' ')).toMatch(/여러 줄/);
