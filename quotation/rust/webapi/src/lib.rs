@@ -148,7 +148,7 @@ fn pick_upload(upload: &Upload) -> Result<String, ApiError> {
     }
     if upload.content.len() > limits::MAX_UPLOAD_BYTES {
         return Err(errors::file_too_large(&format!(
-            "XML 화일은 {} MiB 까지 올릴 수 있습니다.",
+            "XML 파일은 {} MiB 까지 올릴 수 있습니다.",
             limits::MAX_UPLOAD_BYTES / limits::MIB
         )));
     }
@@ -290,12 +290,12 @@ fn too_many_items() -> String {
 fn guard_document_size(xml: &[u8]) -> Result<(), ApiError> {
     if xml.len() > limits::MAX_UPLOAD_BYTES {
         return Err(errors::file_too_large(&format!(
-            "XML 화일은 {} MiB 까지 올릴 수 있습니다.",
+            "XML 파일은 {} MiB 까지 올릴 수 있습니다.",
             limits::MAX_UPLOAD_BYTES / limits::MIB
         )));
     }
     if xml.iter().all(u8::is_ascii_whitespace) {
-        return Err(errors::invalid_request("빈 화일입니다."));
+        return Err(errors::invalid_request("빈 파일입니다."));
     }
     if rough_item_count(xml) > limits::MAX_LINE_ITEMS {
         return Err(errors::invalid_quotation_xml(&too_many_items()));

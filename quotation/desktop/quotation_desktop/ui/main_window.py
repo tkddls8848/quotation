@@ -17,7 +17,7 @@ from .. import paths
 
 TITLE = "견적서 작성기"
 SUBTITLE = "IBM eServer and TotalStorage, Lenovo x86 (ThinkSystem) — 자동 구분"
-XML_FILETYPES = [("XML 화일", "*.xml"), ("모든 화일", "*.*")]
+XML_FILETYPES = [("XML 파일", "*.xml"), ("모든 파일", "*.*")]
 #: 템플릿 열기 줄에 보여 줄 이름. `quotation.core.modes.LABELS` 는 진단용이라
 #: 화면 문구는 여기서 따로 정한다.
 TEMPLATE_ROW_LABELS = {modes.UNIX: "IBM", modes.INTEGRATED: "Lenovo x86"}
@@ -34,7 +34,7 @@ class MainWindow(ttk.Frame):
 
         self.xml_path = tk.StringVar()
         self.open_result = tk.BooleanVar(value=self.cfg.open_result_when_done)
-        self.status = tk.StringVar(value="변환할 XML 화일을 선택하십시오.")
+        self.status = tk.StringVar(value="변환할 XML 파일을 선택하십시오.")
         self.progress_pct = tk.StringVar(value="0%")
         # 어느 XML 을 고를지는 아직 모르므로(IBM/Lenovo 는 파싱 후에 갈린다),
         # 편집용 사본은 두 모드 다 미리 만들어 둔다.
@@ -62,8 +62,8 @@ class MainWindow(ttk.Frame):
         ttk.Label(self, text=SUBTITLE, style="Muted.TLabel").grid(
             row=1, column=0, sticky="w", pady=(2, 16))
 
-        # --- 화일 선택 -----------------------------------------------------
-        ttk.Label(self, text="XML 화일", style="FieldLabel.TLabel").grid(
+        # --- 파일 선택 -----------------------------------------------------
+        ttk.Label(self, text="XML 파일", style="FieldLabel.TLabel").grid(
             row=2, column=0, sticky="w")
 
         file_row = ttk.Frame(self)
@@ -156,7 +156,7 @@ class MainWindow(ttk.Frame):
 
     def _pick_xml(self):
         chosen = filedialog.askopenfilename(
-            title="XML화일 선택", filetypes=XML_FILETYPES,
+            title="XML파일 선택", filetypes=XML_FILETYPES,
             initialdir=self.cfg.last_input_dir or str(Path.home()))
         if chosen:
             self.xml_path.set(chosen)
@@ -179,16 +179,16 @@ class MainWindow(ttk.Frame):
             return
         raw = self.xml_path.get().strip()
         if not raw:
-            messagebox.showinfo(TITLE, "작업할 화일을 선택하세요.")
+            messagebox.showinfo(TITLE, "작업할 파일을 선택하세요.")
             return
         xml = Path(raw)
         if not xml.is_file():
-            messagebox.showerror(TITLE, f"화일을 찾을 수 없습니다.\n{xml}")
+            messagebox.showerror(TITLE, f"파일을 찾을 수 없습니다.\n{xml}")
             return
 
         target = convert.output_path_for(xml)
         if target.exists() and not messagebox.askyesno(
-                TITLE, f"이미 있는 화일을 덮어씁니다.\n\n{target.name}\n\n계속할까요?"):
+                TITLE, f"이미 있는 파일을 덮어씁니다.\n\n{target.name}\n\n계속할까요?"):
             return
 
         self._set_busy(True)
@@ -209,11 +209,11 @@ class MainWindow(ttk.Frame):
         except PermissionError:
             self._events.put((
                 "error",
-                "저장할 화일이 다른 프로그램에서 열려 있습니다.\n"
+                "저장할 파일이 다른 프로그램에서 열려 있습니다.\n"
                 "해당 견적서를 닫고 다시 시도하십시오.",
             ))
         except OSError as exc:
-            self._events.put(("error", f"화일을 저장하지 못했습니다.\n{exc}"))
+            self._events.put(("error", f"파일을 저장하지 못했습니다.\n{exc}"))
 
     def _drain_events(self):
         try:
@@ -272,7 +272,7 @@ def _open(path: Path):
     try:
         os.startfile(path)  # noqa: S606
     except OSError as exc:
-        messagebox.showerror(TITLE, f"화일을 열지 못했습니다.\n{exc}")
+        messagebox.showerror(TITLE, f"파일을 열지 못했습니다.\n{exc}")
 
 
 def run(prefill: str | None = None) -> int:

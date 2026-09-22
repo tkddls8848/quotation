@@ -65,7 +65,7 @@ pub fn file_too_large(message: &str) -> ApiError {
 }
 
 pub fn unsupported_media_type() -> ApiError {
-    error(UNSUPPORTED_MEDIA_TYPE, "XML 화일만 변환할 수 있습니다.")
+    error(UNSUPPORTED_MEDIA_TYPE, "XML 파일만 변환할 수 있습니다.")
 }
 
 pub fn invalid_quotation_xml(message: &str) -> ApiError {

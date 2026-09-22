@@ -125,7 +125,7 @@ def main() -> int:
                         help="합격하면 저장소 원본으로 삼고 파생물을 다시 만든다")
     args = parser.parse_args()
     if not args.template.is_file():
-        return _fail(f"화일이 없습니다: {args.template}")
+        return _fail(f"파일이 없습니다: {args.template}")
 
     code = verify(args.template)
     if code != 0 or not args.adopt:

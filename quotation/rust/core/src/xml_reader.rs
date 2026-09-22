@@ -134,7 +134,7 @@ pub fn parse_items(data: &[u8]) -> Result<Vec<LineItem>> {
 /// 문서를 읽어 뿌리와 라인을 함께 돌려준다. 요약표가 뿌리를 다시 본다.
 fn read(data: &[u8]) -> Result<(Element, Vec<LineItem>)> {
     if data.iter().all(u8::is_ascii_whitespace) {
-        return Err(QuotationXmlError::load("빈 화일입니다."));
+        return Err(QuotationXmlError::load("빈 파일입니다."));
     }
 
     let root = xmldom::parse(data).map_err(QuotationXmlError::load)?;

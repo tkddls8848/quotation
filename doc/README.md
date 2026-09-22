@@ -83,7 +83,7 @@
 | Phase 0 기준선·fixture | **완료** | `tests/fixtures/public/` 에 신규·증설·N/C·REMOVE·EUC-KR·인라인 DTD fixture. 런타임 검증은 [실측](measurements/runtime.md)으로 끝냈다 |
 | Phase 1 코어 bytes I/O | **완료** | `parse_bytes`, `build_bytes`, `carry_over_bytes`, `convert_bytes`. 경로 API 는 데스크톱 어댑터로 유지. path/bytes 동등성 테스트 통과 |
 | Phase 2 변환 API | **완료** | 상한·오류코드·보안 헤더·Asia/Seoul 날짜. 그 계약은 `quotation/rust/webapi` 한 벌이고 데스크톱과 브라우저가 같은 것을 부른다 |
-| Phase 3 웹 UI | **완료** | 드래그앤드롭, 여러 화일 일괄 변환, 단계 상태, 취소, 중복 제출 방지, 접근성, 한글 파일명 다운로드 |
+| Phase 3 웹 UI | **완료** | 드래그앤드롭, 여러 파일 일괄 변환, 단계 상태, 취소, 중복 제출 방지, 접근성, 한글 파일명 다운로드 |
 | Phase 4 보안·운영 | **범위 축소** | 변환이 브라우저에서 끝나 서버에 남길 것이 없다. 서버 경로 자체를 없앴으므로 Access·Rate Limiting 도 대상이 없다 ([결정 0010](decisions/0010-retire-the-server-conversion-path.md)) |
 | Phase 5 CI/CD | **완료** | `.github/workflows/ci.yml` — 테스트·번들 검사·브라우저 동일성·배포 |
 | Phase 6 병행 운영 | 진행 중 | 데스크톱 앱을 복구 수단으로 유지. 결과 동일성은 CI 가 매 푸시 대조 |
@@ -97,7 +97,7 @@
 | 변환 코어는 파이썬 한 벌 | Rust 한 벌. 데스크톱은 확장 모듈로, 브라우저는 WASM 으로 부른다 | [결정 0004](decisions/0004-resume-rust-wasm-phase0.md), [0007](decisions/0007-phase0-gates-passed.md) |
 | 첫 방문에 엔진 14.4 MiB (Pyodide) | 약 1 MiB (gzip). 기동 1.9초 → 5 ms 안팎 | [결정 0008](decisions/0008-wasm-size-after-the-writer.md) |
 | Cloudflare Access 로 접근 제어 | 적용하지 않음. 서버에 XML 이 가지 않는다 | [결정 0002](decisions/0002-convert-in-browser.md) |
-| 한 번에 화일 1개 | 화면에서 최대 50개, 변환은 한 건씩 | `web/frontend/src/batch.ts` |
+| 한 번에 파일 1개 | 화면에서 최대 50개, 변환은 한 건씩 | `web/frontend/src/batch.ts` |
 | Container fallback 검토 | 하지 않음. Paid 전제라 무료 계정 문제를 못 푼다 | [결정 0002](decisions/0002-convert-in-browser.md) |
 | Worker 스크립트 없음 (정적 자산만) | 그대로다. 공시 중계 창구는 계산기와 함께 내렸다 | [결정 0013](decisions/0013-deposit-products-from-fss.md), [0014](decisions/0014-retire-the-fire-calculator.md) |
 | 파일은 브라우저 밖으로 나가지 않는다 | 예외 없이 그렇다. 문서 변환기의 HWP → PDF 서버를 내리면서 되돌아왔다 | [결정 0016](decisions/0016-a-server-only-for-hwp-to-pdf.md), [0018](decisions/0018-browser-only-converters.md) |

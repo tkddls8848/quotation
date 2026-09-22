@@ -14,11 +14,11 @@ describe('selectFiles', () => {
     );
     expect(accepted.map((f) => f.name)).toEqual(['a.xml', 'b.XML']);
     expect(rejected).toEqual([
-      { name: '메모.txt', reason: 'XML 화일만 변환할 수 있습니다.' },
+      { name: '메모.txt', reason: 'XML 파일만 변환할 수 있습니다.' },
     ]);
   });
 
-  it('빈 화일과 너무 큰 화일을 거른다', () => {
+  it('빈 파일과 너무 큰 파일을 거른다', () => {
     const { accepted, rejected } = selectFiles(
       [file('빈.xml', 0), file('큰.xml', APP_CONFIG.max_upload_bytes + 1), file('ok.xml')],
       APP_CONFIG,
@@ -29,7 +29,7 @@ describe('selectFiles', () => {
   });
 
   it('같은 이름을 두 번 고르면 앞의 것만 남긴다', () => {
-    // 결과 화일 이름이 같아 서로를 덮어쓰기 때문이다.
+    // 결과 파일 이름이 같아 서로를 덮어쓰기 때문이다.
     const { accepted, rejected } = selectFiles([file('견적.xml'), file('견적.xml')], APP_CONFIG);
     expect(accepted).toHaveLength(1);
     expect(rejected[0].reason).toContain('두 번');
@@ -49,7 +49,7 @@ describe('selectFiles', () => {
     expect(rejected).toHaveLength(1);
   });
 
-  it('이미 대기 중인 화일과 이름이 겹치면 거른다', () => {
+  it('이미 대기 중인 파일과 이름이 겹치면 거른다', () => {
     const { accepted, rejected } = selectFiles(
       [file('견적.xml'), file('새.xml')],
       APP_CONFIG,

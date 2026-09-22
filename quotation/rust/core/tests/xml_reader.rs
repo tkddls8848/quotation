@@ -90,8 +90,8 @@ fn reads_line_and_sub_fields() {
 
 #[test]
 fn rejects_empty_document() {
-    assert!(message(b"").contains("빈 화일입니다."));
-    assert!(message(b"   \n\t ").contains("빈 화일입니다."));
+    assert!(message(b"").contains("빈 파일입니다."));
+    assert!(message(b"   \n\t ").contains("빈 파일입니다."));
 }
 
 #[test]

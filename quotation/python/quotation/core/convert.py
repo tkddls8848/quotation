@@ -160,17 +160,17 @@ def convert(xml_path: str | Path, *, template: TemplatePath | None = None,
     started = dt.datetime.now()
     xml_path = Path(xml_path)
 
-    progress(5, "XML화일을 읽고 있습니다.")
+    progress(5, "XML파일을 읽고 있습니다.")
     xml_bytes = xml_path.read_bytes()
     resolved_mode = document_mode(xml_bytes, mode)
 
     resolved_template = (Path(_resolve(template, resolved_mode)) if template is not None
                          else resources.default_template_path(resolved_mode))
 
-    progress(35, "XML화일 분석을 완료하였습니다.")
+    progress(35, "XML파일 분석을 완료하였습니다.")
     out = output_path_for(xml_path)
 
-    progress(45, "Excel화일을 생성하고 있습니다.")
+    progress(45, "Excel파일을 생성하고 있습니다.")
     result = _core().convert_bytes(
         xml_bytes, resolved_template.read_bytes(),
         *_date_parts(today), resolved_mode)

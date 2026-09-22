@@ -132,7 +132,7 @@ pub fn parse(data: &[u8]) -> Result<Element, String> {
     if !stack.is_empty() {
         return Err("닫히지 않은 태그가 있습니다.".to_owned());
     }
-    root.ok_or_else(|| "빈 화일입니다.".to_owned())
+    root.ok_or_else(|| "빈 파일입니다.".to_owned())
 }
 
 fn open(name: &[u8], namespace: &ResolveResult) -> Element {

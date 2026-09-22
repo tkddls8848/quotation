@@ -34,7 +34,7 @@ def _sheet(xlsx: bytes, part: str) -> str:
 # --- 입력 거르기 ---------------------------------------------------------------
 
 def test_empty_input_is_rejected():
-    with pytest.raises(QuotationXmlError, match="빈 화일"):
+    with pytest.raises(QuotationXmlError, match="빈 파일"):
         convert.convert_bytes(b"   \n", today=TODAY)
 
 

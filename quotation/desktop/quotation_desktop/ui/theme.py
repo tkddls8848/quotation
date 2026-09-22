@@ -18,14 +18,14 @@ ACCENT_TEXT = "#10131a"
 OK = "#6fcf97"         # 완료
 DANGER = "#ff8f85"     # 실패
 
-MONO_FONT = "Consolas"  # 화일 경로·판(mode) 이름처럼 값을 그대로 보여 줄 때
+MONO_FONT = "Consolas"  # 파일 경로·판(mode) 이름처럼 값을 그대로 보여 줄 때
 
 
 def apply(root: tk.Misc) -> None:
     """창과 ttk 위젯을 어둡게 칠한다.
 
     윈도우 기본 테마(vista)는 색을 바꿔도 대부분 무시하므로 `clam` 으로
-    바꾼 뒤 칠한다. 알림창과 화일 선택창은 운영체제가 그리므로 그대로 둔다.
+    바꾼 뒤 칠한다. 알림창과 파일 선택창은 운영체제가 그리므로 그대로 둔다.
     """
     style = ttk.Style(root)
     if "clam" in style.theme_names():

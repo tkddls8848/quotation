@@ -116,7 +116,7 @@ def test_convert_without_file_warns(root, monkeypatch):
                         lambda t, m: shown.append((t, m)))
     win = main_window.MainWindow(root)
     win._start()
-    assert shown == [(main_window.TITLE, "작업할 화일을 선택하세요.")]
+    assert shown == [(main_window.TITLE, "작업할 파일을 선택하세요.")]
 
 
 def test_missing_file_reports_error(root, monkeypatch, tmp_path):
@@ -125,6 +125,6 @@ def test_missing_file_reports_error(root, monkeypatch, tmp_path):
     monkeypatch.setattr(main_window.messagebox, "showerror",
                         lambda t, m: errors.append(m))
     win = main_window.MainWindow(root)
-    win.xml_path.set(str(tmp_path / "없는화일.xml"))
+    win.xml_path.set(str(tmp_path / "없는파일.xml"))
     win._start()
     assert errors and "찾을 수 없습니다" in errors[0]

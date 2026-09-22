@@ -1,5 +1,5 @@
 /**
- * 여러 화일을 고를 때의 판단 — 화면 조작과 떼어 놓아 그대로 시험한다.
+ * 여러 파일을 고를 때의 판단 — 화면 조작과 떼어 놓아 그대로 시험한다.
  *
  * 변환 자체는 한 건씩 한다. 브라우저가 `entry.convert` 를 파일 수만큼 되풀이할
  * 뿐이고, 한 건의 산출물은 한 개만 변환할 때와 바이트가 같다. 여기 있는 것은
@@ -21,9 +21,9 @@ export interface Selection {
 }
 
 /**
- * 고른 화일 중 변환할 수 있는 것만 추린다. 거른 것은 이유와 함께 돌려준다.
+ * 고른 파일 중 변환할 수 있는 것만 추린다. 거른 것은 이유와 함께 돌려준다.
  *
- * `existing` 은 이미 대기 목록에 있는 화일이다. 새로 고른 화일을 여기 이어
+ * `existing` 은 이미 대기 목록에 있는 파일이다. 새로 고른 파일을 여기 이어
  * 붙일 것이므로, 이름 겹침과 한 번에 받는 개수도 `existing` 을 합쳐서 셈한다.
  */
 export function selectFiles(
@@ -42,7 +42,7 @@ export function selectFiles(
       rejected.push({ name: file.name, reason });
       continue;
     }
-    // 같은 이름을 두 번 고르면 결과 화일이 서로를 덮는다. 앞의 것만 남긴다.
+    // 같은 이름을 두 번 고르면 결과 파일이 서로를 덮는다. 앞의 것만 남긴다.
     if (seen.has(file.name)) {
       rejected.push({ name: file.name, reason: '같은 이름을 두 번 골랐습니다.' });
       continue;
@@ -62,13 +62,13 @@ export function selectFiles(
   return { accepted, rejected };
 }
 
-/** 화일 하나를 받아들일 수 없는 이유. 받아들일 수 있으면 null. */
+/** 파일 하나를 받아들일 수 없는 이유. 받아들일 수 있으면 null. */
 export function rejectReason(file: File, config: AppConfig): string | null {
   const name = file.name.toLowerCase();
   if (!config.allowed_suffixes.some((suffix) => name.endsWith(suffix))) {
-    return 'XML 화일만 변환할 수 있습니다.';
+    return 'XML 파일만 변환할 수 있습니다.';
   }
-  if (file.size === 0) return '빈 화일입니다.';
+  if (file.size === 0) return '빈 파일입니다.';
   if (file.size > config.max_upload_bytes) {
     return `너무 큽니다. 한 개당 최대 ${Math.floor(config.max_upload_bytes / MiB)} MiB 입니다.`;
   }

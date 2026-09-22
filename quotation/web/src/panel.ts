@@ -142,13 +142,13 @@ export function mountQuotation(root: HTMLElement, deploymentVersion: string): vo
     selected.hidden = chosen.length === 0;
     selected.textContent =
       chosen.length === 1
-        ? '화일 1개'
-        : `화일 ${chosen.length}개 · 합계 ${humanSize(
+        ? '파일 1개'
+        : `파일 ${chosen.length}개 · 합계 ${humanSize(
             chosen.reduce((sum, f) => sum + f.size, 0),
           )}`;
   }
 
-  /** 새로 고른 화일을 대기 목록에 이어 붙인다. 통째로 바꿔치기하지 않는다. */
+  /** 새로 고른 파일을 대기 목록에 이어 붙인다. 통째로 바꿔치기하지 않는다. */
   function addFiles(files: readonly File[]): void {
     clearError();
     setStatus('');
@@ -172,7 +172,7 @@ export function mountQuotation(root: HTMLElement, deploymentVersion: string): vo
     }
   }
 
-  /** 대기 목록에서 화일 하나를 뺀다. 변환이 진행 중일 때는 손대지 않는다. */
+  /** 대기 목록에서 파일 하나를 뺀다. 변환이 진행 중일 때는 손대지 않는다. */
   function removeFile(index: number): void {
     if (running) return;
     clearError();
@@ -185,7 +185,7 @@ export function mountQuotation(root: HTMLElement, deploymentVersion: string): vo
 
   function pickFromInput(): void {
     addFiles(Array.from(fileInput.files ?? []));
-    // 값을 비워 두어야 같은 화일을 다시 고를 때도 change 이벤트가 일어난다.
+    // 값을 비워 두어야 같은 파일을 다시 고를 때도 change 이벤트가 일어난다.
     fileInput.value = '';
   }
 
@@ -209,11 +209,11 @@ export function mountQuotation(root: HTMLElement, deploymentVersion: string): vo
     const files = event.dataTransfer?.files;
     if (!files?.length) return;
     addFiles(Array.from(files));
-    // 입력 요소를 비워 두어야 같은 화일을 다시 드롭했을 때도 change 가 어긋나지 않는다.
+    // 입력 요소를 비워 두어야 같은 파일을 다시 드롭했을 때도 change 가 어긋나지 않는다.
     fileInput.value = '';
   });
 
-  // 키보드만으로도 화일을 고를 수 있어야 한다.
+  // 키보드만으로도 파일을 고를 수 있어야 한다.
   dropzone.addEventListener('click', () => {
     if (!running) fileInput.click();
   });

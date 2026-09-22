@@ -88,7 +88,7 @@ page.on('console', (message) => {
 const results = {};
 await page.goto(origin + '/');
 
-// 화일을 **한 번에 모두** 고른다. 여러 건 변환이 한 건씩 변환과 같은 결과를
+// 파일을 **한 번에 모두** 고른다. 여러 건 변환이 한 건씩 변환과 같은 결과를
 // 내는지가 이 스모크의 요점이다.
 const saved = [];
 page.on('download', async (download) => {
