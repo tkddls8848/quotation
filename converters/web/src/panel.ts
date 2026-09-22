@@ -31,6 +31,7 @@ import { pdfEditTool } from './pdf-edit-panel';
 import { pdfTool } from './pdf-panel';
 import { textHwpxTool } from './text-hwpx-panel';
 import { zipTool } from './zip-panel';
+import { documentTool, spreadsheetTool } from './format-panel';
 
 const MAX_BYTES = 64 * 1024 * 1024;
 
@@ -46,6 +47,8 @@ interface Choice {
 // 이름은 고른 뒤 열리는 도구의 제목과 **같은 글자**다. 고르고 나서 "내가 이걸
 // 골랐나" 를 되짚게 만들지 않기 위함이다.
 const CHOICES: Choice[] = [
+  { id: 'document', title: '문서·전자책 변환', summary: 'DOCX·ODT·PDF·EPUB 등의 본문을 10가지 형식으로', build: documentTool },
+  { id: 'spreadsheet', title: '스프레드시트 변환', summary: 'Excel·ODS·CSV·JSON 등, 여러 시트도 한 번에', build: spreadsheetTool },
   { id: 'pdf', title: 'PDF 편집기', summary: '병합·쪽 삭제·회전·분할, HWPX·이미지로 저장', build: pdfTool },
   { id: 'pdf-edit', title: 'PDF 글자 고치기', summary: '쪽 위의 글자를 눌러 원하는 글꼴·크기로 바꾼다', build: pdfEditTool },
   { id: 'images-pdf', title: '이미지 → PDF', summary: '사진·스캔 여러 장을 고른 순서대로 한 PDF 로', build: imagesPdfTool },

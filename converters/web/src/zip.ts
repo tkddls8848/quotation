@@ -79,6 +79,8 @@ export async function readZip(bytes: Uint8Array, limits: Partial<ZipLimits> = {}
     const extraLength = view.getUint16(offset + 30, true);
     const commentLength = view.getUint16(offset + 32, true);
     const localOffset = view.getUint32(offset + 42, true);
+    if (flags & 1) throw new Error('암호화된 ZIP은 지원하지 않습니다.');
+    if (offset + 46 + nameLength + extraLength + commentLength > view.byteLength) throw new Error('ZIP 항목 헤더가 손상됐습니다.');
     const name = decodeName(bytes.subarray(offset + 46, offset + 46 + nameLength), flags);
     offset += 46 + nameLength + extraLength + commentLength;
 
@@ -93,11 +95,12 @@ export async function readZip(bytes: Uint8Array, limits: Partial<ZipLimits> = {}
     const localName = view.getUint16(localOffset + 26, true);
     const localExtra = view.getUint16(localOffset + 28, true);
     const start = localOffset + 30 + localName + localExtra;
+    if (start + compressedSize > view.byteLength) throw new Error('ZIP 압축 데이터가 잘렸습니다.');
     const compressed = bytes.subarray(start, start + compressedSize);
 
     let data: Uint8Array;
     if (method === 0) data = compressed.slice();
-    else if (method === 8) data = await inflateRaw(compressed);
+    else if (method === 8) data = await inflateRaw(compressed, Math.min(size, maxSize));
     else throw new Error(`지원하지 않는 ZIP 압축 방식 ${method}: ${name}`);
     if (data.byteLength !== size) throw new Error(`ZIP 크기가 적힌 것과 다릅니다: ${name}`);
     entries.set(name, data);
@@ -121,7 +124,7 @@ export function isSafePath(name: string): boolean {
   return !!name && !name.includes('\\') && !name.startsWith('/') && !name.split('/').includes('..');
 }
 
-async function inflateRaw(data: Uint8Array): Promise<Uint8Array> {
+async function inflateRaw(data: Uint8Array, maxSize: number): Promise<Uint8Array> {
   // 스트림에 넣기 전에 제 버퍼로 한 번 옮긴다. 타입이 까다로워서가 아니라
   // (TypeScript 는 SharedArrayBuffer 위의 배열을 여기 넣지 못하게 한다) 넘겨받은
   // 배열이 원본 ZIP 의 일부를 가리키는 subarray 이기 때문이다 — 스트림이 읽는
@@ -135,5 +138,18 @@ async function inflateRaw(data: Uint8Array): Promise<Uint8Array> {
     },
   });
   const stream = source.pipeThrough(new DecompressionStream('deflate-raw'));
-  return new Uint8Array(await new Response(stream).arrayBuffer());
+  const reader = stream.getReader();
+  const chunks: Uint8Array[] = []; let length = 0;
+  try {
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      length += value.length;
+      if (length > maxSize) { await reader.cancel(); throw new Error('ZIP 실제 압축 해제 크기가 한도를 넘습니다.'); }
+      chunks.push(value);
+    }
+  } finally { reader.releaseLock(); }
+  const result = new Uint8Array(length); let offset = 0;
+  for (const chunk of chunks) { result.set(chunk, offset); offset += chunk.length; }
+  return result;
 }

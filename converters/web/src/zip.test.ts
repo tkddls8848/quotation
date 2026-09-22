@@ -6,6 +6,15 @@ import { makeZip } from './zip-fixture';
 const text = (bytes: Uint8Array): string => new TextDecoder().decode(bytes);
 
 describe('readZip', () => {
+  it('암호화 ZIP과 실제 해제 크기를 속인 ZIP은 거절한다', async () => {
+    const encrypted = await makeZip([{ name: 'a', content: 'secret', flags: 1 }]);
+    await expect(readZip(encrypted)).rejects.toThrow('암호화');
+    const bomb = await makeZip([{ name: 'a', content: 'x'.repeat(100000), deflate: true }]);
+    const view = new DataView(bomb.buffer as ArrayBuffer);
+    const central = view.getUint32(bomb.length - 22 + 16, true);
+    view.setUint32(central + 24, 1, true);
+    await expect(readZip(bomb)).rejects.toThrow('실제 압축 해제 크기');
+  });
   it('압축하지 않은 항목과 deflate 항목을 모두 되읽는다', async () => {
     // 한글이 내보내는 HWPX 는 deflate 다. method 0 도 규격에 있어 둘 다 받는다.
     const zip = await makeZip([

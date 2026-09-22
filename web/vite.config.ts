@@ -44,7 +44,7 @@ export default defineConfig({
       for (const [name, path] of pdfAssets) this.emitFile({ type: 'asset', fileName: name.slice(1), source: readFileSync(path) });
     },
   }],
-  optimizeDeps: { exclude: ['pdfjs-dist'] },
+  optimizeDeps: { exclude: ['pdfjs-dist'], include: ['xlsx', 'xlsx/dist/cpexcel.full.mjs'] },
   resolve: {
     alias: {
       '@quotation': at('../quotation/web/src'),
@@ -53,6 +53,8 @@ export default defineConfig({
       '@pdf-lib/fontkit': at('./node_modules/@pdf-lib/fontkit/dist/fontkit.es.js'),
       'pdfjs-dist': at('./node_modules/pdfjs-dist'),
       'fflate': at('./node_modules/fflate/esm/browser.js'),
+      'xlsx/dist/cpexcel.full.mjs': at('./node_modules/xlsx/dist/cpexcel.full.mjs'),
+      'xlsx': at('./node_modules/xlsx/xlsx.mjs'),
     },
   },
   define: {
