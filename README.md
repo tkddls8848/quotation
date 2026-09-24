@@ -58,9 +58,10 @@ quotation/              견적기 — 이 기능에 딸린 것은 전부 여기 
   tests/                공개 API 회귀 + 익명화 fixture
   tools/                이 기능의 개발 도구 (골든 비교, 내용 비교, 기동 실측)
 
-converters/             문서 변환기 — 전부 브라우저 안에서 끝난다
+converters/             문서 변환기·사무 도구 — 전부 브라우저 안에서 끝난다
   web/src/              화면·파서·생성기 (panel.ts · pdf-*.ts · hwpx*.ts · zip.ts
-                        · images-pdf.ts · markdown.ts · encoding.ts)
+                        · images-pdf.ts · markdown.ts · encoding.ts · kit.ts
+                        · money·vat·dates·bizno·redact·text-*·hash·qr … 결정 0020)
   web/scripts/          실제 브라우저로 화면과 산출물을 검사한다
   desktop/              한글 COM 으로 .hwp → .hwpx (Windows 전용)
 

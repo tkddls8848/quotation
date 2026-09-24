@@ -187,6 +187,7 @@ jobs:
             sleep 1
           done
           node converters/web/scripts/check-converters.mjs
+          node converters/web/scripts/check-office-tools.mjs
 
   bundle:
     name: 배포 설정 검증 (정적 자산 — 무료 계정)

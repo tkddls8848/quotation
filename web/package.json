@@ -27,6 +27,7 @@
     "fflate": "^0.8.3",
     "pdf-lib": "^1.17.1",
     "pdfjs-dist": "^6.3.289",
+    "qrcode-generator": "^2.0.4",
     "xlsx": "https://cdn.sheetjs.com/xlsx-0.20.3/xlsx-0.20.3.tgz"
   }
 }
