@@ -14,16 +14,14 @@
 # 무료 계정 기준 배포에는 서버 코드가 없다. 변환은 브라우저에서 돌고
 # Cloudflare 는 정적 자산만 내려 준다(결정 decisions/0002).
 #
-# web/ 은 **셸** 이다 — 탭과 공통 틀만 갖는다. 도구는 최상위 기능 폴더에 있고
-# (quotation/, converters/) 셸이 별명으로 부른다. 그래서 빌드 순서가 이렇다.
+# web/ 은 **셸** 이다 — 공통 틀만 갖는다. 도구는 최상위 기능 폴더(quotation/)에
+# 있고 셸이 별명으로 부른다. 그래서 빌드 순서가 이렇다.
 #
 #   1) 변환 엔진: 견적기의 Rust 코어를 wasm 으로 지어 web/public/engine 으로.
 #      빌드 이미지에 Rust 가 없으므로 도구부터 갖춘다 (ensure_wasm_toolchain.sh).
 #   2) 데스크톱 앱: 릴리스의 EXE 를 web/public/download 로. 저장소에 담아 두지
 #      않고 배포할 때 받아 온다 (fetch_desktop_app.sh).
-#   3) 글꼴: PDF 글자 고치기가 심을 한글 글꼴을 npm 에서 web/public/fonts 로.
-#      같은 이유로 저장소에 담지 않는다 (fetch_fonts.py).
-#   4) 정적 자산: wrangler.jsonc 의 assets.directory(dist) 가 있어야 한다.
+#   3) 정적 자산: wrangler.jsonc 의 assets.directory(dist) 가 있어야 한다.
 set -euo pipefail
 
 cd "$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
@@ -38,27 +36,19 @@ rm -rf ./*.egg-info
 export DEPLOYMENT_VERSION="${DEPLOYMENT_VERSION:-${WORKERS_CI_COMMIT_SHA:-$(git rev-parse --short HEAD 2>/dev/null || echo dev)}}"
 echo "=== 배포 판본: ${DEPLOYMENT_VERSION}"
 
-echo "=== 1/4 브라우저 변환 엔진 생성"
+echo "=== 1/3 브라우저 변환 엔진 생성"
 # Cloudflare 빌드 이미지에는 Node·Python·Go·Ruby 만 있고 Rust 가 없다. 없는 것만
 # 갖춘다 — 이미 있는 곳(개발 기계, GitHub Actions)에서는 판본만 찍고 지나간다.
 export PATH="${CARGO_HOME:-$HOME/.cargo}/bin:$PATH"
 bash scripts/ensure_wasm_toolchain.sh
 python3 ../quotation/web/scripts/build_browser_engine.py
 
-echo "=== 2/4 데스크톱 앱 가져오기"
+echo "=== 2/3 데스크톱 앱 가져오기"
 # 화면에서 바로 받아지게 릴리스의 EXE 를 정적 자산에 담는다. 못 받아도 빌드는
 # 계속한다 (화면이 GitHub 쪽으로 물러난다).
 bash scripts/fetch_desktop_app.sh
 
-echo "=== 3/4 글꼴 가져오기"
-# 못 받아도 빌드는 계속한다 (화면이 PDF 기본 라틴 글꼴로 물러난다).
-#
-# `|| true` 가 그 말을 **코드로** 지킨다. 이 파일은 set -e 아래에서 돌기 때문에,
-# 이것이 없으면 글꼴 한 단계가 0 아닌 값으로 끝나는 순간 아래 빌드와 배포가
-# 통째로 죽는다 — 있으면 좋은 것 하나 때문에 사이트 전체가 안 올라간다.
-python3 scripts/fetch_fonts.py || echo "    글꼴 단계가 실패했습니다. 라틴 기본 글꼴로 물러난 채 계속합니다."
-
-echo "=== 4/4 정적 자산 빌드"
+echo "=== 3/3 정적 자산 빌드"
 npm ci
 npm run build
 

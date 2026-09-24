@@ -38,12 +38,13 @@
 | [`decisions/0012-one-folder-per-feature.md`](decisions/0012-one-folder-per-feature.md) | 기능마다 최상위 폴더 하나 |
 | [`decisions/0013-deposit-products-from-fss.md`](decisions/0013-deposit-products-from-fss.md) | 예적금 상품은 공시에서, 창구 Worker 하나 (결정 0014 가 뒤집음) |
 | [`decisions/0014-retire-the-fire-calculator.md`](decisions/0014-retire-the-fire-calculator.md) | FIRE 계산기를 내린다 |
-| [`decisions/0015-both-pdf-to-hwpx-modes.md`](decisions/0015-both-pdf-to-hwpx-modes.md) | PDF → HWPX 는 이미지·텍스트 두 방식 모두 |
-| [`decisions/0016-a-server-only-for-hwp-to-pdf.md`](decisions/0016-a-server-only-for-hwp-to-pdf.md) | HWP → PDF 에만 서버를 다시 들인다 (결정 0018 이 뒤집음) |
+| [`decisions/0015-both-pdf-to-hwpx-modes.md`](decisions/0015-both-pdf-to-hwpx-modes.md) | PDF → HWPX 는 이미지·텍스트 두 방식 모두 — 변환기는 제 저장소로 나갔다 (결정 0021) |
+| [`decisions/0016-a-server-only-for-hwp-to-pdf.md`](decisions/0016-a-server-only-for-hwp-to-pdf.md) | HWP → PDF 에만 서버를 다시 들인다 (결정 0018 이 뒤집음) — 변환기는 제 저장소로 나갔다 (결정 0021) |
 | [`decisions/0017-cloudflare-builds-owns-deploys.md`](decisions/0017-cloudflare-builds-owns-deploys.md) | 배포는 Cloudflare Workers Builds 가 갖는다 |
-| [`decisions/0018-browser-only-converters.md`](decisions/0018-browser-only-converters.md) | HWP → PDF 를 내리고 변환기를 브라우저 안으로 되돌린다 |
-| [`decisions/0019-overwrite-not-inplace-pdf-text.md`](decisions/0019-overwrite-not-inplace-pdf-text.md) | PDF 글자는 제자리에서 고치지 않고 덮어쓴다 |
-| [`decisions/0020-office-tools-in-converters.md`](decisions/0020-office-tools-in-converters.md) | 사무 도구 16개를 변환기 탭 안에 들인다 |
+| [`decisions/0018-browser-only-converters.md`](decisions/0018-browser-only-converters.md) | HWP → PDF 를 내리고 변환기를 브라우저 안으로 되돌린다 — 변환기는 제 저장소로 나갔다 (결정 0021) |
+| [`decisions/0019-overwrite-not-inplace-pdf-text.md`](decisions/0019-overwrite-not-inplace-pdf-text.md) | PDF 글자는 제자리에서 고치지 않고 덮어쓴다 — 변환기는 제 저장소로 나갔다 (결정 0021) |
+| [`decisions/0020-office-tools-in-converters.md`](decisions/0020-office-tools-in-converters.md) | 사무 도구 16개를 변환기 탭 안에 들인다 — 변환기는 제 저장소로 나갔다 (결정 0021) |
+| [`decisions/0021-converters-moves-out.md`](decisions/0021-converters-moves-out.md) | 문서 변환기를 제 저장소로 내보낸다 |
 | [`incidents/0001-worker-rejected-everything.md`](incidents/0001-worker-rejected-everything.md) | Worker 가 모든 변환을 거절했다 |
 | [`incidents/0002-pyodide-lxml-euckr.md`](incidents/0002-pyodide-lxml-euckr.md) | Pyodide 의 libxml2 는 EUC-KR 을 모른다 |
 | [`measurements/runtime.md`](measurements/runtime.md) | CPU·판본·크기 실측 |
@@ -57,7 +58,7 @@
 브라우저                                   Cloudflare (정적 자산만)
   ┌──────────────────────────────┐
   │ 셸 (main.ts)                 │  ← index.html, js, css
-  │   └ 견적서 탭 (panel.ts)     │
+  │   └ 견적서 화면 (panel.ts)   │
   │       └ 변환 일꾼 (Worker)   │
   │           └ engine.js        │  ← /engine/engine.json
   │               └ quotation_wasm  ← /engine/quotation_wasm_bg.wasm
@@ -103,3 +104,4 @@
 | Worker 스크립트 없음 (정적 자산만) | 그대로다. 공시 중계 창구는 계산기와 함께 내렸다 | [결정 0013](decisions/0013-deposit-products-from-fss.md), [0014](decisions/0014-retire-the-fire-calculator.md) |
 | 파일은 브라우저 밖으로 나가지 않는다 | 예외 없이 그렇다. 문서 변환기의 HWP → PDF 서버를 내리면서 되돌아왔다 | [결정 0016](decisions/0016-a-server-only-for-hwp-to-pdf.md), [0018](decisions/0018-browser-only-converters.md) |
 | 배포 경로가 둘(대시보드·Actions) | Workers Builds 하나. Actions 의 배포 잡은 지웠다 | [결정 0017](decisions/0017-cloudflare-builds-owns-deploys.md) |
+| 한 사이트에 도구 여럿(견적서·변환기·계산기) | 견적서 하나. 계산기는 내렸고 변환기는 제 저장소로 나갔다 | [결정 0014](decisions/0014-retire-the-fire-calculator.md), [0021](decisions/0021-converters-moves-out.md) |

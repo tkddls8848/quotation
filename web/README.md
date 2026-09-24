@@ -76,9 +76,8 @@ iconv 가 없어 파이썬 코덱으로 UTF-8 로 옮겨 읽는 우회책이 있
 
 ```text
 web/                       셸 — 여기에는 도구의 논리가 없다
-  index.html               탭과 빈 칸만 있다
-  src/main.ts              탭을 세우고 도구를 처음 열릴 때 불러온다
-  src/tabs.ts              탭 전환 (#해시·키보드)
+  index.html               빈 칸 하나만 있다
+  src/main.ts              그 칸에 견적서를 세운다
   src/styles.css           공통 색과 틀
   public/engine/           변환 엔진 자산 (생성물, 추적하지 않음)
   scripts/
@@ -89,10 +88,10 @@ web/                       셸 — 여기에는 도구의 논리가 없다
 ```
 
 도구는 최상위 기능 폴더에 있습니다. 셸은 별명으로만 부릅니다
-(`vite.config.ts` 의 `@quotation`, `@converters`).
+(`vite.config.ts` 의 `@quotation`).
 
 ```text
-quotation/web/             견적서 탭
+quotation/web/             견적서 화면
   src/panel.ts             화면 배선, src/panel.html 뼈대, src/quotation.css
   src/engine.js            wasm 을 세우고 convert 를 부른다
   src/convert.worker.ts    변환 Web Worker
@@ -102,9 +101,6 @@ quotation/web/             견적서 탭
   e2e/browser_smoke.mjs    실제 브라우저 스모크
   tests/                   브라우저↔데스크톱 동일성, 실제 Chromium E2E
 
-converters/web/src/        문서 변환기 탭 (panel.ts · converters.css · 변환기들)
-  hwpx.ts  zip.ts          HWPX 읽기 (zip 은 제 안에 둔다)
-  pdf.ts  pdf-panel.ts     브라우저 PDF 편집기
 ```
 
 변환 규칙은 여기 없다. `rust/core` 에 한 벌 있고, 브라우저는 그것을 wasm 으로,
@@ -424,11 +420,6 @@ python -m pytest -q
 무료 계정 배포에서는 **XML 이 서버로 가지 않습니다.** 변환이 브라우저 안에서
 끝나므로 올린 XML 도 만들어진 견적서도 네트워크를 타지 않고, 서버에는 남길
 것도 없습니다.
-
-문서 변환기도 마찬가지입니다. PDF 편집·이미지 변환·HWPX 짓기와 읽기·인코딩
-변환·ZIP 이 모두 브라우저 안에서 끝나며, 파일을 어디로도 올려 보내지 않습니다
-([결정 0018](../doc/decisions/0018-browser-only-converters.md),
-[변환기 README](../converters/README.md)).
 
 변환은 브라우저 안에서만 일어나며 업로드한 XML 은 밖으로 나가지 않습니다.
 요청을 처리하는 동안만 메모리에 두었다가 응답과 함께 버리고, 로그에는 요청 ID,

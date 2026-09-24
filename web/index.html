@@ -10,41 +10,10 @@
     <link rel="icon" href="data:," />
   </head>
   <body>
-    <!-- 셸은 탭과 빈 칸만 갖는다. 칸을 채우는 것은 각 도구다
-         (quotation/web/src/panel.ts, converters/web/src/panel.ts). -->
+    <!-- 셸은 빈 칸 하나를 내주는 것까지만 한다. 그 칸을 채우는 것은
+         견적서 도구다 (quotation/web/src/panel.ts). -->
     <div class="shell">
-      <nav class="tabs" role="tablist" aria-label="도구">
-        <button
-          id="tab-quote"
-          class="tab"
-          type="button"
-          role="tab"
-          aria-controls="panel-quote"
-          aria-selected="true"
-        >
-          견적서 변환
-        </button>
-        <button
-          id="tab-converters"
-          class="tab"
-          type="button"
-          role="tab"
-          aria-controls="panel-converters"
-          aria-selected="false"
-          tabindex="-1"
-        >
-          문서 변환기
-        </button>
-      </nav>
-
-      <div id="panel-quote" role="tabpanel" aria-labelledby="tab-quote" tabindex="-1">
-        <main id="quote-root" class="page"></main>
-      </div>
-
-      <div id="panel-converters" role="tabpanel" aria-labelledby="tab-converters" tabindex="-1" hidden>
-        <main id="converters-root" class="converters"></main>
-      </div>
-
+      <main id="quote-root" class="page"></main>
     </div>
 
     <script type="module" src="/src/main.ts"></script>

@@ -1,7 +1,7 @@
-/* 셸 — 여러 도구가 같이 서는 틀과 공통 색·글꼴.
+/* 셸 — 도구가 서는 틀과 공통 색·글꼴.
  *
- * 도구마다 제 스타일은 제 폴더에 있다 (quotation/web/src/quotation.css,
- * converters/web/src/converters.css). 여기에는 **어느 도구에도 딸리지 않는 것만** 둔다.
+ * 도구의 스타일은 제 폴더에 있다 (quotation/web/src/quotation.css).
+ * 여기에는 **어느 도구에도 딸리지 않는 것만** 둔다.
  */
 
 :root {
@@ -31,43 +31,11 @@ body {
   font: 16px/1.6 "Malgun Gothic", "맑은 고딕", system-ui, -apple-system, sans-serif;
 }
 
-/* 도구가 여럿이다. 바깥 틀은 넓게 두고
-   견적서 화면만 읽기 좋은 너비로 가운데 세운다. */
+/* 바깥 틀은 넓게 두고 견적서 화면만 읽기 좋은 너비로 가운데 세운다. */
 .shell {
   max-width: 76rem;
   margin: 0 auto;
   padding: 1rem 1.25rem 3rem;
-}
-
-.tabs {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.25rem;
-  margin-bottom: 0.75rem;
-  border-bottom: 1px solid var(--line);
-}
-
-.tab {
-  padding: 0.55rem 1rem;
-  background: transparent;
-  color: var(--muted);
-  border: 0;
-  border-bottom: 2px solid transparent;
-  border-radius: 8px 8px 0 0;
-}
-
-.tab:hover {
-  color: var(--text);
-}
-
-.tab[aria-selected='true'] {
-  color: var(--text);
-  border-bottom-color: var(--accent);
-  background: color-mix(in srgb, var(--accent) 8%, transparent);
-}
-
-[role='tabpanel']:focus {
-  outline: none;
 }
 
 .page {

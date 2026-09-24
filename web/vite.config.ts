@@ -1,25 +1,17 @@
 // vitest 의 defineConfig 는 vite 의 것을 그대로 넓힌 것이다. test 항목까지 타입이 선다.
 import { defineConfig } from 'vitest/config';
 import { fileURLToPath } from 'node:url';
-import { readFileSync, readdirSync } from 'node:fs';
 
 // 설정 파일은 Node 에서 돈다. @types/node 를 끌어오지 않기 위해 여기서만 알린다.
 declare const process: { env: Record<string, string | undefined> };
 
 const at = (path: string) => fileURLToPath(new URL(path, import.meta.url));
-const pdfAssets = new Map<string, string>();
-for (const dir of ['cmaps', 'standard_fonts', 'wasm', 'iccs']) {
-  for (const name of readdirSync(at(`./node_modules/pdfjs-dist/${dir}`))) {
-    pdfAssets.set(`/pdf-assets/${dir}/${name}`, at(`./node_modules/pdfjs-dist/${dir}/${name}`));
-  }
-}
-
 /**
  * 셸의 빌드 설정.
  *
- * 도구는 저장소 최상위에 기능별로 나뉘어 있고 (`quotation/`, `converters/`), 셸은
- * 별명으로만 그것들을 부른다. 도구끼리는 서로를 부르지 않는다 — 별명이
- * 셸에서 도구로 가는 한 방향만 있기 때문에 그 규칙이 설정으로 지켜진다.
+ * 도구는 저장소 최상위에 기능별로 나뉘어 있고 (`quotation/`), 셸은 별명으로만
+ * 그것을 부른다. 셸에서 도구로 가는 한 방향만 있으므로 그 규칙이 설정으로
+ * 지켜진다.
  *
  * 빌드 결과는 web/dist 로 나가고 Workers Static Assets 가 그대로 배포한다
  * (web/wrangler.jsonc 의 assets.directory).
@@ -30,32 +22,9 @@ for (const dir of ['cmaps', 'standard_fonts', 'wasm', 'iccs']) {
  * 때문이다.
  */
 export default defineConfig({
-  plugins: [{
-    name: 'converter-pdf-assets',
-    configureServer(server) {
-      server.middlewares.use((request, response, next) => {
-        const path = pdfAssets.get((request.url ?? '').split('?')[0]!);
-        if (!path) { next(); return; }
-        response.setHeader('Content-Type', path.endsWith('.wasm') ? 'application/wasm' : 'application/octet-stream');
-        response.end(readFileSync(path));
-      });
-    },
-    generateBundle() {
-      for (const [name, path] of pdfAssets) this.emitFile({ type: 'asset', fileName: name.slice(1), source: readFileSync(path) });
-    },
-  }],
-  optimizeDeps: { exclude: ['pdfjs-dist'], include: ['xlsx', 'xlsx/dist/cpexcel.full.mjs'] },
   resolve: {
     alias: {
       '@quotation': at('../quotation/web/src'),
-      '@converters': at('../converters/web/src'),
-      'pdf-lib': at('./node_modules/pdf-lib/es/index.js'),
-      '@pdf-lib/fontkit': at('./node_modules/@pdf-lib/fontkit/dist/fontkit.es.js'),
-      'pdfjs-dist': at('./node_modules/pdfjs-dist'),
-      'fflate': at('./node_modules/fflate/esm/browser.js'),
-      'qrcode-generator': at('./node_modules/qrcode-generator/dist/qrcode.mjs'),
-      'xlsx/dist/cpexcel.full.mjs': at('./node_modules/xlsx/dist/cpexcel.full.mjs'),
-      'xlsx': at('./node_modules/xlsx/xlsx.mjs'),
     },
   },
   define: {
@@ -82,7 +51,6 @@ export default defineConfig({
     include: [
       'src/**/*.test.ts',
       '../quotation/web/src/**/*.test.ts',
-      '../converters/web/src/**/*.test.ts',
     ],
   },
 });

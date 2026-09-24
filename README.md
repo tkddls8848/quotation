@@ -51,22 +51,15 @@ quotation/              견적기 — 이 기능에 딸린 것은 전부 여기 
     core/               convert·modes·xml_reader·resources
     resources/          기준 템플릿 (.xlsx 두 벌이 유일한 원본)
   desktop/              Windows 단일 EXE (Tkinter + PyInstaller)
-  web/                  견적서 탭
+  web/                  견적서 화면
     src/                화면·배선·엔진 호출 (panel.html / panel.ts / engine.js)
     scripts/            엔진 포장, 템플릿 검증, Node 구동기
     tests/ e2e/         브라우저↔데스크톱 동일성, 실제 Chromium
   tests/                공개 API 회귀 + 익명화 fixture
   tools/                이 기능의 개발 도구 (골든 비교, 내용 비교, 기동 실측)
 
-converters/             문서 변환기·사무 도구 — 전부 브라우저 안에서 끝난다
-  web/src/              화면·파서·생성기 (panel.ts · pdf-*.ts · hwpx*.ts · zip.ts
-                        · images-pdf.ts · markdown.ts · encoding.ts · kit.ts
-                        · money·vat·dates·bizno·redact·text-*·hash·qr … 결정 0020)
-  web/scripts/          실제 브라우저로 화면과 산출물을 검사한다
-  desktop/              한글 COM 으로 .hwp → .hwpx (Windows 전용)
-
-web/                    셸 — 도구를 탭으로 세우는 틀. 도구 논리는 없다
-  index.html  src/      탭·공통 색·진입점
+web/                    셸 — 도구가 설 틀. 도구 논리는 없다
+  index.html  src/      빈 칸·공통 색·진입점
   public/engine/        배포 직전 만드는 엔진 자산 (추적하지 않음)
   scripts/              Cloudflare 빌드·배포, wasm 도구 갖추기
   wrangler.jsonc        정적 자산만 배포 (무료 계정)
@@ -77,8 +70,8 @@ doc/                    성격별로 나눈 문서 — 명세·안내·계획·�
 의존은 한 방향뿐입니다.
 
 ```text
-셸(web/) ──별명(@quotation, @converters)──▶ 기능
-기능 ──▶ 기능                          금지
+셸(web/) ──별명(@quotation)──▶ 기능
+기능 ──▶ 기능                 금지
 ```
 
 **기능 바깥에 공유 코드를 두지 않습니다.** 여러 기능이 쓸 법한 것이라도 각
@@ -86,9 +79,9 @@ doc/                    성격별로 나눈 문서 — 명세·안내·계획·�
 두면 거기 생긴 문제 하나가 여러 기능의 장애로 번지기 때문입니다. 개발 도구
 (`quotation/tools/`)도 그래서 그 기능 폴더 안에 있습니다.
 
-별명은 셸의 `vite.config.ts` 에만 있습니다. 그래서 문서 변환기를 고쳐도 견적서
-변환은 빌드도 테스트도 그대로이고, 반대도 같습니다. 빌드 산출물도 기능마다
-따로 나갑니다 — 견적서만 쓰는 사람은 문서 변환기 코드를 내려받지 않습니다.
+별명은 셸의 `vite.config.ts` 에만 있습니다. 지금 서 있는 기능은 견적서 하나이고,
+문서 변환기는 제 저장소로 나갔습니다 ([결정 0021](doc/decisions/0021-converters-moves-out.md)).
+기능이 다시 늘어도 셸에서 기능으로 가는 한 방향만 두는 규칙은 그대로입니다.
 
 **변환 규칙은 `quotation/rust/` 에 한 벌뿐입니다.** 데스크톱은 확장 모듈로,
 브라우저는 WASM 으로 같은 코어를 부릅니다.

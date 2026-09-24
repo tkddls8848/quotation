@@ -9,7 +9,7 @@ CSP 를 건 서버에서 dist 를 내려 주고, Chromium 으로 파일을 골�
 
     python quotation/web/scripts/build_browser_engine.py
     npm --prefix web ci && npm --prefix web run build
-    npm --prefix web install --no-save playwright   (브라우저 구동)
+    npm --prefix quotation/web install            (브라우저 구동)
 """
 from __future__ import annotations
 

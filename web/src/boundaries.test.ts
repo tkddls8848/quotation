@@ -1,10 +1,14 @@
 /**
  * 기능 경계를 코드로 지킨다.
  *
- * 별칭(`@quotation`, `@converters`)을 셸에만 둔 것은 **관례**일 뿐이다.
- * 관례는 샌다 — 누군가 `../../converters/web/src/panel` 이라고 적으면 별칭을 거치지
- * 않고 그대로 붙고, 빌드도 타입 검사도 통과한다. 그 순간 한 도구의 변경이 다른
- * 도구를 무너뜨릴 수 있게 된다 (결정 0012).
+ * 별칭(`@quotation`)을 셸에만 둔 것은 **관례**일 뿐이다. 관례는 샌다 — 누군가
+ * `../../quotation/web/src/panel` 이라고 적으면 별칭을 거치지 않고 그대로 붙고,
+ * 빌드도 타입 검사도 통과한다. 그 순간 한 도구의 변경이 다른 도구를 무너뜨릴 수
+ * 있게 된다 (결정 0012).
+ *
+ * 지금 기능은 견적서 하나뿐이다(결정 0021). 그래도 검사를 남기는 것은, 셸이
+ * 기능의 **속**이 아니라 진입점 하나만 보게 막는 일이 기능 수와 무관하기
+ * 때문이다.
  *
  * 그래서 여기서 실제로 읽어 본다. 허용되는 것은 한 방향뿐이다.
  *
@@ -31,7 +35,6 @@ interface Feature {
 /** vitest 는 셸(web/)에서 돈다. 기능은 그 바깥, 저장소 최상위에 있다. */
 const FEATURES: Record<string, Feature> = {
   quotation: { root: resolve('../quotation'), dirs: [resolve('../quotation/web/src')] },
-  converters: { root: resolve('../converters'), dirs: [resolve('../converters/web/src')] },
 };
 
 /** 셸의 화면 코드에도 같은 규칙을 적용한다. */
@@ -41,7 +44,6 @@ const SHELL_DIRS = [resolve('src')];
 /** 셸이 기능에서 가져다 쓰는 **진입점**. 이것 말고는 속을 들여다보지 않는다. */
 const ENTRY_POINTS = [
   '@quotation/panel',
-  '@converters/panel',
 ];
 
 const SOURCE = /\.(ts|tsx|js|mjs|css|html)$/;

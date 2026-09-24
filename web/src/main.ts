@@ -1,41 +1,19 @@
 /**
- * 셸 — 도구를 탭으로 세우는 것까지만 한다.
+ * 셸 — 도구가 설 빈 칸을 내주는 것까지만 한다.
  *
- * 여기에는 어떤 도구의 논리도 없다. 각 도구는 제 폴더(`quotation/web`,
- * `converters/web`)에 화면·스타일·논리를 다 갖고 있고, 셸은 빈 칸을
- * 내주며 처음 열릴 때 불러올 뿐이다.
+ * 여기에는 도구의 논리가 없다. 견적서는 제 폴더(`quotation/web`)에 화면·스타일·
+ * 논리를 다 갖고 있고, 셸은 칸을 내주며 부를 뿐이다.
  *
- *   - 도구끼리는 서로를 import 하지 않는다. 한 도구를 고쳐도 다른 도구가
- *     흔들리지 않게 하기 위함이다
- *   - 도구는 제 탭이 처음 열릴 때 받아 온다. 견적서만 쓰는 사람이 문서 변환기
- *     코드를 내려받을 이유가 없다
+ * 문서 변환기가 함께 서 있던 동안에는 탭이 있었고, 도구는 제 탭이 처음 열릴 때
+ * 받아 왔다. 도구가 하나만 남은 지금 탭 한 개짜리 막대도, 늦춰 받을 이유도
+ * 없다 — 그 도구가 곧 이 화면이다 (결정 0021).
  */
 
 import './styles.css';
 
-import { setupTabs } from './tabs';
+import { mountQuotation } from '@quotation/panel';
 
-const el = (id: string): HTMLElement => {
-  const found = document.getElementById(id);
-  if (!found) throw new Error(`요소를 찾지 못했습니다: #${id}`);
-  return found;
-};
+const root = document.getElementById('quote-root');
+if (!root) throw new Error('요소를 찾지 못했습니다: #quote-root');
 
-setupTabs([
-  {
-    id: 'quote',
-    title: '견적서 작성기',
-    onFirstShow: async () => {
-      const { mountQuotation } = await import('@quotation/panel');
-      mountQuotation(el('quote-root'), __DEPLOYMENT_VERSION__);
-    },
-  },
-  {
-    id: 'converters',
-    title: '문서 변환기',
-    onFirstShow: async () => {
-      const { mountConverters } = await import('@converters/panel');
-      mountConverters(el('converters-root'));
-    },
-  },
-]);
+mountQuotation(root, __DEPLOYMENT_VERSION__);
