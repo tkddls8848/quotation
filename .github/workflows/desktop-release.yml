@@ -31,27 +31,19 @@ jobs:
     runs-on: windows-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
-        with:
-          python-version: "3.12"
-          cache: pip
       - uses: dtolnay/rust-toolchain@stable
       - uses: Swatinem/rust-cache@v2
 
-      - name: 의존성 설치
-        run: python -m pip install -r quotation/desktop/requirements.txt maturin
-
-      - name: 변환 코어 확장 빌드와 설치
-        # 변환 규칙은 Rust 한 벌이다. EXE 도 그것을 부른다 (spec 의 hiddenimports).
-        run: |
-          maturin build --release -m quotation/rust/python/Cargo.toml --out target/wheels
-          $wheel = Get-ChildItem target/wheels/*.whl | Select-Object -First 1
-          python -m pip install --force-reinstall $wheel.FullName
+      - name: 앞서 도는 검사
+        # 화면에서 떼어 둔 판단(저장 경로·문구)을 먼저 본다.
+        run: cargo test -p quotation-desktop
 
       - name: EXE 빌드
+        # 파이썬도 PyInstaller 도 없다. 변환 규칙은 코어 크레이트에서 곧바로 온다.
         run: |
-          python -m PyInstaller quotation/desktop/QuotationTool.spec --noconfirm --clean `
-            --distpath quotation/desktop/dist --workpath quotation/desktop/build
+          cargo build --release -p quotation-desktop
+          New-Item -ItemType Directory -Force quotation/desktop/dist | Out-Null
+          Copy-Item target/release/QuotationTool.exe quotation/desktop/dist/ -Force
 
       - name: 인수 검사
         # 빌드가 됐다고 도는 것은 아니다. 첫 실행에서 템플릿을 만들고 변환까지

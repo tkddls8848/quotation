@@ -1,0 +1,25 @@
+# 데스크톱 앱 — Windows 단일 EXE.
+#
+# 변환 규칙은 여기 없다. `quotation-core` 한 벌을 부른다 (결정 0004·0007).
+# 이 크레이트가 갖는 것은 화면과 **경로 정책**뿐이다 — 어디에 저장할지, 템플릿
+# 사본을 어디 둘지, 설정을 어디 적을지.
+[package]
+name = "quotation-desktop"
+version = "0.1.0"
+edition.workspace = true
+rust-version.workspace = true
+publish = false
+
+[[bin]]
+name = "QuotationTool"
+path = "src/main.rs"
+
+[dependencies]
+quotation-core = { path = "../rust/core" }
+# 견적 날짜는 이 컴퓨터의 날짜다. 코어는 시계를 읽지 않는다.
+chrono = { version = "0.4.45", default-features = false, features = ["clock"] }
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+native-windows-gui = "1.0.13"
+# 만든 견적서를 기본 프로그램(Excel)으로 여는 데만 쓴다.
+winapi = { version = "0.3", features = ["shellapi", "winuser"] }

@@ -45,6 +45,7 @@
 | [`decisions/0019-overwrite-not-inplace-pdf-text.md`](decisions/0019-overwrite-not-inplace-pdf-text.md) | PDF 글자는 제자리에서 고치지 않고 덮어쓴다 — 변환기는 제 저장소로 나갔다 (결정 0021) |
 | [`decisions/0020-office-tools-in-converters.md`](decisions/0020-office-tools-in-converters.md) | 사무 도구 16개를 변환기 탭 안에 들인다 — 변환기는 제 저장소로 나갔다 (결정 0021) |
 | [`decisions/0021-converters-moves-out.md`](decisions/0021-converters-moves-out.md) | 문서 변환기를 제 저장소로 내보낸다 |
+| [`decisions/0022-desktop-app-in-rust.md`](decisions/0022-desktop-app-in-rust.md) | 데스크톱 앱을 Rust 로 옮긴다 |
 | [`incidents/0001-worker-rejected-everything.md`](incidents/0001-worker-rejected-everything.md) | Worker 가 모든 변환을 거절했다 |
 | [`incidents/0002-pyodide-lxml-euckr.md`](incidents/0002-pyodide-lxml-euckr.md) | Pyodide 의 libxml2 는 EUC-KR 을 모른다 |
 | [`measurements/runtime.md`](measurements/runtime.md) | CPU·판본·크기 실측 |
@@ -105,3 +106,4 @@
 | 파일은 브라우저 밖으로 나가지 않는다 | 예외 없이 그렇다. 문서 변환기의 HWP → PDF 서버를 내리면서 되돌아왔다 | [결정 0016](decisions/0016-a-server-only-for-hwp-to-pdf.md), [0018](decisions/0018-browser-only-converters.md) |
 | 배포 경로가 둘(대시보드·Actions) | Workers Builds 하나. Actions 의 배포 잡은 지웠다 | [결정 0017](decisions/0017-cloudflare-builds-owns-deploys.md) |
 | 한 사이트에 도구 여럿(견적서·변환기·계산기) | 견적서 하나. 계산기는 내렸고 변환기는 제 저장소로 나갔다 | [결정 0014](decisions/0014-retire-the-fire-calculator.md), [0021](decisions/0021-converters-moves-out.md) |
+| 데스크톱은 Tkinter + PyInstaller (PyO3 로 Rust 코어 호출) | Rust 하나. EXE 12 MiB → 4 MB, 빌드 세 단계 → 하나 | [결정 0022](decisions/0022-desktop-app-in-rust.md) |

@@ -3,7 +3,6 @@
 저장소가 세 갈래로 나뉘어 있어 각각의 임포트 뿌리를 잡아 준다.
 
     <root>/quotation/python       공용 코어 패키지  ``quotation``
-    <root>/quotation/desktop      데스크톱 패키지   ``quotation_desktop``
     <root>/quotation/web/scripts  엔진 포장 스크립트 ``build_browser_engine``
     <root>/quotation/tools        비교기 ``compare``, ``xlsx_content``
 
@@ -19,8 +18,8 @@ ROOT = Path(__file__).resolve().parent
 
 QUOTATION = ROOT / "quotation"
 
-IMPORT_ROOTS = (QUOTATION / "python", QUOTATION / "desktop",
-                QUOTATION / "web" / "scripts", QUOTATION / "tools")
+IMPORT_ROOTS = (QUOTATION / "python", QUOTATION / "web" / "scripts",
+                QUOTATION / "tools")
 
 for path in reversed(IMPORT_ROOTS):
     entry = str(path)

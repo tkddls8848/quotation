@@ -1,6 +1,7 @@
 [workspace]
 resolver = "2"
 members = [
+  "quotation/desktop",
   "quotation/rust/core",
   "quotation/rust/python",
   "quotation/rust/roundtrip",

@@ -1,9 +1,9 @@
 param()
 
 $ErrorActionPreference = "Continue"
-# desktop_ibm\tools -> desktop_ibm. 배포본은 desktop_ibm\dist 에 낸다 (--distpath).
-$desktop_ibm = Split-Path -Parent $PSScriptRoot
-$dist = Join-Path $desktop_ibm "dist"
+# tools -> quotation/desktop. 배포본은 그 아래 dist 에 둔다.
+$desktop = Split-Path -Parent $PSScriptRoot
+$dist = Join-Path $desktop "dist"
 $gui = Join-Path $dist "QuotationTool.exe"
 $cli = Join-Path $dist "QuotationTool-cli.exe"
 $templateBase = -join @([char]0xACAC, [char]0xC801, [char]0xC11C)  # 견적서
@@ -28,7 +28,9 @@ function Check($name, $ok, $detail = "") {
 
 "=== 1. Distribution files"
 Check "GUI EXE" (Test-Path -LiteralPath $gui)
-Check "GUI EXE size" ((Get-Item -LiteralPath $gui).Length -gt 5MB)
+# 파이썬 런타임을 안고 가던 때는 12 MiB 였다. 지금은 코어까지 넣고도 4 MB 선이다.
+$size = (Get-Item -LiteralPath $gui).Length
+Check "GUI EXE size" ($size -gt 1MB -and $size -lt 12MB) ("{0:N1} MB" -f ($size / 1MB))
 Check "CLI EXE removed" (-not (Test-Path -LiteralPath $cli))
 
 foreach ($t in $distTemplates) {

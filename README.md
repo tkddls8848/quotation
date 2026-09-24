@@ -50,7 +50,7 @@ quotation/              견적기 — 이 기능에 딸린 것은 전부 여기 
   python/quotation/     얇은 파이썬 얼굴 — 규칙은 없다
     core/               convert·modes·xml_reader·resources
     resources/          기준 템플릿 (.xlsx 두 벌이 유일한 원본)
-  desktop/              Windows 단일 EXE (Tkinter + PyInstaller)
+  desktop/              Windows 단일 EXE (Rust + native-windows-gui)
   web/                  견적서 화면
     src/                화면·배선·엔진 호출 (panel.html / panel.ts / engine.js)
     scripts/            엔진 포장, 템플릿 검증, Node 구동기
@@ -159,10 +159,9 @@ node quotation\tools\wasm_startup_bench.mjs
 # samples\ 의 .xls 골든을 .cache\ 로 변환할 때만 실행 (Excel 필요)
 .\quotation\tools\xls2xlsx.ps1
 
-# 데스크톱 EXE 빌드 (산출물은 quotation\desktop\dist, 중간물은 quotation\desktop\build)
-.\.venv\Scripts\python.exe -m pip install -r quotation\desktop\requirements.txt
-.\.venv\Scripts\python.exe -m PyInstaller quotation\desktop\QuotationTool.spec --noconfirm --clean `
-    --distpath quotation\desktop\dist --workpath quotation\desktop\build
+# 데스크톱 EXE 빌드 (파이썬이 필요 없다 — 코어 크레이트에서 곧바로 온다)
+cargo build --release -p quotation-desktop
+Copy-Item target\release\QuotationTool.exe quotation\desktop\dist\
 .\quotation\desktop\tools\acceptance.ps1
 ```
 
