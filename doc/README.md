@@ -19,6 +19,8 @@
 
 | 문서 | 성격 |
 |---|---|
+| [`guide/CONFIGURATION.md`](guide/CONFIGURATION.md) | 일반 설정과 인증정보 전용 .env 정책 |
+| [`reviews/2026-09-27-modularity.md`](reviews/2026-09-27-modularity.md) | 모듈·탐색 비용·환경 파일 적대적 검토와 수정 |
 | [`spec/SPEC_CELLMAP.md`](spec/SPEC_CELLMAP.md) | 셀 매핑과 검증 기준 |
 | [`spec/SPEC_INTEGRATED.md`](spec/SPEC_INTEGRATED.md) | 통합 모드 (레노버 x86) 해석 규칙 |
 | [`guide/MIGRATION.md`](guide/MIGRATION.md) | 2005년판에서 넘어오는 기존 사용자 안내 |

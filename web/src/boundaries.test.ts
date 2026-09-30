@@ -21,7 +21,8 @@
  * 이 검사가 붉으면 고칠 곳은 이 파일이 아니라 그 import 다.
  */
 import { readFileSync, readdirSync, statSync } from 'node:fs';
-import { dirname, join, relative, resolve, sep } from 'node:path';
+import { dirname, isAbsolute, join, relative, resolve, sep } from 'node:path';
+import ts from 'typescript';
 
 import { describe, expect, it } from 'vitest';
 
@@ -62,11 +63,29 @@ function sourcesUnder(dir: string): string[] {
 /** 그 파일이 바깥에서 끌어오는 것들. import·동적 import·CSS @import·url() 까지. */
 function specifiers(file: string): string[] {
   const text = readFileSync(file, 'utf-8');
+  return specifiersIn(text, file);
+}
+
+function specifiersIn(text: string, file: string): string[] {
   const out: string[] = [];
+  if (/\.[cm]?[jt]sx?$/.test(file)) {
+    const source = ts.createSourceFile(file, text, ts.ScriptTarget.Latest, true);
+    const add = (node: ts.Node | undefined): void => {
+      if (node && (ts.isStringLiteral(node) || ts.isNoSubstitutionTemplateLiteral(node))) out.push(node.text);
+    };
+    const visit = (node: ts.Node): void => {
+      if (ts.isImportDeclaration(node) || ts.isExportDeclaration(node)) add(node.moduleSpecifier);
+      if (ts.isImportEqualsDeclaration(node) && ts.isExternalModuleReference(node.moduleReference)) add(node.moduleReference.expression);
+      if (ts.isCallExpression(node) && (node.expression.kind === ts.SyntaxKind.ImportKeyword ||
+          (ts.isIdentifier(node.expression) && node.expression.text === 'require'))) add(node.arguments[0]);
+      if (ts.isNewExpression(node) && ts.isIdentifier(node.expression) && node.expression.text === 'URL' &&
+          node.arguments?.[1]?.getText(source) === 'import.meta.url') add(node.arguments[0]);
+      ts.forEachChild(node, visit);
+    };
+    visit(source);
+    return out.filter(spec => !/^(data:|https?:)/.test(spec));
+  }
   const patterns = [
-    /\bfrom\s+['"]([^'"]+)['"]/g,
-    /\bimport\s+['"]([^'"]+)['"]/g,
-    /\bimport\s*\(\s*['"]([^'"]+)['"]\s*\)/g,
     /@import\s+(?:url\()?['"]([^'"]+)['"]/g,
     /\burl\(\s*['"]?([^'")]+)['"]?\s*\)/g,
   ];
@@ -81,16 +100,34 @@ function specifiers(file: string): string[] {
 
 /** 상대 경로가 그 기능 폴더 밖으로 나가는가. */
 function escapes(file: string, spec: string, root: string): boolean {
-  if (!spec.startsWith('.')) return false;
-  const target = resolve(dirname(file), spec);
+  const path = spec.split(/[?#]/)[0]!;
+  let target: string;
+  if (path.startsWith('/@fs/')) {
+    const absolute = path.slice('/@fs'.length).replace(/^\/([A-Za-z]:\/)/, '$1');
+    target = resolve(absolute);
+  } else if (path.startsWith('/')) target = resolve(SHELL, `.${path}`);
+  else if (path.startsWith('.')) target = resolve(dirname(file), path);
+  else return false;
   const inside = relative(root, target);
-  return inside.startsWith('..' + sep) || inside === '..';
+  return isAbsolute(inside) || inside.startsWith('..' + sep) || inside === '..';
 }
 
 /** 여러 자리를 한꺼번에 읽는다. */
 const sourcesIn = (dirs: string[]): string[] => dirs.flatMap((dir) => sourcesUnder(dir));
 
 describe('기능 경계', () => {
+  it('주석·문자열은 무시하고 재내보내기·worker URL·require도 검사한다', () => {
+    const text = `// import '../comment';
+      const example = "import '../example'";
+      export { item } from '../internal';
+      import('../dynamic');
+      require('../commonjs');
+      new Worker(new URL('../worker.ts', import.meta.url));`;
+    expect(specifiersIn(text, 'probe.ts')).toEqual(['../internal', '../dynamic', '../commonjs', '../worker.ts']);
+    expect(escapes(resolve('../quotation/web/src/probe.ts'), '../../../web/src/main.ts?raw', FEATURES['quotation']!.root)).toBe(true);
+    expect(escapes(resolve('../quotation/web/src/probe.ts'), '/src/main.ts', FEATURES['quotation']!.root)).toBe(true);
+    expect(escapes(resolve('../quotation/web/src/probe.ts'), '/@fs/' + resolve('../outside.ts').replaceAll('\\', '/'), FEATURES['quotation']!.root)).toBe(true);
+  });
   for (const [name, feature] of Object.entries(FEATURES)) {
     const { root, dirs } = feature;
     const others = Object.keys(FEATURES).filter((other) => other !== name);

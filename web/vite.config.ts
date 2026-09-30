@@ -1,11 +1,13 @@
 // vitest 의 defineConfig 는 vite 의 것을 그대로 넓힌 것이다. test 항목까지 타입이 선다.
 import { defineConfig } from 'vitest/config';
 import { fileURLToPath } from 'node:url';
+import { validateEnvFiles } from './scripts/env-policy';
 
 // 설정 파일은 Node 에서 돈다. @types/node 를 끌어오지 않기 위해 여기서만 알린다.
 declare const process: { env: Record<string, string | undefined> };
 
 const at = (path: string) => fileURLToPath(new URL(path, import.meta.url));
+validateEnvFiles(at('..'));
 /**
  * 셸의 빌드 설정.
  *
@@ -22,6 +24,9 @@ const at = (path: string) => fileURLToPath(new URL(path, import.meta.url));
  * 때문이다.
  */
 export default defineConfig({
+  // .env is for deployment credentials only. No dotenv or VITE_* injection into clients.
+  envDir: false,
+  envPrefix: [],
   resolve: {
     alias: {
       '@quotation': at('../quotation/web/src'),
@@ -50,6 +55,7 @@ export default defineConfig({
     // 각 도구의 테스트는 그 도구 폴더에 있다.
     include: [
       'src/**/*.test.ts',
+      'tests/**/*.test.ts',
       '../quotation/web/src/**/*.test.ts',
     ],
   },

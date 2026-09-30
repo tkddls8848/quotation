@@ -9,13 +9,13 @@ quotation/
     core/               XML 읽기부터 견적서 작성까지
     webapi/             요청 검증·응답 헤더·오류 문구
     wasm/               브라우저 진입점 (wasm-bindgen)
-    python/             데스크톱·CI 용 확장 모듈 (PyO3, quotation_rust)
+    python/             Python 호환 API·CI 용 확장 모듈 (PyO3, quotation_rust)
     tools/ roundtrip/   개발용 실행 파일, 템플릿 도형 보존 확인
   python/quotation/     얇은 파이썬 얼굴 (import 경로는 quotation.core)
     core/               convert·modes·xml_reader·resources
     resources/          기준 템플릿 — .xlsx 두 벌이 유일한 원본
-  desktop/              Windows 단일 EXE (Tkinter + PyInstaller)
-  web/                  견적서 탭 (화면·엔진 포장·동일성 검증)
+  desktop/              Windows 단일 EXE (Rust + native-windows-gui)
+  web/                  견적서 화면 (화면·엔진 포장·동일성 검증)
                         package.json 은 실제 브라우저로 받아 보는 도구(playwright)
                         하나만 갖는다. 화면 빌드는 셸이 한다
   tests/                공개 API 회귀 + 익명화 fixture
@@ -25,7 +25,7 @@ quotation/
 
 ## 다른 기능과의 경계
 
-- 다른 기능(`converters/`)을 **부르지 않는다.** 반대도 마찬가지다.
+- 다른 기능을 **부르지 않는다.** `converters/`는 별도 저장소로 분리되었다.
 - 화면은 셸(`web/`)이 내주는 빈 칸 하나에 들어간다. 셸은 `@quotation` 별명으로
   `web/src/panel.ts` 만 부르며, 그 안의 구조는 이 폴더가 알아서 한다.
 - 화면 뼈대(`web/src/panel.html`)와 스타일(`web/src/quotation.css`)도 여기 있다.
@@ -39,9 +39,10 @@ quotation/
 | 하고 싶은 일 | 갈 곳 |
 |---|---|
 | 변환 규칙을 고친다 | `rust/core/` — 데스크톱과 브라우저가 같은 코어를 부른다 |
+| Excel 작성 부분을 고친다 | [`rust/core/src/writer/README.md`](rust/core/src/writer/README.md) — TOTAL·상세·셀 서식별 위치 |
 | 데스크톱 앱을 고친다 | [`desktop/README.md`](desktop/README.md) |
 | 웹 화면을 고친다 | `web/src/panel.ts` |
-| 엔진 자산을 다시 만든다 | `python web/scripts/build_browser_engine.py` (저장소 루트에서) |
+| 엔진 자산을 다시 만든다 | `python quotation/web/scripts/build_browser_engine.py` (저장소 루트에서) |
 | 두 경로가 같은지 본다 | `pytest quotation/web/tests -q` |
 | 실제 브라우저로 받아 본다 | `npm --prefix quotation/web install` 뒤 위와 같음 |
 

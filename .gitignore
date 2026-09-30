@@ -4,6 +4,13 @@ __pycache__/
 .pytest_cache/
 .acceptance-tmp/
 
+# Credentials only; never commit real environment files (including nested ones).
+.env
+.env.*
+!.env.example
+.dev.vars
+.dev.vars.*
+
 # 빌드 산출물 — 데스크톱 배포본은 quotation/desktop/dist 에 낸다 (폴더만 .gitkeep 으로 남긴다)
 build/
 quotation/desktop/dist/*
@@ -20,7 +27,7 @@ out/
 samples/
 
 # 데스크톱 실행 시 자동 생성되는 외부 템플릿
-# (원본은 quotation/resources/견적서_template_{IBM,Lenovo}.xlsx 뿐이다)
+# (원본은 quotation/python/quotation/resources/견적서_template_{IBM,Lenovo}.xlsx 뿐이다)
 quotation/desktop/견적서_template_IBM.xlsx
 quotation/desktop/견적서_template_Lenovo.xlsx
 

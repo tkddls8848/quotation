@@ -26,6 +26,8 @@
     "noEmit": true
   },
   "include": [
+    "tests",
+    "scripts/env-policy.ts",
     "src",
     "vite.config.ts",
     "../quotation/web/src"

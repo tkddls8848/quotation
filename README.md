@@ -1,5 +1,8 @@
 # 견적서 작성기 (Quotation Tool)
 
+개발 경로는 [작업 지도](AGENTS.md), 일반 설정과 인증정보의 구분은
+[설정 안내](doc/guide/CONFIGURATION.md)를 먼저 보세요.
+
 eConfig Export XML을 기존 견적서 양식의 Excel 파일(`.xlsx`)로 변환합니다.
 2005년 VB6 프로그램 `pConvertXMLtoExcel`을 다시 구현했으며, 지금은 **같은 변환
 코어를 두 가지 방식으로 제공**합니다.
@@ -45,7 +48,7 @@ quotation/              견적기 — 이 기능에 딸린 것은 전부 여기 
     core/               XML 읽기부터 견적서 작성까지
     webapi/             요청 검증·응답 헤더·오류 문구
     wasm/               브라우저 진입점 (wasm-bindgen)
-    python/             데스크톱·CI 용 확장 모듈 (PyO3, quotation_rust)
+    python/             Python 호환 API·CI 용 확장 모듈 (PyO3, quotation_rust)
     tools/ roundtrip/   개발용 실행 파일, 도형 보존 확인
   python/quotation/     얇은 파이썬 얼굴 — 규칙은 없다
     core/               convert·modes·xml_reader·resources
@@ -83,8 +86,8 @@ doc/                    성격별로 나눈 문서 — 명세·안내·계획·�
 문서 변환기는 제 저장소로 나갔습니다 ([결정 0021](doc/decisions/0021-converters-moves-out.md)).
 기능이 다시 늘어도 셸에서 기능으로 가는 한 방향만 두는 규칙은 그대로입니다.
 
-**변환 규칙은 `quotation/rust/` 에 한 벌뿐입니다.** 데스크톱은 확장 모듈로,
-브라우저는 WASM 으로 같은 코어를 부릅니다.
+**변환 규칙은 `quotation/rust/` 에 한 벌뿐입니다.** Rust 데스크톱은 코어를 직접,
+브라우저는 WASM으로, Python 호환 API는 확장 모듈로 같은 코어를 부릅니다.
 
 경계는 테스트로 지킵니다. `quotation/tests/test_bytes_api.py` 는 경로 입력
 (데스크톱)과 바이트 입력(웹)의 산출물이 같은지 보고,
