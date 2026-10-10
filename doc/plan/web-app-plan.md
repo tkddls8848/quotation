@@ -4,30 +4,29 @@
 - 대상 서비스: IBM eConfig Export XML → 기존 견적서 양식 `.xlsx` 변환
 - 문서 상태: **착수안 (역사 기록)**. 착수 시점 그대로 두고 고치지 않는다
 
-> **이 문서는 지금의 구조가 아니다.** 구현하면서 두 군데가 뒤집혔고, 그 이유는
+> **이 문서는 지금의 구조가 아니다.** 구현하면서 한 군데가 뒤집혔고, 그 이유는
 > 계획을 덮어쓰는 대신 결정 기록으로 남겼다. 지금 무엇이 사실인지는
 > [`doc/README.md`](../README.md) 를 보라.
 >
 > | 이 문서의 | 지금 | 기록 |
 > |---|---|---|
 > | §1·§4 Python Worker 가 변환 | 브라우저가 변환 (무료 계정) | [결정 0002](../decisions/0002-convert-in-browser.md) |
-> | §8 템플릿을 비공개 R2 에 | 저장소 원본을 번들에 담는다 | [결정 0001](../decisions/0001-template-in-bundle.md) |
 >
 > 뒤집히지 않은 부분(§2 현행 분석, §3 범위, §5 변환 설계, §6 API 계약,
-> §7 UI 규칙, §9 보안, §12 테스트 전략, §13 관측성)은 그대로 유효하다.
+> §7 UI 규칙, §8 템플릿 운영, §9 보안, §12 테스트 전략, §13 관측성)은 그대로 유효하다.
 
 ## 1. 결론
 
 > **§1 은 뒤집혔다** — [결정 0002](../decisions/0002-convert-in-browser.md).
-> 변환은 Python Worker 가 아니라 브라우저에서 돈다. R2 는 쓰지 않는다.
+> 변환은 Python Worker 가 아니라 브라우저에서 돈다.
 > 다만 "TypeScript 로 OOXML 생성기를 재작성하지 않는다" 는 판단은 지금도
 > 유효하다 — 브라우저에서 도는 것은 **같은 파이썬**이다.
 
-1차 구현은 **Cloudflare Workers Static Assets + Python Worker API + 비공개 R2 템플릿** 구조로 진행한다.
+1차 구현은 **Cloudflare Workers Static Assets + Python Worker API + 번들 템플릿** 구조로 진행한다.
 
 - 웹 화면은 Vite 기반 TypeScript SPA로 만들고 Workers Static Assets로 배포한다.
 - 변환 API는 Python Worker에서 실행한다. 기존 `quotation/core`의 금액·그룹·시트 작성 규칙을 재사용하되 파일 경로 I/O를 `bytes`/`BytesIO` I/O로 분리한다.
-- 견적서 템플릿은 공개 정적 자산으로 노출하지 않고 비공개 R2 버킷에서 버전별로 관리한다.
+- 견적서 템플릿은 공개 정적 자산으로 노출하지 않고 저장소 원본 하나를 Worker 번들에 담아 내용 해시로 판본을 매긴다([결정 0001](../decisions/0001-template-in-bundle.md)).
 - 업로드한 고객 XML과 생성한 견적서는 기본적으로 저장하지 않고 한 요청 안에서만 처리하여 다운로드 응답으로 반환한다.
 - 사내용 서비스라면 사용자 인증은 애플리케이션에 직접 구현하지 않고 Cloudflare Access로 제한한다.
 - 구현에 앞서 `lxml==6.1.1`, `openpyxl==3.1.5`의 Python Workers/Pyodide 호환성, CPU, 메모리, 도형 보존을 검증한다. 합격하지 못하면 API 계약과 UI는 유지한 채 변환 실행부만 **Cloudflare Container**로 전환한다.
@@ -46,7 +45,7 @@
 | 데이터 모델/계산 | `models.py`, `money.py`, `naming.py` | 그대로 재사용 |
 | Excel 작성 | `writer/ibm_writer.py`, openpyxl | `BytesIO` 기반으로 리팩터링 |
 | 로고·도형 보존 | `writer/drawings.py`, ZIP 직접 수정 | 메모리 ZIP 처리로 리팩터링 |
-| 템플릿 | EXE 옆 사용자 파일 및 번들 리소스 | R2의 중앙 버전 템플릿으로 전환 |
+| 템플릿 | EXE 옆 사용자 파일 및 번들 리소스 | 저장소 원본 한 개를 번들에 담아 판본은 내용 해시로 |
 | 로컬 설정 | `%LOCALAPPDATA%`의 JSON | 웹에서는 제거; 필요한 설정만 브라우저 로컬 저장 |
 | 결과 저장 | XML과 같은 폴더에 덮어쓰기 확인 후 저장 | 브라우저 다운로드로 변경 |
 
@@ -94,7 +93,7 @@
 
 > **§4 는 뒤집혔다** — [결정 0002](../decisions/0002-convert-in-browser.md).
 > 아래 그림은 `env.server`(Workers Paid) 배포에만 해당한다. 무료 계정 기본
-> 배포에는 Worker 스크립트도 R2 도 Access 도 없고, Cloudflare 는 정적 자산만
+> 배포에는 Worker 스크립트도 Access 도 없고, Cloudflare 는 정적 자산만
 > 내려 준다. §4.2 의 Container 전환도 하지 않는다.
 
 ```text
@@ -107,11 +106,7 @@
                          ├─ 업로드/스키마 검증
                          ├─ quotation/core 변환
                          ├─ 메모리 내 XLSX 생성
-                         └─ R2에서 활성 템플릿 읽기
-                              │
-                              ▼
-                       비공개 R2 버킷
-                       templates/{version}/template.xlsx
+                         └─ 번들에 담긴 템플릿 읽기
 ```
 
 ### 4.1 Cloudflare 구성요소
@@ -120,7 +115,6 @@
 |---|---|---|
 | Workers Static Assets | SPA 정적 파일 제공 | 필수 |
 | Python Worker | 업로드 검증 및 동기 변환 API | 필수 |
-| R2 | 비공개 템플릿 버전 저장 | 필수 권장 |
 | Cloudflare Access | 사내 사용자 인증/접근 제어 | 사내용이면 필수 |
 | Workers Logs/Tracing | 오류율, 처리 시간, 요청 추적 | 필수 |
 | Rate Limiting | 과다 요청과 비용 폭주 방지 | 공개 범위가 있으면 필수 |
@@ -176,7 +170,7 @@ def convert_bytes(
 3. XML 파일명과 내용을 검사한다. 확장자만 신뢰하지 않는다.
 4. 외부 엔티티/네트워크 접근을 금지한 파서로 XML을 파싱한다.
 5. 문서 노드 수, 라인 아이템 수, 그룹 수 상한을 검사한다.
-6. R2에서 `ACTIVE_TEMPLATE_KEY`에 지정된 템플릿을 읽고 ETag/버전을 기록한다.
+6. 번들에 담긴 템플릿을 읽고 내용 해시 판본을 기록한다.
 7. 템플릿 필수 시트(`TOTAL`, `template`)와 기본 셀 구조를 검사한다.
 8. 메모리 안에서 XLSX를 생성하고 ZIP 구조 및 필수 시트를 재검사한다.
 9. 다운로드 헤더와 요청 ID를 붙여 XLSX 바이트를 응답한다.
@@ -235,9 +229,9 @@ Cloudflare 계정의 최대 업로드 한도보다 작은 애플리케이션 자
 | 415 | `UNSUPPORTED_MEDIA_TYPE` | XML이 아닌 입력 |
 | 422 | `INVALID_QUOTATION_XML` | XML 구문/필수 항목/상한 검증 실패 |
 | 500 | `CONVERSION_FAILED` | 예상하지 못한 변환 실패 |
-| 503 | `TEMPLATE_UNAVAILABLE` | 활성 템플릿을 읽거나 검증하지 못함 |
+| 503 | `TEMPLATE_UNAVAILABLE` | 번들 템플릿을 읽거나 검증하지 못함 |
 
-스택 추적, XML 본문, 로컬/R2 경로는 사용자 응답에 포함하지 않는다.
+스택 추적, XML 본문, 로컬 경로는 사용자 응답에 포함하지 않는다.
 
 ### 6.2 보조 엔드포인트
 
@@ -269,29 +263,23 @@ Cloudflare 계정의 최대 업로드 한도보다 작은 애플리케이션 자
 
 ## 8. 템플릿 운영 계획
 
-> **§8 은 뒤집혔다** — [결정 0001](../decisions/0001-template-in-bundle.md).
-> R2 는 쓰지 않는다. 저장소 원본 `quotation/resources/견적서_template.xlsx`
-> 하나를 번들에 담고, 판본은 내용 해시로 매긴다. 아래 절차는 R2 로 되돌릴 때
-> 참고할 설계로만 남긴다. 지금의 템플릿 운영 절차는
+> 근거는 [결정 0001](../decisions/0001-template-in-bundle.md), 지금의 운영 절차는
 > [`web/README.md` 템플릿 운영](../../web/README.md#템플릿-운영)에 있다.
 
 ### 8.1 저장 및 선택
 
-- R2 버킷은 공개 액세스를 끄고 Worker binding으로만 읽는다.
-- 객체 키 예: `templates/2026-08-13-a1b2c3/견적서_template.xlsx`
-- `ACTIVE_TEMPLATE_KEY`는 환경별 Worker 변수로 둔다.
-- 활성화 전 템플릿 검증 도구로 필수 시트, 필수 셀, 도형 관계, 파일 해시를 검사한다.
-- 새 버전을 올린 뒤 Worker 변수를 바꾸어 배포하고, 문제 시 이전 키로 재배포한다.
-- 최소 최근 3개 정상 버전을 유지한다.
+- 원본은 저장소의 `quotation/resources/견적서_template.xlsx` 하나이고, 배포 때 Worker 번들과 브라우저 엔진에 담는다.
+- 템플릿은 정적 자산 폴더에 두지 않으므로 URL 로 받아 갈 수 없다.
+- 판본은 내용 해시(`sha256-…`)로 매기고 `/status` 와 응답 헤더에 싣는다.
+- 반영 전 템플릿 검증 도구로 필수 시트, 필수 셀, 도형 관계, 파일 해시를 검사한다.
 
 ### 8.2 템플릿 변경 절차
 
 1. 담당자가 Excel에서 템플릿을 수정한다.
 2. 로컬 검증 명령으로 구조와 골든 회귀 테스트를 통과시킨다.
-3. immutable 버전 키로 R2에 업로드한다.
-4. 스테이징의 `ACTIVE_TEMPLATE_KEY`를 바꾸고 대표 XML로 검증한다.
-5. 승인 후 운영 키를 전환한다.
-6. 버전, 해시, 변경자, 변경 사유를 릴리스 기록에 남긴다.
+3. 저장소 원본을 바꾸어 커밋하고 스테이징에 배포해 대표 XML로 검증한다.
+4. 승인 후 운영에 배포한다. 롤백은 그 커밋을 되돌려 재배포한다.
+5. 판본 해시, 변경자, 변경 사유를 커밋과 릴리스 기록에 남긴다.
 
 1차 출시에서는 일반 사용자의 템플릿 업로드/영구 저장 UI를 제공하지 않는다. 사용자별 템플릿이 필수라는 업무 요건이 확인되면, 요청마다 템플릿을 함께 올리고 저장하지 않는 모드 또는 Access 그룹 기반 템플릿 선택을 별도 설계한다.
 
@@ -305,16 +293,14 @@ Cloudflare 계정의 최대 업로드 한도보다 작은 애플리케이션 자
 - XML 본문, 고객명, 제품 설명, 금액, 원본 파일명, 생성 XLSX를 로그에 남기지 않는다.
 - 로그는 요청 ID, 결과 코드, 입력 크기 구간, 그룹 수, 처리 시간, 템플릿 버전만 구조화해 남긴다.
 - `Cache-Control: no-store`, `X-Content-Type-Options: nosniff`, CSP, `Referrer-Policy` 등 보안 헤더를 적용한다.
-- R2 binding을 사용하여 애플리케이션 코드에 R2 API 키를 두지 않는다.
-- CI의 Cloudflare API 토큰은 최소 계정/Worker/R2 권한으로 제한하고 저장소에 넣지 않는다.
+- CI의 Cloudflare API 토큰은 최소 계정/Worker 권한으로 제한하고 저장소에 넣지 않는다.
 - 공개 서비스가 필요하면 Access 제거 전에 별도의 사용자 인증, CSRF, Rate Limiting, 감사 정책을 먼저 설계한다.
 
 ## 10. 저장소 목표 구조
 
-> 아래는 **실제로 그렇게 됐다.** 달라진 것은 두 가지뿐이다 — `web/browser/`
+> 아래는 **실제로 그렇게 됐다.** 달라진 것은 하나뿐이다 — `web/browser/`
 > 와 `web/frontend/src/` 의 변환 일꾼이 [결정 0002]
-> (../decisions/0002-convert-in-browser.md) 로 생겼고, R2 대신 템플릿을
-> 번들에 담는다([결정 0001](../decisions/0001-template-in-bundle.md)).
+> (../decisions/0002-convert-in-browser.md) 로 생겼다.
 
 ```text
 quotation/                      공용 순수 도메인/변환 로직 (데스크톱·웹 공용)
@@ -398,13 +384,13 @@ Worker 는 `main` 이 있는 폴더 아래 모듈만 번들에 담으므로, 배
 - 같은 fixture의 path 방식과 bytes 방식이 의미상 동일
 - 생성물의 시트, 값, 수식, 서식, 병합, 도형, 인쇄 영역 회귀 없음
 
-### Phase 2 — Worker API와 템플릿 binding (2~3일)
+### Phase 2 — Worker API와 번들 템플릿 (2~3일)
 
 작업:
 
 - `/api/v1/convert`, `/status`, `/config` 구현
 - multipart, 크기, 파일형식, 상한 검증 구현
-- 비공개 R2 binding과 활성 템플릿 버전 처리
+- 번들 템플릿과 판본(내용 해시) 처리
 - 표준 오류 형식, 요청 ID, 다운로드 헤더 구현
 - no-store와 보안 헤더 적용
 
@@ -412,7 +398,7 @@ Worker 는 `main` 이 있는 폴더 아래 모듈만 번들에 담으므로, 배
 
 - `wrangler dev`에서 실제 업로드/다운로드 성공
 - 잘못된 입력별 상태 코드와 메시지 일관성 확보
-- 입력/결과 파일이 R2, KV, 로그에 저장되지 않음
+- 입력/결과 파일이 KV, 로그에 저장되지 않음
 
 ### Phase 3 — 웹 UI (2~3일)
 
@@ -494,7 +480,7 @@ Worker 는 `main` 이 있는 폴더 아래 모듈만 번들에 담으므로, 배
 - 빈 파일, 복수 파일, 잘못된 multipart, 잘못된 XML, 필수 노드 누락
 - 외부 엔티티, 큰 DTD/entity expansion, 과도한 노드/그룹/라인
 - 10 MiB 경계값, 잘못된 파일명, 한글/공백/`#` 파일명
-- 템플릿 없음/손상/필수 시트 누락/R2 오류
+- 템플릿 없음/손상/필수 시트 누락
 - 오류 응답에 스택, 경로, XML 내용이 없는지 검사
 
 ### 12.3 브라우저/E2E
@@ -543,7 +529,7 @@ Worker 는 `main` 이 있는 폴더 아래 모듈만 번들에 담으므로, 배
 | 128 MB 메모리 초과 | 요청 실패 | 입력/복잡도 제한, BytesIO 복사 최소화, 실측 후 제한 축소 |
 | 도형/서식 유실 | 업무 문서 품질 저하 | 기존 ZIP 패치 이식, drawing 관계 자동 테스트, 파일럿 대조 |
 | UTC 날짜 사용 | 견적 날짜 오기 | Asia/Seoul 명시 및 자정 경계 테스트 |
-| 템플릿 오배포 | 전 사용자 결과 손상 | immutable R2 버전, 사전 검증, staging, 즉시 롤백 |
+| 템플릿 오배포 | 전 사용자 결과 손상 | 내용 해시 판본, 사전 검증, staging, 커밋 되돌리기로 롤백 |
 | 실데이터 Git 유출 | 고객정보/가격정보 노출 | `samples/` ignore/untrack, 익명 fixture, secret scan |
 | 로그에 민감정보 노출 | 정보 유출 | 허용 필드 기반 구조화 로그, 원문/파일명 로깅 금지 |
 | Free plan CPU 한도 | 변환 실패/불안정 | Workers Paid를 운영 전제로 예산 승인 |
@@ -556,7 +542,7 @@ Worker 는 `main` 이 있는 폴더 아래 모듈만 번들에 담으므로, 배
 - UTF-8/EUC-KR, 신규/증설, N/C/REMOVE 핵심 시나리오가 자동 테스트된다.
 - Access로 비인가 사용자를 차단하고 입력/결과를 영구 저장하지 않는다.
 - XML 본문, 금액, 파일명이 로그와 오류 응답에 노출되지 않는다.
-- R2 템플릿 버전 전환과 롤백이 문서화되고 검증된다.
+- 템플릿 교체와 롤백 절차가 문서화되고 검증된다.
 - PR 테스트, preview, 승인 배포, smoke test, 롤백 경로가 동작한다.
 - 운영 담당자가 요청 ID로 실패를 찾고 사용자에게 민감정보 없이 안내할 수 있다.
 - 파일럿 승인 후에도 데스크톱 앱을 정한 기간 동안 복구 수단으로 유지한다.
@@ -569,7 +555,7 @@ Worker 는 `main` 이 있는 폴더 아래 모듈만 번들에 담으므로, 배
 4. 중앙 템플릿 담당자와 변경 승인자
 5. 사용자별 템플릿이 반드시 필요한지
 6. 입력·결과 무저장 정책에 대한 업무 승인
-7. Workers Paid 및 필요 시 Containers/R2 비용 승인
+7. Workers Paid 및 필요 시 Containers 비용 승인
 8. 파일럿 사용자와 대표 익명화 회귀 자료
 
 ## 17. 공식 참고 자료
@@ -580,7 +566,6 @@ Worker 는 `main` 이 있는 폴더 아래 모듈만 번들에 담으므로, 배
 - [Python Workers packages](https://developers.cloudflare.com/workers/languages/python/packages/)
 - [Python Workers standard library](https://developers.cloudflare.com/workers/languages/python/stdlib/)
 - [Workers Static Assets](https://developers.cloudflare.com/workers/static-assets/)
-- [R2 Workers API](https://developers.cloudflare.com/r2/get-started/workers-api/)
 - [Cloudflare Containers](https://developers.cloudflare.com/containers/)
 - [Container lifecycle and cold starts](https://developers.cloudflare.com/containers/platform-details/architecture/)
 - [Cloudflare Access policies](https://developers.cloudflare.com/cloudflare-one/access-controls/policies/)

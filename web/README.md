@@ -273,7 +273,7 @@ bash web/scripts/cf_deploy.sh deploy
 ```
 
 My Profile → API Tokens → Create Token 에서 **Edit Cloudflare Workers** 템플릿을
-그대로 쓰면 됩니다. 별도 권한 추가는 필요 없습니다(R2 를 쓰지 않습니다).
+그대로 쓰면 됩니다. 별도 권한 추가는 필요 없습니다.
 
 | 범위 | 권한 | 용도 |
 |---|---|---|

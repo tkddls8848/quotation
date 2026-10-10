@@ -26,7 +26,7 @@
 | [`guide/MIGRATION.md`](guide/MIGRATION.md) | 2005년판에서 넘어오는 기존 사용자 안내 |
 | [`plan/web-app-plan.md`](plan/web-app-plan.md) | 웹 앱 구현 계획 (2026-08-14 착수안) |
 | [`plan/rust-wasm-core-plan.md`](plan/rust-wasm-core-plan.md) | 변환 코어 Rust→WASM 이식 계획 (착수 전) |
-| [`decisions/0001-template-in-bundle.md`](decisions/0001-template-in-bundle.md) | 템플릿을 R2 에서 번들로 |
+| [`decisions/0001-template-in-bundle.md`](decisions/0001-template-in-bundle.md) | 템플릿을 번들에 담는다 |
 | [`decisions/0002-convert-in-browser.md`](decisions/0002-convert-in-browser.md) | 변환을 서버에서 브라우저로 |
 | [`decisions/0003-reject-rust-wasm-core-after-phase0.md`](decisions/0003-reject-rust-wasm-core-after-phase0.md) | Rust→WASM 전환을 하지 않는다 (결정 0004 가 철회) |
 | [`decisions/0004-resume-rust-wasm-phase0.md`](decisions/0004-resume-rust-wasm-phase0.md) | 그 폐기를 철회하고 Phase 0 을 다시 연다 |
@@ -97,7 +97,6 @@
 
 | 계획 | 지금 | 기록 |
 |---|---|---|
-| 템플릿을 비공개 R2 에 버전별로 | 저장소 원본 한 개를 번들에 담는다 | [결정 0001](decisions/0001-template-in-bundle.md) |
 | 변환은 Python Worker (Workers Paid 전제) | 변환은 브라우저 (무료 계정) | [결정 0002](decisions/0002-convert-in-browser.md) |
 | 변환 코어는 파이썬 한 벌 | Rust 한 벌. 데스크톱은 확장 모듈로, 브라우저는 WASM 으로 부른다 | [결정 0004](decisions/0004-resume-rust-wasm-phase0.md), [0007](decisions/0007-phase0-gates-passed.md) |
 | 첫 방문에 엔진 14.4 MiB (Pyodide) | 약 1 MiB (gzip). 기동 1.9초 → 5 ms 안팎 | [결정 0008](decisions/0008-wasm-size-after-the-writer.md) |

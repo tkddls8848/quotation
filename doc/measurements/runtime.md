@@ -1,8 +1,7 @@
 # 실측 — 런타임, 판본, 크기
 
-측정일 2026-08-14. 판단의 근거가 된 숫자만 모은다. 이 숫자들이 계획을 두 번
-뒤집었다([결정 0001](../decisions/0001-template-in-bundle.md),
-[결정 0002](../decisions/0002-convert-in-browser.md)).
+측정일 2026-08-14. 판단의 근거가 된 숫자만 모은다. 이 숫자들이 계획을
+뒤집었다([결정 0002](../decisions/0002-convert-in-browser.md)).
 
 ## 변환 1건의 CPU 시간
 

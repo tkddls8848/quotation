@@ -20,6 +20,6 @@ def fixtures() -> Path:
 
 @pytest.fixture(scope="session")
 def template_bytes() -> bytes:
-    """운영에서 쓰는 그 템플릿. R2 를 걷어낸 뒤로는 번들에 담겨 나간다
+    """운영에서 쓰는 그 템플릿. 번들에 담겨 나간다
     (doc/decisions/0001-template-in-bundle.md)."""
     return resources.default_template_bytes()
