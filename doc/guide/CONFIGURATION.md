@@ -4,7 +4,7 @@
 `.dev.vars*` 파일은 발견되지 않았다. 기존 값을 옮기거나 삭제한 것은 없다.
 
 `.env`를 사용하는 배포 도구를 추가할 때는 **저장소 루트의 인증정보 전용 파일**로
-한정한다. 허용 키는 `CLOUDFLARE_ACCOUNT_ID`, `CLOUDFLARE_API_TOKEN`,
+한정한다. 허용 키는 `CLOUDFLARE_ACCOUNT_ID`, `CLOUDFLARE_WORKER_AI_API_TOKEN`,
 `GITHUB_TOKEN`, `GH_TOKEN`이다. 값은 로컬 자격증명이나 CI secret에서 관리하고
 Git에 넣지 않는다. 현재 코드가 `.env`를 자동 로드하는 것은 아니다.
 새 인증 키가 필요하면 `web/scripts/env-policy.ts`의 허용 목록과 이 문서를 함께 고친다.

@@ -253,11 +253,13 @@ Root directory 값이 무엇이든 똑같이 동작한다. 이 장치가 없으�
 평소 배포는 Workers Builds 가 하지만, 손으로 올릴 때는 `wrangler` 가 토큰을 찾는다.
 
 ```bash
-export CLOUDFLARE_API_TOKEN="<토큰>"    # 셸에만 둔다. 파일에 적지 않는다
+export CLOUDFLARE_WORKER_AI_API_TOKEN="<토큰>"    # 셸에만 둔다. 파일에 적지 않는다
 export CLOUDFLARE_ACCOUNT_ID="<계정 ID>"
 bash web/scripts/cf_build.sh
 bash web/scripts/cf_deploy.sh deploy
 ```
+
+`cf_deploy.sh` 가 이 값을 wrangler 가 읽는 이름으로 넘겨 준다.
 
 이 토큰은 대시보드의 **빌드 토큰과 다른 것**이다. 빌드 토큰은 Workers Builds 가
 저장소를 짓고 올릴 때 쓰는 것으로 Settings → Build 에서 관리한다.
@@ -284,7 +286,7 @@ My Profile → API Tokens → Create Token 에서 **Edit Cloudflare Workers** �
 
 흔한 실수:
 
-- **Global API Key 를 넣었다.** 그것은 `CLOUDFLARE_API_TOKEN` 이 아니라
+- **Global API Key 를 넣었다.** 그것은 `CLOUDFLARE_WORKER_AI_API_TOKEN` 이 아니라
   `CLOUDFLARE_API_KEY` + `CLOUDFLARE_EMAIL` 로 넘겨야 합니다. API 토큰을 새로
   만드는 쪽이 낫습니다.
 - **토큰 값 대신 토큰 ID 를 붙여넣었다.** 값은 생성 직후 한 번만 보입니다.

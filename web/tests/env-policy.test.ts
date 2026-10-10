@@ -8,7 +8,8 @@ import config from '../vite.config';
 
 describe('credential-only environment policy', () => {
   it('accepts credential assignments, rejects public configuration and malformed lines without echoing values', () => {
-    expect(validateEnvText('# comment\nGH_TOKEN=fake\nexport CLOUDFLARE_ACCOUNT_ID=fake')).toEqual([]);
+    expect(validateEnvText('# comment\nGH_TOKEN=fake\nexport CLOUDFLARE_ACCOUNT_ID=fake\nCLOUDFLARE_WORKER_AI_API_TOKEN=fake')).toEqual([]);
+    expect(validateEnvText('CLOUDFLARE_API_TOKEN=fake')).toEqual([1]);
     expect(validateEnvText('PORT=123\nVITE_TOKEN=fake\nDEPLOYMENT_VERSION=fake\nbad')).toEqual([1, 2, 3, 4]);
   });
   it('checks ignored dotenv files and rejects nested browser credentials', () => {

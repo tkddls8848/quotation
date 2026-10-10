@@ -3,7 +3,7 @@ import { readdirSync, readFileSync } from 'node:fs';
 import { join, relative } from 'node:path';
 
 export const SECRET_KEYS = new Set([
-  'CLOUDFLARE_ACCOUNT_ID', 'CLOUDFLARE_API_TOKEN', 'GITHUB_TOKEN', 'GH_TOKEN',
+  'CLOUDFLARE_ACCOUNT_ID', 'CLOUDFLARE_WORKER_AI_API_TOKEN', 'GITHUB_TOKEN', 'GH_TOKEN',
 ]);
 const SKIP = new Set(['.git', 'node_modules', 'target', '.cache', '.venv', '.pytest_cache', '__pycache__', '.wrangler', 'dist']);
 

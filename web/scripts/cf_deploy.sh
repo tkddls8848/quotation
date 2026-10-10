@@ -36,5 +36,12 @@ done
 if [ "$has_env" = false ]; then
   set -- "$@" --env=""
 fi
+# 손으로 배포할 때 토큰은 CLOUDFLARE_WORKER_AI_API_TOKEN 으로 받는다. wrangler 는
+# 정해진 이름만 읽으므로 그 이름으로 넘긴다. 없으면 Workers Builds 가 넣어 준
+# 토큰을 그대로 둔다.
+if [ -n "${CLOUDFLARE_WORKER_AI_API_TOKEN:-}" ]; then
+  export CLOUDFLARE_API_TOKEN="$CLOUDFLARE_WORKER_AI_API_TOKEN"
+fi
+
 echo "=== 배포: npx wrangler $*"
 exec npx wrangler "$@"
